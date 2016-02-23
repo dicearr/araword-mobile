@@ -1,0 +1,8 @@
+/* Empty. Add your own CSS if you like */
+.picto {
+    width:100px; /* i should change */
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
