@@ -18,6 +18,7 @@
         var service = {
             startService: startService,
             getPictographs: getPictographs,
+            getCompoundsStartingWith: getCompoundsStartingWith,
             ready: ready
         };
 
@@ -27,6 +28,7 @@
 
         function getPictographs(word) {
             return $q(function(resolve,reject){
+                // Case insensitive
                 var query = "SELECT * FROM ArawordView WHERE word=\'" + word.toLowerCase() +"\'";
                 var pictos = [];
 
@@ -37,7 +39,35 @@
                         for(var i = 0; i < res.rows.length; i++) {
                             pictos.push(res.rows.item(i).name);
                         }
+                        if (pictos.length==0) {
+                            reject('NO_PICT');
+                        }
                         resolve(pictos);
+                    }, function (err) {
+                        reject(err);
+                    });
+                }
+
+            });
+        };
+
+        function getCompoundsStartingWith(word) {
+            return $q(function(resolve,reject){
+                // Case insensitive
+                var query = "SELECT * FROM ArawordView WHERE word=\'" + word.toLowerCase() +" \%\'";
+                var compounds = [];
+
+                document.addEventListener('deviceready', executeQuery, false);
+
+                function executeQuery() {
+                    $cordovaSQLite.execute(db, query).then(function(res) {
+                        for(var i = 0; i < res.rows.length; i++) {
+                            compounds.push(res.rows.item(i).word);
+                        }
+                        if (compounds.length==0) {
+                            reject('NO_COMPOUNDS');
+                        }
+                        resolve(compounds);
                     }, function (err) {
                         reject(err);
                     });

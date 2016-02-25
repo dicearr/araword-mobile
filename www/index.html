@@ -27,6 +27,7 @@
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/directives/focus.js"></script>
     <script type="text/javascript" src="js/services/dbService.js"></script>
+    <script type="text/javascript" src="js/services/textAnalyzer.js"></script>
     <script type="text/javascript" src="js/controllers/textController.js"></script>
     <script type="text/javascript" src="js/services/pictUpdater.js"></script>
     <script type="text/javascript" src="js/services/pictManager.js"></script>
@@ -42,8 +43,7 @@
             <div class="inline padding" ng-repeat="word in text.myText">
               <img class="picto" ng-src="{{ word.pictos[0] }}"/>
               <input type="text"
-                     ng-change="text.change(word)"
-                     ng-keyup="text.if_empty_delete(word,$event)"
+                     ng-keyup="text.change(word, $event)"
                      ng-model="word.value"
                      focus="{{ word.autofocus }}"
                      pu-elastic-input
