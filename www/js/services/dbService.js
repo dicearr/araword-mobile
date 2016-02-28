@@ -54,7 +54,7 @@
         function getCompoundsStartingWith(word) {
             return $q(function(resolve,reject){
                 // Case insensitive
-                var query = "SELECT * FROM ArawordView WHERE word=\'" + word.toLowerCase() +" \%\'";
+                var query = "SELECT * FROM ArawordView WHERE word like \'" + word.toLowerCase() +" \%\'";
                 var compounds = [];
 
                 document.addEventListener('deviceready', executeQuery, false);

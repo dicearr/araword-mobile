@@ -15,7 +15,6 @@
 
         var vm = this;
         vm.myText = [{
-            'id': 0,
             'value': 'AraWord',
             'pictos': ['img/logo.png'],
             'words': 1,
@@ -33,9 +32,9 @@
         function change(w, event) {
             if (w.value.length==0 && event.keyCode == 8) {
                 textAnalyzer.deleteWord(w,vm.myText);
-                textAnalyzer.focusLastWord(vm.myText);
+            } else {
+                textAnalyzer.processEvent(w, vm.myText, event);
             }
-            textAnalyzer.processEvent(w, vm.myText, event);
         };
     }
 })();
