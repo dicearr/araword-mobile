@@ -18,7 +18,7 @@
         vm.setGrayValue = setGrayValue;
         vm.grayValue = 0;
         vm.grayStyle = {
-            'filter': 'grayscale(1)'
+            '-webkit-filter': 'grayscale(100%)'
         };
 
         vm.setPictoSizeValue = setPictoSizeValue;
@@ -35,7 +35,7 @@
 
         function setGrayValue() {
           vm.grayStyle = {
-            'filter': 'grayscale('+vm.grayValue/100+')'
+            '-webkit-filter': 'grayscale('+vm.grayValue+'%)'
           };
         }
 

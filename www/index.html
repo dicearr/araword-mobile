@@ -33,19 +33,20 @@
     <script type="text/javascript" src="js/services/pictManager.js"></script>
     <script type="text/javascript" src="js/controllers/settingsController.js"></script>
     <script type="text/javascript" src="js/configurations/routes.js"></script>
+    <script type="text/javascript" src="js/controllers/pictosController.js"></script>
 
   </head>
 
   <body ng-app="app">
 
-      <ion-nav-bar class="bar-positive">
-          <ion-nav-title>AraWord</ion-nav-title>
-          <ion-nav-buttons side="primary">
+      <ion-nav-bar align-title="center" class="bar-positive">
+          <ion-nav-buttons side="left">
               <button class="button button-icon ion-compose" ui-sref="text"></button>
           </ion-nav-buttons>
-          <ion-nav-buttons side="secondary">
+          <ion-nav-title>AraWord</ion-nav-title>
+          <ion-nav-buttons side="right">
               <button class="button button-icon ion-person-stalker"></button>
-              <button class="button button-icon ion-images"></button>
+              <button class="button button-icon ion-images" ui-sref="pictos"></button>
               <button class="button button-icon ion-gear-a" ui-sref="settings"></button>
           </ion-nav-buttons>
       </ion-nav-bar>

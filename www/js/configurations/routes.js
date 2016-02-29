@@ -28,6 +28,22 @@
                 templateUrl: 'templates/settings.html',
                 controller: 'settingsController',
                 controllerAs: 'sett'
+            })
+
+            // Pictos configuration
+            .state('pictos', {
+                url: '/pictos',
+                templateUrl: 'templates/pictos.html',
+                controller: 'pictosController',
+                controllerAs: 'pict'
+            })
+
+            // Picto edition
+            .state('pictos.edit', {
+                url: '/pictos/edit',
+                templateUrl: 'templates/edit.html',
+                controller: 'pictEditor',
+                controllerAs: 'editor'
             });
 
         $urlRouterProvider.otherwise('/');
