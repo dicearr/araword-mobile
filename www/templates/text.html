@@ -1,0 +1,15 @@
+<ion-view>
+    <ion-content class="has-header" overflow-scroll="false">
+        <div class="inline padding" ng-repeat="word in text.myText">
+            <img class="picto" ng-src="{{ word.pictos[0] }}"/>
+            <input type="text"
+                   ng-keyup="text.change(word, $event)"
+                   ng-model="word.value"
+                   focus="{{ word.autofocus }}"
+                   pu-elastic-input
+                   style="min-width: 100px; font-size:24px;"/>
+        </div>
+    </ion-content>
+</ion-view>
+
+

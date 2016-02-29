@@ -1,0 +1,66 @@
+<ion-view>
+    <ion-content class="has-header" overflow-scroll="false">
+        <ion-list>
+
+            <!-- Gray scale configuration -->
+            <ion-item class="item-input">
+                Escala de grises
+                <input type="range"
+                       name="grayScale"
+                       min="0"
+                       max="100"
+                       ng-model="sett.grayValue"
+                       ng-change="sett.setGrayValue()"
+                       style="max-width: 60%; margin-left:auto; margin-right: 10%"/>
+            </ion-item>
+
+            <ion-item ng-show="sett.grayValue">
+                <img ng-src="img/logo.png" class="picto" ng-style="sett.grayStyle">
+            </ion-item>
+            <!-- End -->
+
+            <!-- Pictos size configuration -->
+            <ion-item class="item-input">
+                Tamaño pictograma
+                <input type="range"
+                       name="pictoSize"
+                       min="50"
+                       max="200"
+                       value="{{ sett.pictoSizeValue }}"
+                       ng-model="sett.pictoSizeValue"
+                       ng-change="sett.setPictoSizeValue()"
+                       style="max-width: 60%; margin-left:auto; margin-right: 10%"/>
+            </ion-item>
+
+            <ion-item>
+                <img ng-src="img/logo.png" class="picto" ng-style="sett.pictoStyle">
+            </ion-item>
+            <!-- End -->
+
+            <!-- Font size configuration -->
+            <ion-item class="item-input">
+                Tamaño de letra
+                <input type="range"
+                       name="fontSize"
+                       min="12"
+                       max="40"
+                       value="{{ sett.fontSizeValue }}"
+                       ng-model="sett.fontSizeValue"
+                       ng-change="sett.setFontSizeValue()"
+                       style="max-width: 60%; margin-left:auto; margin-right: 10%"/>
+            </ion-item>
+
+            <ion-item>
+                <h3 ng-style="sett.fontStyle" style="text-align: center;">AraWord</h3>
+            </ion-item>
+
+        </ion-list>
+
+        <div style="text-align: center; padding-top: 2%">
+            <button class="button button-positive" style="margin:auto">
+                Guardar cambios
+            </button>
+        </div>
+
+    </ion-content>
+</ion-view>

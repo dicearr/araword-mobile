@@ -31,28 +31,26 @@
     <script type="text/javascript" src="js/controllers/textController.js"></script>
     <script type="text/javascript" src="js/services/pictUpdater.js"></script>
     <script type="text/javascript" src="js/services/pictManager.js"></script>
-
+    <script type="text/javascript" src="js/controllers/settingsController.js"></script>
+    <script type="text/javascript" src="js/configurations/routes.js"></script>
 
   </head>
-  <body ng-app="app" ng-controller="textController as text">
-    <ion-pane>
-      <ion-header-bar class="bar-stable">
-        <h1 class="title">AraWord</h1>
-      </ion-header-bar>
-        <ion-content overflow-scroll="false">
-            <div class="inline padding" ng-repeat="word in text.myText">
-              <img class="picto" ng-src="{{ word.pictos[0] }}"/>
-              <input type="text"
-                     ng-keyup="text.change(word, $event)"
-                     ng-model="word.value"
-                     focus="{{ word.autofocus }}"
-                     pu-elastic-input
-                     style="min-width: 100px; font-size:24px;"/>
-            </div>
-      </ion-content>
-      <ion-footer-bar class="bar-stable">
-        <h1 class="title">Unizar</h1>
-      </ion-footer-bar>
-    </ion-pane>
+
+  <body ng-app="app">
+
+      <ion-nav-bar class="bar-positive">
+          <ion-nav-title>AraWord</ion-nav-title>
+          <ion-nav-buttons side="primary">
+              <button class="button button-icon ion-compose" ui-sref="text"></button>
+          </ion-nav-buttons>
+          <ion-nav-buttons side="secondary">
+              <button class="button button-icon ion-person-stalker"></button>
+              <button class="button button-icon ion-images"></button>
+              <button class="button button-icon ion-gear-a" ui-sref="settings"></button>
+          </ion-nav-buttons>
+      </ion-nav-bar>
+
+      <ion-pane><ion-nav-view></ion-nav-view></ion-pane>
+
   </body>
 </html>
