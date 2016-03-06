@@ -17,10 +17,12 @@
         vm.myText = [{
             'value': 'AraWord',
             'pictos': [{'picto':'25748.png', 'type':4}],
+            'pictInd': 0,
             'words': 1,
             'autofocus': true
         }];
         vm.change = change;
+        vm.nextPicto = nextPicto;
 
         configService.restoreConfig();
 
@@ -56,16 +58,14 @@
 
         function readPicto(picto) {
 
+            // Digest cycles are faster than read fs so we return empty picto to avoid multiple reads
+            picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
             document.addEventListener('deviceready', readPictHandler, false);
 
             function readPictHandler() {
 
-                console.log('Reading picto.');
-
                 var dirUrl = cordova.file.dataDirectory;
                 var dirName = 'pictos';
-
-                picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
                 $cordovaFile.readAsDataURL(dirUrl+dirName+'/pictos_12', picto['picto'])
                     .then(function(success){
@@ -76,6 +76,10 @@
                     });
             }
 
+        }
+
+        function nextPicto(word) {
+            word.pictInd = (word.pictInd+1)%word.pictos.length;
         }
     }
 })();

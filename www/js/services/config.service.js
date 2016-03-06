@@ -59,7 +59,7 @@
             service.borders = newValue;
         }
 
-        function getDivStyle(typeOfWord) {
+        function getDivStyle(word) {
 
             var color = null;
             if (!service.borders) {
@@ -68,7 +68,7 @@
                 }
             }
 
-            switch (typeOfWord) {
+            switch (word.pictos[word.pictInd]['type']) {
                 case 0:
                     color = 'orange';
                     break;
@@ -88,10 +88,7 @@
                     color = 'white';
                     break;
             }
-
-            return {
-                'border': '4px solid '+color
-            }
+            word.divStyle = { 'border': '4px solid '+color };
         }
 
         function saveConfig() {

@@ -1,28 +1,32 @@
+<!-- CONTROLLER AS text -->
 <ion-view>
-    <ion-content class="has-header" overflow-scroll="false">
+    <ion-content class="has-header" overflow-scroll="false" ng-style="text.wordStyle">
         <div class="inline padding" ng-repeat="word in text.myText"
-             ng-style="text.getDivStyle(word.pictos[0]['type'])"
+             ng-style="word.divStyle || text.getDivStyle(word)"
              style="margin: 1px">
 
+            <!-- Text can appear on top -->
             <input type="text"
                    ng-keyup="text.change(word, $event)"
                    ng-model="word.value"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
-                   ng-style="text.wordStyle"
-                   ng-hide="text.wordPosition()"/>
+                   ng-hide="text.wordPosition()"
+                   style="font-size: inherit"/>
 
             <img class="picto"
-                 ng-src="{{ word.pictos[0]['base64'] || text.readPicto(word.pictos[0]) }}"
-                 ng-style="text.pictoStyle"/>
+                 ng-src="{{ word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
+                 ng-style="text.pictoStyle"
+                 ng-click="text.nextPicto(word)"/>
 
+            <!-- or bot -->
             <input type="text"
                    ng-keyup="text.change(word, $event)"
                    ng-model="word.value"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
-                   ng-style="text.wordStyle"
-                   ng-show="text.wordPosition()"/>
+                   ng-show="text.wordPosition()"
+                   style="font-size: inherit"/>
         </div>
     </ion-content>
 </ion-view>

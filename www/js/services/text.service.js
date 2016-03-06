@@ -9,9 +9,9 @@
         .module('app')
         .factory('textAnalyzer', textAnalyzer);
 
-    textAnalyzer.$inject = ['dbService','$q' ];
+    textAnalyzer.$inject = ['dbService','$q','verbsDB'];
 
-    function textAnalyzer(dbService, $q ){
+    function textAnalyzer(dbService, $q, verbsDB){
 
         var radius = 3;
         var separators = [32,9,13]; // space, tab, enter
@@ -23,6 +23,10 @@
             deleteWord: deleteWord,
             setCaret: setCaret
         };
+
+        if(!verbsDB.ready()) {
+            verbsDB.startService();
+        }
 
         return service;
 
@@ -44,63 +48,68 @@
             } else {
                 textContext = getTextContext(wordPosition, radius);
                 var wordsInContext = textContext.words;
+                var wordsValuesInContext = wordsInContext.map(function(word) {
+                    if (!angular.isUndefined(word)) return word.value.toLowerCase();
+                });
 
                 var promises = [];
                 var results = [];
+
                 wordsInContext.forEach(function(simpleWord) {
+                    var inf = undefined;
                     promises.push(
                         $q(function(resolve) {
-                            dbService.getCompoundsStartingWith(simpleWord.value)
-                                .then(function (compounds) {
-                                    var wordsValuesInContext = wordsInContext.map(function(word) {
-                                        if (!angular.isUndefined(word)) return word.value;
-                                    });
+                            var promise = verbsDB.getInfinitive(simpleWord.value)
+                                .then(function(infinitive){
+                                    inf = infinitive;
+                                    return dbService.getCompoundsStartingWith(infinitive);
+                                }, function() {
+                                    return dbService.getCompoundsStartingWith(simpleWord.value);
+                                });
+
+                            promise
+                                .then(function(compounds) {
+                                    if (!angular.isUndefined(inf)) {
+                                        wordsValuesInContext.splice(simpleWord.position,1,inf);
+                                        console.log(JSON.stringify(wordsValuesInContext));
+                                    }
                                     var text = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length).join(' ');
+                                    console.log(text);
                                     var match = {
                                         'value': simpleWord.value,
                                         'pictos': [emptyPicto],
+                                        'pictInd': 0,
                                         'words': 1
                                     };
+
                                     for(var i=0; i<compounds.length; i++) {
-                                        if (text.indexOf(compounds[i])==0 &&
-                                            (text.charAt(compounds[i].length)==' ' ||
-                                            text.length <= compounds[i].length )) {
-                                            var newLength = compounds[i].split(' ').length;
-                                            if (match == null || newLength > match.words) {
+                                        var comp = compounds[i];
+                                        var len = comp.word.length;
+                                        if (text.indexOf(comp.word)==0 &&
+                                            (text.charAt(len)==' ' ||
+                                            (text.length <= len))) {
+                                            var newLength = comp.word.split(' ').length;
+                                            if (match == null || newLength >= match.words) {
                                                 match = {
-                                                    'value': compounds[i],
-                                                    'pictos': [emptyPicto],
+                                                    //Allows Upper Case in text, com.word is lower case
+                                                    'value': newLength==1?simpleWord.value:comp.word,
+                                                    'pictos': comp.pictos,
+                                                    'pictInd': 0,
                                                     'words': newLength
                                                 };
                                             }
                                         }
                                     }
-                                    dbService.getPictographs(match.value)
-                                        .then(function(paths) {
-                                            match.pictos = paths;
-                                            results[simpleWord.position] = match;
-                                            resolve();
-                                        }, function() {
-                                            results[simpleWord.position] = match;
-                                            resolve();
-                                        });
+                                    results[simpleWord.position] = match;
+                                    resolve();
                                 }, function () {
-                                    dbService.getPictographs(simpleWord.value)
-                                        .then(function(paths) {
-                                            results[simpleWord.position] = {
-                                                'value': simpleWord.value,
-                                                'pictos': paths,
-                                                'words': 1
-                                            };
-                                            resolve();
-                                        },function() {
-                                            results[simpleWord.position] = {
-                                                'value': simpleWord.value,
-                                                'pictos': [emptyPicto],
-                                                'words': 1
-                                            };
-                                            resolve();
-                                        });
+                                    results[simpleWord.position] = {
+                                        'value': simpleWord.value,
+                                        'pictos': [emptyPicto],
+                                        'pictInd': 0,
+                                        'words': 1
+                                    };
+                                    resolve();
                                 });
                         })
                     );
@@ -158,6 +167,7 @@
                 var emptyWord = {
                     'value': '',
                     'pictos': [emptyPicto],
+                    'pictInd': 0,
                     'words': 1
                 };
                 text.splice(wordPosition+1,0,emptyWord);
