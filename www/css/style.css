@@ -1,14 +1,7 @@
 /* Empty. Add your own CSS if you like */
 .picto {
-    width:100px; /* i should change */
+    width:100px;
     height: auto;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.range-in-item {
-    max-width: 60%;
-    margin-left: auto;
-    margin-right: 10%;
+    margin: auto;
 }

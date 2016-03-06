@@ -1,7 +1,8 @@
 <ion-view>
     <ion-content class="has-header has-footer" overflow-scroll="false">
-        <div class="inline padding" ng-repeat="word in pict.customPicts">
-            <img class="picto" ng-src="{{ word.pictos[0] }}"/>
+        <div class="inline padding" ng-repeat="word in pict.customPicts" >
+            <img class="picto" ng-src="{{ word.pictos[0] }}"
+                 ng-click="pict.editPicto(word)"/>
             <h4 style="text-align: center;">{{word.value}}</h4>
         </div>
     </ion-content>

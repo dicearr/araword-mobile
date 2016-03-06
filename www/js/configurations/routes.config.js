@@ -39,10 +39,10 @@
             })
 
             // Picto edition
-            .state('pictos.edit', {
+            .state('pictos-edit', {
                 url: '/pictos/edit',
                 templateUrl: 'templates/edit.html',
-                controller: 'pictEditor',
+                controller: 'pictEditorController',
                 controllerAs: 'editor'
             });
 

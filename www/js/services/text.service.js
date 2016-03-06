@@ -9,21 +9,20 @@
         .module('app')
         .factory('textAnalyzer', textAnalyzer);
 
-    textAnalyzer.$inject = ['pictManager','$q','dbService'];
+    textAnalyzer.$inject = ['dbService','$q' ];
 
-    function textAnalyzer(pictManager, $q, dbService){
+    function textAnalyzer(dbService, $q ){
 
         var radius = 3;
         var separators = [32,9,13]; // space, tab, enter
         var caretPosition = 0;
+        var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='};
 
         var service = {
             processEvent: processEvent,
             deleteWord: deleteWord,
             setCaret: setCaret
         };
-
-        pictManager.startService();
 
         return service;
 
@@ -54,29 +53,29 @@
                             dbService.getCompoundsStartingWith(simpleWord.value)
                                 .then(function (compounds) {
                                     var wordsValuesInContext = wordsInContext.map(function(word) {
-                                       if (!angular.isUndefined(word)) return word.value;
+                                        if (!angular.isUndefined(word)) return word.value;
                                     });
                                     var text = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length).join(' ');
                                     var match = {
                                         'value': simpleWord.value,
-                                        'pictos': [],
+                                        'pictos': [emptyPicto],
                                         'words': 1
                                     };
                                     for(var i=0; i<compounds.length; i++) {
                                         if (text.indexOf(compounds[i])==0 &&
-                                                (text.charAt(compounds[i].length)==' ' ||
-                                                text.length <= compounds[i].length )) {
+                                            (text.charAt(compounds[i].length)==' ' ||
+                                            text.length <= compounds[i].length )) {
                                             var newLength = compounds[i].split(' ').length;
                                             if (match == null || newLength > match.words) {
                                                 match = {
                                                     'value': compounds[i],
-                                                    'pictos': [],
+                                                    'pictos': [emptyPicto],
                                                     'words': newLength
                                                 };
                                             }
                                         }
                                     }
-                                    pictManager.getPictPaths(match.value)
+                                    dbService.getPictographs(match.value)
                                         .then(function(paths) {
                                             match.pictos = paths;
                                             results[simpleWord.position] = match;
@@ -86,7 +85,7 @@
                                             resolve();
                                         });
                                 }, function () {
-                                    pictManager.getPictPaths(simpleWord.value)
+                                    dbService.getPictographs(simpleWord.value)
                                         .then(function(paths) {
                                             results[simpleWord.position] = {
                                                 'value': simpleWord.value,
@@ -97,7 +96,7 @@
                                         },function() {
                                             results[simpleWord.position] = {
                                                 'value': simpleWord.value,
-                                                'pictos': ['img/logo.png'],
+                                                'pictos': [emptyPicto],
                                                 'words': 1
                                             };
                                             resolve();
@@ -109,6 +108,7 @@
 
                 $q.all(promises).then(function() {
                     text.splice(textContext.minIndex,textContext.maxIndex-textContext.minIndex+1);
+                    var caret = 0;
                     for(var i=0; i<results.length; i++) {
                         text.splice(textContext.minIndex++,0,results[i]);
                         i = i + results[i].words - 1;
@@ -157,7 +157,7 @@
             function push_empty_word() {
                 var emptyWord = {
                     'value': '',
-                    'pictos': [],
+                    'pictos': [emptyPicto],
                     'words': 1
                 };
                 text.splice(wordPosition+1,0,emptyWord);

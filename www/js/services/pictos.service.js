@@ -37,12 +37,25 @@
                     var dirUrl = cordova.file.dataDirectory;
 
                     dbService.getPictographs(word)
-                        .then(function(pictNames) {
+                        .then(function(wordInfo) {
                             var paths = [];
-                            pictNames.forEach(function(name) {
-                                $cordovaFile.readAsDataURL(dirUrl+dirName+'/pictos_12',name)
+                            wordInfo.forEach(function(picto) {
+                                $cordovaFile.readAsDataURL(dirUrl+dirName+'/pictos_12',picto['picto'])
                                     .then(function(success){
-                                        paths.push(success);
+
+                                        var type = null;
+                                        if (picto['type']=="nombreComun") type = 0;
+                                        else if (picto['type']=="descriptivo") type = 1;
+                                        else if (picto['type']=="verbo") type = 2;
+                                        else if (picto['type']=="miscelanea") type = 3;
+                                        else if (picto['type']=="nombrePropio") type = 4;
+                                        else { type = 5; }
+
+                                        paths.push({
+                                            'picto': success,
+                                            'type': type
+                                        });
+
                                     },function(error){
                                         console.log('[E] '+JSON.stringify(error));
                                     });

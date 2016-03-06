@@ -2,26 +2,6 @@
     <ion-content class="has-header" overflow-scroll="false">
         <ion-list>
 
-            <!-- Gray scale configuration -->
-            <div class="card">
-                <div class="item item-divider" style="text-align: center">
-                    Escala de grises
-                </div>
-                <div class="item range">
-                    <input type="range"
-                           name="grayScale"
-                           min="0"
-                           max="100"
-                           ng-model="sett.grayValue"
-                           ng-change="sett.setGrayValue()"
-                           style="max-width: 80%; margin:auto;"/>
-                </div>
-                <div class="item item-divider" ng-show="sett.grayValue">
-                    <img ng-src="img/logo.png" class="picto" ng-style="sett.grayStyle">
-                </div>
-            </div>
-            <!-- End -->
-
             <!-- Pictos size configuration -->
             <div class="card">
                 <div class="item item-divider" style="text-align: center">
@@ -64,14 +44,57 @@
             </div>
             <!-- End -->
 
+            <!-- Gray scale configuration -->
+            <div class="card">
+                <div class="item item-divider" style="text-align: center">
+                    Escala de grises
+                </div>
+                <div class="item range">
+                    <input type="range"
+                           name="grayScale"
+                           min="0"
+                           max="100"
+                           ng-model="sett.grayValue"
+                           ng-change="sett.setGrayValue()"
+                           style="max-width: 80%; margin:auto;"/>
+                </div>
+                <div class="item item-divider" ng-show="sett.grayValue">
+                    <img ng-src="img/logo.png" class="picto" ng-style="sett.grayStyle">
+                </div>
+            </div>
+            <!-- End -->
+
+            <!-- Borders configuration enabled/disabled -->
+            <div class="item item-toggle">
+                Bordes de colores
+                <label class="toggle toggle-positive">
+                    <input type="checkbox" ng-model="sett.bordersValue">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+            <!-- End -->
+
+            <!-- Pictos position (relative to text) configuration top/bot -->
+            <div class="item item-toggle">
+                Texto debajo
+                <label class="toggle toggle-positive">
+                    <input type="checkbox" ng-model="sett.wordPosition">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+            <!-- End -->
+
         </ion-list>
 
         <div style="text-align: center; padding: 2%">
-            <button class="button button-positive" style="margin: 1%">
+            <button class="button button-positive"
+                    style="margin: 1%"
+                    ng-click="sett.saveConfig()">
                 Guardar por defecto
-            </button>
-            <button class="button button-positive" style="margin:1%">
-                Nuevo perfil
             </button>
         </div>
 

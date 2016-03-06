@@ -9,10 +9,13 @@
         .module('app')
         .controller('pictosController', pictosController);
 
-    pictosController.$inject = [];
+    pictosController.$inject = ['pictEditorService','$location'];
 
-    function pictosController() {
+    function pictosController(pictEditorService, $location) {
+
         var vm = this;
+
+        vm.editPicto = editPicto;
 
         vm.customPicts = [{
             'value': 'AraWord',
@@ -45,6 +48,11 @@
             'words': 1,
             'autofocus': true
         }];
+
+        function editPicto(word) {
+            pictEditorService.setPicto(word);
+            $location.path('/pictos/edit');
+        }
     }
 
 })();

@@ -1,13 +1,28 @@
 <ion-view>
     <ion-content class="has-header" overflow-scroll="false">
-        <div class="inline padding" ng-repeat="word in text.myText">
-            <img class="picto" ng-src="{{ word.pictos[0] }}"/>
+        <div class="inline padding" ng-repeat="word in text.myText"
+             ng-style="text.getDivStyle(word.pictos[0]['type'])"
+             style="margin: 1px">
+
             <input type="text"
                    ng-keyup="text.change(word, $event)"
                    ng-model="word.value"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
-                   style="min-width: 100px; font-size:24px;"/>
+                   ng-style="text.wordStyle"
+                   ng-hide="text.wordPosition()"/>
+
+            <img class="picto"
+                 ng-src="{{ word.pictos[0]['base64'] || text.readPicto(word.pictos[0]) }}"
+                 ng-style="text.pictoStyle"/>
+
+            <input type="text"
+                   ng-keyup="text.change(word, $event)"
+                   ng-model="word.value"
+                   focus="{{ word.autofocus }}"
+                   pu-elastic-input
+                   ng-style="text.wordStyle"
+                   ng-show="text.wordPosition()"/>
         </div>
     </ion-content>
 </ion-view>
