@@ -1,11 +1,13 @@
 /**
  * Created by diego on 29/02/16.
+ *
+ * Manages views, controllers and paths.
  */
 (function(){
     'use strict';
 
     angular
-        .module('app')
+        .module('AraWord')
         .config(routes);
 
     routes.$inject = ['$stateProvider', '$urlRouterProvider'];
@@ -14,7 +16,7 @@
 
         $stateProvider
 
-            // Text editor
+            // Text editor (main route)
             .state('text', {
                 url: '/',
                 templateUrl: 'templates/text.html',

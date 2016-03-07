@@ -1,12 +1,15 @@
 /**
  * Created by diego on 29/02/16.
+ *
+ * Manages the configuration screen. Obtains the values
+ * from the configuration service.
  */
 (function() {
 
     'use strict';
 
     angular
-        .module('app')
+        .module('AraWord')
         .controller('settingsController', settingsController);
 
     settingsController.$inject = ['configService'];
@@ -46,26 +49,38 @@
         vm.bordersValue = configService.borders;
         vm.wordPosition = configService.wordPosition;
 
-        ///////////
+        //////////////////////
 
+        /**
+         * Changes the gray scale value
+         */
         function setGrayValue() {
           vm.grayStyle = {
             '-webkit-filter': 'grayscale('+vm.grayValue+'%)'
           };
         }
 
+        /**
+         * Changes the pictograph size
+         */
         function setPictoSizeValue() {
             vm.pictoStyle = {
                 'width': vm.pictoSizeValue + 'px'
             };
         }
 
+        /**
+         * Changes the font size
+         */
         function setFontSizeValue() {
             vm.fontStyle = {
                 'fontSize': vm.fontSizeValue + 'px'
             };
         }
 
+        /**
+         * Saves the whole configuration
+         */
         function saveConfig() {
             configService.setWordFontSize(vm.fontSizeValue);
             configService.setPictoGrayscale(vm.grayValue);

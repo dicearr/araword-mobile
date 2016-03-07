@@ -1,17 +1,20 @@
 /**
  * Created by diego on 23/02/16.
+ *
+ * Manages changes in the text. Uses databases to get pictographs
+ * and insert them into their words.
  */
 
 (function(){
     'use strict';
 
     angular
-        .module('app')
+        .module('AraWord')
         .factory('textAnalyzer', textAnalyzer);
 
-    textAnalyzer.$inject = ['dbService','$q','verbsDB'];
+    textAnalyzer.$inject = ['araworddb','$q','verbsdb'];
 
-    function textAnalyzer(dbService, $q, verbsDB){
+    function textAnalyzer(araworddb, $q, verbsdb){
 
         var radius = 3;
         var caretPosition = 0;
@@ -25,21 +28,28 @@
             addEmptyWord: addEmptyWord
         };
 
-        if(!verbsDB.ready()) {
-            verbsDB.startService();
+        if(!verbsdb.ready()) {
+            verbsdb.startService();
         }
 
         return service;
 
         //////////////////////////////
 
+        /**
+         * Modifies the tex by changing the words if it's required. For example
+         * it detects new compound words.
+         * @param w = The word that has been changed
+         * @param text = The whole text
+         */
         function processEvent(w, text) {
 
             var wordPosition = text.indexOf(w);
             var textContext = [];
-
             textContext = getTextContext(wordPosition, radius);
+            // Words in context ar objects like { 'value': 'AraWord', 'position': 0 }
             var wordsInContext = textContext.words;
+            // We have to parse it and obtain 'values'
             var wordsValuesInContext = wordsInContext.map(function(word) {
                 if (!angular.isUndefined(word)) return word.value.toLowerCase();
             });
@@ -47,23 +57,31 @@
             var promises = [];
             var results = [];
 
+            // Each word in context is the beginning of a simple/compound word so
+            // we search the greatest word in the database that starts with our word.
+            // For each result we store the word and the position in an array then we will select
+            // only the words that we need.
             wordsInContext.forEach(function(simpleWord) {
                 var inf = undefined;
                 promises.push(
                     $q(function(resolve) {
-                        var promise = verbsDB.getInfinitive(simpleWord.value)
+                        // If it's a verb we have to use the infinitive instead of the given form
+                        var promise = verbsdb.getInfinitive(simpleWord.value)
                             .then(function(infinitive){
                                 inf = infinitive;
-                                return dbService.getCompoundsStartingWith(infinitive);
+                                return araworddb.getWordsStartingWith(infinitive);
                             }, function() {
-                                return dbService.getCompoundsStartingWith(simpleWord.value);
+                                return araworddb.getWordsStartingWith(simpleWord.value);
                             });
 
                         promise
                             .then(function(compounds) {
+                                // If its a verb, we replace the given form in the context.
                                 if (!angular.isUndefined(inf)) {
                                     wordsValuesInContext.splice(simpleWord.position,1,inf);
                                 }
+                                // We concatenate all the words in a simple String so as to can compare database
+                                // results and know if our text contains any compound word.
                                 var text = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length).join(' ');
                                 var match = {
                                     'value': simpleWord.value,
@@ -72,6 +90,8 @@
                                     'pictInd': 0,
                                     'words': 1
                                 };
+                                // We loop over the results so as to find the longest word thata
+                                // matches with our word
                                 for(var i=0; i<compounds.length; i++) {
                                     var comp = compounds[i];
                                     var len = comp.word.length;
@@ -79,6 +99,7 @@
                                         (text.charAt(len)==' ' ||
                                         (text.length <= len))) {
                                         var newLength = comp.word.split(' ').length;
+                                        // If mathces and is longest we replace match with the new compound word
                                         if (match == null || newLength >= match.words) {
                                             match = {
                                                 //Allows Upper Case in text, com.word is lower case
@@ -94,6 +115,7 @@
                                 results[simpleWord.position] = match;
                                 resolve();
                             }, function () {
+                                // If word it's not in our database we use empty pictograph
                                 results[simpleWord.position] = {
                                     'value': simpleWord.value,
                                     'pictos': [emptyPicto],
@@ -107,20 +129,32 @@
                     );
                 });
 
+            // Resutls looks like
+            // [ {'value': 'de color', 'words': 2, 'pictos': [*]}, {'value': 'color', 'words': 1, 'pictos': [*]} ]
             $q.all(promises).then(function() {
                 for(var i=0; i<results.length; i++) {
                     var pos = textContext.minIndex;
+                    // If we've to change the word
                     if (pos<text.length && !equals(results[i],text[pos])) {
+                        // If word it's compound we remove all the simple words
+                        // that are included in the compound word
+                        // and we push the new compund word
                         if (results[i].words>1) {
                             text.splice(textContext.minIndex,results[i].words,results[i]);
                             i = i + results[i].words - 1;
-                        } else {
+                        }
+                        // If not we simply modify simple word values
+                        else {
                             text[pos].value = results[i].value;
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;
                             text[pos].words = 1;
                         }
-                    } else if (pos>=text.length) {
+                    }
+                    // If due to a compound word we have reduced the text size
+                    // we cannot access old text[pos] items so we simply push new
+                    // words at the end.
+                    else if (pos>=text.length) {
                         text.push(results[i]);
                         i = i + results[i].words - 1;
                     }
@@ -129,6 +163,12 @@
                 setCaret(text,textContext.minIndex-1);
             });
 
+            /**
+             * Returns the range of words from the text that must be re-analyzed.
+             * @param pos = Position in which change has happened.
+             * @param rad = Radius of analysis.
+             * @returns {{minIndex: number, maxIndex: number, words: Array}}
+             */
             function getTextContext(pos, rad) {
                 var minIndex = 0;
                 var maxIndex = text.length-1;
@@ -140,7 +180,7 @@
                 var j = 0;
 
                 for(var i=minIndex; i<maxIndex+1; i++) {
-                    if (i==pos || text[i].words == 1) { // Compound word is made by simple words
+                    if (i==pos || text[i].words == 1) { // Compound word is made only by simple words
                         text[i].value.split(' ').forEach(function(simpleWord) { // But changed word could be compound
                             words.push({
                                 'value': simpleWord,
@@ -164,10 +204,10 @@
             }
 
             /**
-             * Compare two pictos
-             * @param pic1
-             * @param pic2
-             * @returns {boolean}
+             * Compares two pictographs.
+             * @param pic1 = first pictograph.
+             * @param pic2 = second pictograph.
+             * @returns {boolean} True if pic1 is equal to pic2, otherwise false.
              */
             function equals(pic1, pic2) {
                 if (pic1.value != pic2.value) return false;
@@ -183,9 +223,8 @@
 
 
         /**
-         *
-         * @param w
-         * @param text
+         * @param w = The word to be deleted.
+         * @param text = The whole text.
          */
         function deleteWord(w, text) {
             var pos = text.indexOf(w);
@@ -196,8 +235,8 @@
         }
 
         /**
-         *
-         * @param text
+         * @param text = The whole text.
+         * @param newCaretPosition = The position inside the text where the caret must be set.
          */
         function setCaret(text, newCaretPosition) {
             // Can be a deleted word because of a compound
@@ -208,6 +247,11 @@
             caretPosition = newCaretPosition;
         }
 
+        /**
+         * Inserts an empty word next to the given word.
+         * @param word = The previous word
+         * @param text = The whole text
+         */
         function addEmptyWord(word, text) {
             word.value = word.value.substring(0,word.value.length-1);
             var pos = text.indexOf(word)+1;

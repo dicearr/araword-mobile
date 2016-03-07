@@ -1,11 +1,13 @@
 /**
  * Created by Diego Ceresuela on 17/02/16.
+ *
+ * Creates the 'focus' directive, used to manage the caret.
  */
 (function(){
     'use strict';
 
     angular
-        .module('app')
+        .module('AraWord')
         .directive('focus', focus);
 
     focus.$inject = ['$timeout'];

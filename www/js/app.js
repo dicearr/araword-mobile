@@ -1,9 +1,9 @@
 /**
  * Created by Diego Ceresuela on 17/02/16.
  */
-angular.module('app',['ionic','puElasticInput','ngCordova']);
+angular.module('AraWord',['ionic','puElasticInput','ngCordova']);
 
-angular.module('app').run(function ($ionicPlatform) {
+angular.module('AraWord').run(function ($ionicPlatform) {
     $ionicPlatform.ready(function () {
         if (window.cordova && window.cordova.plugins.Keyboard) {
             // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard

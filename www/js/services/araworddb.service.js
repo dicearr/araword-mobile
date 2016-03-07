@@ -1,24 +1,26 @@
 /**
  * Created by Diego Ceresuela on 17/02/16.
+ *
+ * Manages AraWord data base queries.
  */
 (function () {
     'use strict';
 
     angular
-        .module('app')
-        .factory('dbService', dbService);
+        .module('AraWord')
+        .factory('araworddb', araworddb);
 
     dbService.$inject = ['$cordovaSQLite','$q'];
 
-    function dbService($cordovaSQLite, $q) {
+    function araworddb($cordovaSQLite, $q) {
 
         var db = undefined;
-        var dbname = 'AraSuite.db';
+        var dbname = 'AraSuite.db'; // Pre filled db
 
 
         var service = {
             startService: startService,
-            getCompoundsStartingWith: getCompoundsStartingWith,
+            getWordsStartingWith: getWordsStartingWith,
             ready: ready
         };
 
@@ -26,7 +28,12 @@
 
         ///////////////////////////////////////////////////////////////////
 
-        function getCompoundsStartingWith(word) {
+        /**
+         * Searches all the words that starts with the given word.
+         * @param word = The word to search.
+         * @returns {*} Promise
+         */
+        function getWordsStartingWith(word) {
 
             return $q(function(resolve,reject){
                 // Case insensitive
@@ -46,7 +53,10 @@
                             var pictoType = parseType(res.rows.item(i).type);
                             var ind = words.indexOf(word);
 
-                            if (ind>=0) { // One word can have multiple pictos
+                            // If its a pictograph from a previous word we do not
+                            // create a new word. We simply add the picto to the
+                            // previously created word.
+                            if (ind>=0) {
                                 compounds[ind]['pictos'].push({
                                     'picto': pictoName,
                                     'type': pictoType
@@ -74,6 +84,9 @@
             });
         }
 
+        /**
+         * Opens the data base
+         */
         function startService() {
 
             document.addEventListener('deviceready', openDB, false);
@@ -83,10 +96,17 @@
             }
         }
 
+        /**
+         * @returns {boolean} True if data base has been opened, otherwise false.
+         */
         function ready() {
             return !angular.isUndefined(db);
         }
 
+        /**
+         * @param typeInText = { nombreComun, descriptivo, verbo, miscelanea, nombrePropio, contenidoSocial }
+         * @returns {number} = Returns a unique identifier for each type of word.
+         */
         function parseType(typeInText) {
             if (typeInText=="nombreComun") return 0;
             else if (typeInText=="descriptivo") return 1;

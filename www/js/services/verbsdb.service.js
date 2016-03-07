@@ -6,12 +6,12 @@
     'use strict';
 
     angular
-        .module('app')
-        .factory('verbsDB',verbsDB);
+        .module('AraWord')
+        .factory('verbsdb',verbsdb);
 
-    verbsDB.$inject = ['$q','$cordovaSQLite'];
+    verbsdb.$inject = ['$q','$cordovaSQLite'];
 
-    function verbsDB($q, $cordovaSQLite) {
+    function verbsdb($q, $cordovaSQLite) {
 
         var db = undefined;
         var dbname = 'Castellano_verbs.db';

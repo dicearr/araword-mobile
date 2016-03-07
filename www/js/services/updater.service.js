@@ -6,7 +6,7 @@
     'use strict';
 
     angular
-        .module('app')
+        .module('AraWord')
         .factory('pictUpdater',  pictUpdater);
 
     pictUpdater.$inject = ['$cordovaFile','$q'];

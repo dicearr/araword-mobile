@@ -1,17 +1,21 @@
 /**
  * Created by diego on 17/02/16.
+ *
+ * Main controller. Manages the whole text analysis and almost all
+ * functionalities.
  */
 (function(){
 
     'use strict';
 
     angular
-        .module('app')
+        .module('AraWord')
         .controller('textController', textController);
 
-    textController.$inject = ['textAnalyzer','configService','$cordovaFile','dbService','$scope'];
+    // Using $scope is not recomended, but I need $scope.$apply() in nextPicto()
+    textController.$inject = ['textAnalyzer','configService', '$cordovaFile','araworddb','$scope'];
 
-    function textController(textAnalyzer, configService, $cordovaFile, dbService, $scope) {
+    function textController(textAnalyzer, configService, $cordovaFile, araworddb, $scope) {
 
         var vm = this;
         vm.myText = [{
@@ -21,10 +25,14 @@
             'words': 1,
             'autofocus': true
         }];
-        vm.onChange = onChange;
-        vm.deleteIfEmpty = deleteIfEmpty;
+        vm.onChange = onChange;  // Main logic
+        vm.deleteIfEmpty = deleteIfEmpty; // Deletes empty words
+        // Manages double/single click by using timeout
         vm.singleClickAction = singleClickAction;
-        vm.readText = readText;
+
+        /* Text to speech functions */
+        vm.readText = readText;  // Whole text
+        vm.readPicto = readPicto; // One word
 
         configService.restoreConfig();
 
@@ -33,33 +41,41 @@
         vm.getDivStyle = configService.getDivStyle;
         vm.wordPosition = wordPosition;
 
-        vm.readPicto = readPicto;
 
-        if(! dbService.ready()) {
-            dbService.startService();
+
+        if(! araworddb.ready()) {
+            araworddb.startService();
         }
 
         //////////////
 
+        /**
+         * @param word = word in which change has happened
+         */
         function onChange(word) {
-            // Common case
+            // Common case, separator at the end of the text
             if (word.value.charAt(word.value.length-1)==' ') {
                 textAnalyzer.addEmptyWord(word,vm.myText);
             }
-            // Delete word
             else if (word.value.length==0) {
                 textAnalyzer.deleteWord(word,vm.myText);
             }
-            // Analysis needed
             else {
                 textAnalyzer.processEvent(word, vm.myText);
             }
         }
 
+        /**
+         * @returns {wordPosition} If true text is over the image, otherwise under.
+         */
         function wordPosition() {
             return configService.wordPosition;
         }
 
+        /**
+         * Reads the image from the file system.
+         * @param picto = The name of the file.
+         */
         function readPicto(picto) {
 
             // Digest cycles are faster than read fs so we return empty picto to avoid multiple reads
@@ -82,15 +98,27 @@
 
         }
 
+        /**
+         * $scope.$apply() used to troubleshoot singleActionClick()
+         * @param word = The word whose picto must change.
+         */
         function nextPicto(word) {
             word.pictInd = (word.pictInd+1)%word.pictos.length;
             $scope.$apply();
         }
 
+        /**
+         * If the word is empty, it will be deleted
+         * @param word = The word that must be checked.
+         */
         function deleteIfEmpty(word) {
             if (word.value.length==0) textAnalyzer.delteWord(word, vm.myText);
         }
 
+        /**
+         * Reads a word
+         * @param word = The word to be read.
+         */
         function readWord(word) {
             TTS.speak({
                 text: word.value,
@@ -103,9 +131,16 @@
             })
         }
 
+        // Used in singleClickAction to manage double clicks
         var waitingForSecondClick = false;
         var executingDoubleClick = false;
 
+        /**
+         * Manages single/double click changin the image or reading the text
+         * depending on the event.
+         * @param word = The word which has been clicked.
+         * @returns {*} void
+         */
         function singleClickAction(word) {
             var myWord = word;
 
@@ -123,15 +158,27 @@
             }, 270); // delay
         }
 
+        /**
+         * SingleClick callback
+         * @param word = the word which has been clicked
+         * @param executingDoubleClick = true if doble click occurs during the timeout
+         */
         function singleClickOnlyAction(word, executingDoubleClick) {
             if (executingDoubleClick) return;
             nextPicto(word)
         }
 
+        /**
+         * DoubleClick callback
+         * @param word  = the word which has been double clicked
+         */
         function doubleClickAction(word) {
             readWord(word);
         }
 
+        /**
+         * Concatenates the full text and reads it.
+         */
         function readText() {
             console.log('reading');
             var text = '';
