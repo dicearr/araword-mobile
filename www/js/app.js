@@ -1,7 +1,7 @@
 /**
  * Created by Diego Ceresuela on 17/02/16.
  */
-angular.module('AraWord',['ionic','puElasticInput','ngCordova']);
+angular.module('AraWord',['ionic','puElasticInput','ngCordova','pascalprecht.translate']);
 
 angular.module('AraWord').run(function ($ionicPlatform) {
     $ionicPlatform.ready(function () {

@@ -180,7 +180,6 @@
          * Concatenates the full text and reads it.
          */
         function readText() {
-            console.log('reading');
             var text = '';
             for(var i=0; i<vm.myText.length; i++){
                 text += vm.myText[i].value;

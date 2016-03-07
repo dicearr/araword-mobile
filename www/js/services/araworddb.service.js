@@ -10,10 +10,11 @@
         .module('AraWord')
         .factory('araworddb', araworddb);
 
-    dbService.$inject = ['$cordovaSQLite','$q'];
+    araworddb.$inject = ['$cordovaSQLite','$q'];
 
     function araworddb($cordovaSQLite, $q) {
 
+        var db = undefined;
         var db = undefined;
         var dbname = 'AraSuite.db'; // Pre filled db
 

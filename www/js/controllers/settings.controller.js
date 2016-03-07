@@ -12,7 +12,7 @@
         .module('AraWord')
         .controller('settingsController', settingsController);
 
-    settingsController.$inject = ['configService'];
+    settingsController.$inject = ['configService','$translate'];
 
     function settingsController(configService) {
 

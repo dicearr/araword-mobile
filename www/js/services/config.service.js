@@ -13,9 +13,9 @@
         .module('AraWord')
         .factory('configService', configService);
 
-    configService.$inject = ['$window'];
+    configService.$inject = ['$window','$translate'];
 
-    function configService($window) {
+    function configService($window, $translate) {
         // Default configurations
         var wordStyle = { 'fontSize': '24px', 'min-width': '100px' };
         var pictoStyle = { 'width': '100px', '-webkit-filter': 'grayscale(0%)' };
@@ -35,6 +35,7 @@
             changeBorders: changeBorders,
             saveConfig: saveConfig,
             restoreConfig: restoreConfig,
+            changeLang: changeLang,
             borders: borders
         };
 
@@ -146,6 +147,14 @@
             // Local storage saves Strings not booleans...
             service.wordPosition = ($window.localStorage['wordPosition'] || "true") == "true";
             service.borders = ($window.localStorage['coloured'] || "true") == "true";
+        }
+
+        /**
+         * Changes the selected language
+         * @param key = new language {'en', 'es', etc.. }
+         */
+        function changeLang(key) {
+            $translate.use(key);
         }
     }
 
