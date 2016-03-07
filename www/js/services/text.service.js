@@ -14,14 +14,15 @@
     function textAnalyzer(dbService, $q, verbsDB){
 
         var radius = 3;
-        var separators = [32,9,13]; // space, tab, enter
         var caretPosition = 0;
         var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='};
 
         var service = {
             processEvent: processEvent,
             deleteWord: deleteWord,
-            setCaret: setCaret
+            setCaret: setCaret,
+            delteWord: deleteWord,
+            addEmptyWord: addEmptyWord
         };
 
         if(!verbsDB.ready()) {
@@ -32,102 +33,101 @@
 
         //////////////////////////////
 
-        function processEvent(w, text, event) {
+        function processEvent(w, text) {
 
             var wordPosition = text.indexOf(w);
-            var char = String.fromCharCode(event.keyCode);
-            var changePosition = w.value.lastIndexOf(char);
             var textContext = [];
 
-            // Usual case
-            if (separators.indexOf(event.keyCode)>=0 && // is a separator
-                     changePosition == w.value.length-1 ) { // at the end of the word
-                w.value = w.value.trim();
-                push_empty_word(); // We add new empty word
-                setCaret(text,wordPosition+1); // We set the caret
-            } else {
-                textContext = getTextContext(wordPosition, radius);
-                var wordsInContext = textContext.words;
-                var wordsValuesInContext = wordsInContext.map(function(word) {
-                    if (!angular.isUndefined(word)) return word.value.toLowerCase();
-                });
+            textContext = getTextContext(wordPosition, radius);
+            var wordsInContext = textContext.words;
+            var wordsValuesInContext = wordsInContext.map(function(word) {
+                if (!angular.isUndefined(word)) return word.value.toLowerCase();
+            });
 
-                var promises = [];
-                var results = [];
+            var promises = [];
+            var results = [];
 
-                wordsInContext.forEach(function(simpleWord) {
-                    var inf = undefined;
-                    promises.push(
-                        $q(function(resolve) {
-                            var promise = verbsDB.getInfinitive(simpleWord.value)
-                                .then(function(infinitive){
-                                    inf = infinitive;
-                                    return dbService.getCompoundsStartingWith(infinitive);
-                                }, function() {
-                                    return dbService.getCompoundsStartingWith(simpleWord.value);
-                                });
+            wordsInContext.forEach(function(simpleWord) {
+                var inf = undefined;
+                promises.push(
+                    $q(function(resolve) {
+                        var promise = verbsDB.getInfinitive(simpleWord.value)
+                            .then(function(infinitive){
+                                inf = infinitive;
+                                return dbService.getCompoundsStartingWith(infinitive);
+                            }, function() {
+                                return dbService.getCompoundsStartingWith(simpleWord.value);
+                            });
 
-                            promise
-                                .then(function(compounds) {
-                                    if (!angular.isUndefined(inf)) {
-                                        wordsValuesInContext.splice(simpleWord.position,1,inf);
-                                        console.log(JSON.stringify(wordsValuesInContext));
-                                    }
-                                    var text = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length).join(' ');
-                                    console.log(text);
-                                    var match = {
-                                        'value': simpleWord.value,
-                                        'pictos': [emptyPicto],
-                                        'pictInd': 0,
-                                        'words': 1
-                                    };
-
-                                    for(var i=0; i<compounds.length; i++) {
-                                        var comp = compounds[i];
-                                        var len = comp.word.length;
-                                        if (text.indexOf(comp.word)==0 &&
-                                            (text.charAt(len)==' ' ||
-                                            (text.length <= len))) {
-                                            var newLength = comp.word.split(' ').length;
-                                            if (match == null || newLength >= match.words) {
-                                                match = {
-                                                    //Allows Upper Case in text, com.word is lower case
-                                                    'value': newLength==1?simpleWord.value:comp.word,
-                                                    'pictos': comp.pictos,
-                                                    'pictInd': 0,
-                                                    'words': newLength
-                                                };
-                                            }
+                        promise
+                            .then(function(compounds) {
+                                if (!angular.isUndefined(inf)) {
+                                    wordsValuesInContext.splice(simpleWord.position,1,inf);
+                                }
+                                var text = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length).join(' ');
+                                var match = {
+                                    'value': simpleWord.value,
+                                    'pictos': [emptyPicto],
+                                    'autofocus': false,
+                                    'pictInd': 0,
+                                    'words': 1
+                                };
+                                for(var i=0; i<compounds.length; i++) {
+                                    var comp = compounds[i];
+                                    var len = comp.word.length;
+                                    if (text.indexOf(comp.word)==0 &&
+                                        (text.charAt(len)==' ' ||
+                                        (text.length <= len))) {
+                                        var newLength = comp.word.split(' ').length;
+                                        if (match == null || newLength >= match.words) {
+                                            match = {
+                                                //Allows Upper Case in text, com.word is lower case
+                                                'value': newLength==1?simpleWord.value:comp.word,
+                                                'pictos': comp.pictos.concat(emptyPicto),
+                                                'autofocus': false,
+                                                'pictInd': 0,
+                                                'words': newLength
+                                            };
                                         }
                                     }
-                                    results[simpleWord.position] = match;
-                                    resolve();
-                                }, function () {
-                                    results[simpleWord.position] = {
-                                        'value': simpleWord.value,
-                                        'pictos': [emptyPicto],
-                                        'pictInd': 0,
-                                        'words': 1
-                                    };
-                                    resolve();
-                                });
+                                }
+                                results[simpleWord.position] = match;
+                                resolve();
+                            }, function () {
+                                results[simpleWord.position] = {
+                                    'value': simpleWord.value,
+                                    'pictos': [emptyPicto],
+                                    'autofocus': false,
+                                    'pictInd': 0,
+                                    'words': 1
+                                };
+                                resolve();
+                            });
                         })
                     );
                 });
 
-                $q.all(promises).then(function() {
-                    text.splice(textContext.minIndex,textContext.maxIndex-textContext.minIndex+1);
-                    var caret = 0;
-                    for(var i=0; i<results.length; i++) {
-                        text.splice(textContext.minIndex++,0,results[i]);
+            $q.all(promises).then(function() {
+                for(var i=0; i<results.length; i++) {
+                    var pos = textContext.minIndex;
+                    if (pos<text.length && !equals(results[i],text[pos])) {
+                        if (results[i].words>1) {
+                            text.splice(textContext.minIndex,results[i].words,results[i]);
+                            i = i + results[i].words - 1;
+                        } else {
+                            text[pos].value = results[i].value;
+                            text[pos].pictos = results[i].pictos;
+                            text[pos].autofocus = false;
+                            text[pos].words = 1;
+                        }
+                    } else if (pos>=text.length) {
+                        text.push(results[i]);
                         i = i + results[i].words - 1;
                     }
-                    setCaret(text,textContext.minIndex-1);
-                });
-
-            }
-
-            /////////////////
+                    textContext.minIndex++;
+                }
+                setCaret(text,textContext.minIndex-1);
+            });
 
             function getTextContext(pos, rad) {
                 var minIndex = 0;
@@ -163,16 +163,22 @@
                 };
             }
 
-            function push_empty_word() {
-                var emptyWord = {
-                    'value': '',
-                    'pictos': [emptyPicto],
-                    'pictInd': 0,
-                    'words': 1
-                };
-                text.splice(wordPosition+1,0,emptyWord);
+            /**
+             * Compare two pictos
+             * @param pic1
+             * @param pic2
+             * @returns {boolean}
+             */
+            function equals(pic1, pic2) {
+                if (pic1.value != pic2.value) return false;
+                if (pic1.pictos.length != pic2.pictos.length) return false;
+                else {
+                    for (var i=0; i<pic1.pictos.length; i++) {
+                        if (pic1.pictos[i].name != pic2.pictos[i].name) return false;
+                    }
+                    return true;
+                }
             }
-
         }
 
 
@@ -200,6 +206,18 @@
             }
             text[newCaretPosition].autofocus = true;
             caretPosition = newCaretPosition;
+        }
+
+        function addEmptyWord(word, text) {
+            word.value = word.value.substring(0,word.value.length-1);
+            var pos = text.indexOf(word)+1;
+            text.splice(pos,0,{
+                'value': '',
+                'pictos': [emptyPicto],
+                'pictInd': 0,
+                'words': 1
+            });
+            setCaret(text, pos);
         }
 
     }

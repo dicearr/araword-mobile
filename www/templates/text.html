@@ -1,34 +1,44 @@
 <!-- CONTROLLER AS text -->
 <ion-view>
-    <ion-content class="has-header" overflow-scroll="false" ng-style="text.wordStyle">
+    <ion-content class="has-header has-footer" overflow-scroll="false" ng-style="text.wordStyle">
         <div class="inline padding" ng-repeat="word in text.myText"
              ng-style="word.divStyle || text.getDivStyle(word)"
              style="margin: 1px">
 
             <!-- Text can appear on top -->
             <input type="text"
-                   ng-keyup="text.change(word, $event)"
+                   ng-change="text.onChange(word)"
+                   ng-keyup="text.deleteIfEmpty(word)"
                    ng-model="word.value"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
                    ng-hide="text.wordPosition()"
-                   style="font-size: inherit"/>
+                   class="word"
+                   style="font-size: inherit;"/>
 
             <img class="picto"
                  ng-src="{{ word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
                  ng-style="text.pictoStyle"
-                 ng-click="text.nextPicto(word)"/>
+                 ng-click="text.singleClickAction(word)"/>
 
             <!-- or bot -->
             <input type="text"
-                   ng-keyup="text.change(word, $event)"
+                   ng-change="text.onChange(word)"
+                   ng-keyup="text.deleteIfEmpty(word)"
                    ng-model="word.value"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
                    ng-show="text.wordPosition()"
-                   style="font-size: inherit"/>
+                   class="word"
+                   style="font-size: inherit;"/>
         </div>
     </ion-content>
+    <ion-footer-bar class="bar-positive">
+            <buttons class="buttons" side="right">
+                <button class="button icon ion-volume-high"
+                        ng-click="text.readText()"/>
+            </buttons>
+    </ion-footer-bar>
 </ion-view>
 
 

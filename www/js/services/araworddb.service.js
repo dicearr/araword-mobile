@@ -34,7 +34,6 @@
                     "UNION SELECT * FROM ArawordView WHERE word=\'" + word.toLowerCase() +"\'";
                 var compounds = [];
                 var words = [];
-                var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='};
 
                 document.addEventListener('deviceready', executeQuery, false);
 
@@ -59,7 +58,7 @@
                                     'pictos': [{
                                         'picto': pictoName,
                                         'type': pictoType
-                                    }, emptyPicto]
+                                    }]
                                 })
                             }
                         }
