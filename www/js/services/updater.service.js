@@ -42,13 +42,13 @@
                     var destDirZip = cordova.file.dataDirectory;
 
                     $cordovaFile.checkDir(dirUrl,dirName)
-                        .then(function(success){
+                        .then(function(){
                             resolve('PIC_ALREADY_UNZIPPED');
                         }, function() {
                             $cordovaFile.copyFile(origDirZip, fileName, destDirZip, fileName)
-                                .then(function (success) {
+                                .then(function () {
                                     $cordovaFile.createDir(dirUrl,dirName,false)
-                                        .then(function(success) {
+                                        .then(function() {
                                             zip.unzip(destDirZip+fileName, dirUrl+dirName,
                                                 function (result) {
                                                     resolve(result);

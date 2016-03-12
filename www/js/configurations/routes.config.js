@@ -16,9 +16,17 @@
 
         $stateProvider
 
+            // Splash screen
+            .state('splash', {
+                url: '/',
+                templateUrl: 'templates/splash.html',
+                controller: 'splashController',
+                controllerAs: 'splash'
+            })
+
             // Text editor (main route)
             .state('text', {
-                url: '/',
+                url: '/text',
                 templateUrl: 'templates/text.html',
                 controller: 'textController',
                 controllerAs: 'text'

@@ -19,7 +19,8 @@
             <img class="picto"
                  ng-src="{{ word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
                  ng-style="text.pictoStyle"
-                 ng-click="text.singleClickAction(word)"/>
+                 ng-click="text.singleClickAction(word)"
+                 on-hold="text.showOptions(word)"/>
 
             <!-- or bot -->
             <input type="text"
@@ -33,11 +34,18 @@
                    style="font-size: inherit;"/>
         </div>
     </ion-content>
-    <ion-footer-bar class="bar-positive">
-            <buttons class="buttons" side="right">
+    <ion-footer-bar class="bar-dark bar-buttons">
+            <div class="buttons" side="left">
                 <button class="button icon ion-volume-high"
                         ng-click="text.readText()"/>
-            </buttons>
+                <button class="button icon ion-android-share-alt"
+                        ng-click="text.test()"/>
+            </div>
+        <h1 class="title"></h1>
+            <div class="buttons" side="right">
+                <button class="button"
+                        ng-click="text.test()">Language</button>
+            </div>
     </ion-footer-bar>
 </ion-view>
 

@@ -13,9 +13,13 @@
         .controller('textController', textController);
 
     // Using $scope is not recomended, but I need $scope.$apply() in nextPicto()
-    textController.$inject = ['textAnalyzer','configService', '$cordovaFile','araworddb','$scope'];
+    textController.$inject = ['textAnalyzer','configService',
+        '$cordovaFile','araworddb','$scope',
+        '$ionicPopup', 'IonicClosePopupService'];
 
-    function textController(textAnalyzer, configService, $cordovaFile, araworddb, $scope) {
+    function textController(textAnalyzer, configService,
+                            $cordovaFile, araworddb,
+                            $scope, $ionicPopup, IonicClosePopupService) {
 
         var vm = this;
         vm.myText = [{
@@ -40,8 +44,7 @@
         vm.wordStyle = configService.wordStyle;
         vm.getDivStyle = configService.getDivStyle;
         vm.wordPosition = wordPosition;
-
-
+        vm.showOptions = showOptions;
 
         if(! araworddb.ready()) {
             araworddb.startService();
@@ -194,6 +197,25 @@
             }, function() {
                 TTS.speak('');
             })
+        }
+
+        function showOptions(word) {
+           var myPopup =  $ionicPopup.show({
+                templateUrl: 'templates/popups/pictos.html',
+                title: 'Options',
+                scope: $scope
+            });
+            $scope.myPopup = myPopup;
+            IonicClosePopupService.register(myPopup);
+        }
+
+        vm.test = test;
+        $scope.test = test;
+        function test() {
+            console.log('test');
+            if (!angular.isUndefined($scope.myPopup)) {
+                $scope.myPopup.close();
+            }
         }
 
     }
