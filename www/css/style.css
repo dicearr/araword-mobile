@@ -9,4 +9,5 @@
 .word {
     min-width: 100px;
     margin: auto;
+    text-align: center;
 }

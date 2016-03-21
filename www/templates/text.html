@@ -17,7 +17,7 @@
                    style="font-size: inherit;"/>
 
             <img class="picto"
-                 ng-src="{{ word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
+                 ng-src="{{  word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
                  ng-style="text.pictoStyle"
                  ng-click="text.singleClickAction(word)"
                  on-hold="text.showOptions(word)"/>

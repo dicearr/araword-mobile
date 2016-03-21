@@ -149,6 +149,7 @@
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;
                             text[pos].words = 1;
+                            text[pos].divStyle = null;
                         }
                     }
                     // If due to a compound word we have reduced the text size
@@ -230,6 +231,9 @@
             var pos = text.indexOf(w);
             if (pos > -1 && text.length>1 ) {
                 text.splice(pos, 1);
+            } else if (pos==0) {
+                text[pos]['pictos'][0] = emptyPicto;
+                text[pos]['pictInd'] = 0;
             }
             setCaret(text, pos==0?pos:pos-1);
         }

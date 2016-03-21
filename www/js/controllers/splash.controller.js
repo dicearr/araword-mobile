@@ -16,6 +16,10 @@
         var loadingBarValue = 0;
         var loadingBarMessage = 'Downloading pictographs';
 
+        pictUpdater.unzip().then(function() {
+            console.log('GO');
+        });
+
         $ionicPopup.show({
             template: '<div class="list">' +
                         ' <label class="item item-input item-select">' +

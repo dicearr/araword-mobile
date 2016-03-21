@@ -77,12 +77,14 @@
 
         /**
          * Reads the image from the file system.
-         * @param picto = The name of the file.
+         * @param picto = The picto we've to read.
          */
         function readPicto(picto) {
 
             // Digest cycles are faster than read fs so we return empty picto to avoid multiple reads
-            picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+            if (!picto['base64'])
+                picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
             document.addEventListener('deviceready', readPictHandler, false);
 
             function readPictHandler() {
@@ -93,8 +95,7 @@
                 $cordovaFile.readAsDataURL(dirUrl+dirName+'/pictos_12', picto['picto'])
                     .then(function(success){
                         picto['base64'] = success;
-                    },function(err){
-                        console.log(JSON.stringify(err));
+                    },function(){
                         picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
                     });
             }

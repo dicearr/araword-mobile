@@ -43,6 +43,7 @@
 
                     $cordovaFile.checkDir(dirUrl,dirName)
                         .then(function(){
+                            console.log('PIC_ALREADY_UNZIPPED');
                             resolve('PIC_ALREADY_UNZIPPED');
                         }, function() {
                             $cordovaFile.copyFile(origDirZip, fileName, destDirZip, fileName)
@@ -54,9 +55,11 @@
                                                     resolve(result);
                                                 });
                                         }, function (error) {
+                                            console.log(JSON.stringify(error));
                                             reject(error);
                                         });
                                 }, function (error) {
+                                    console.log(JSON.stringify(error));
                                     reject(error);
                                 });
                         });
