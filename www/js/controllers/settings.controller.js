@@ -12,9 +12,9 @@
         .module('AraWord')
         .controller('settingsController', settingsController);
 
-    settingsController.$inject = ['configService','$translate'];
+    settingsController.$inject = ['configService','$ionicPopover','$scope','$translate'];
 
-    function settingsController(configService) {
+    function settingsController(configService, $ionicPopover, $scope) {
 
         var vm = this;
 
@@ -25,17 +25,12 @@
         // We need numeric value to ng-model
         vm.grayValue = pictoStyle['-webkit-filter']
             .substring(10,pictoStyle['-webkit-filter'].indexOf('%'));
-        vm.grayStyle = {
-            '-webkit-filter': 'grayscale('+vm.grayValue+'%)'
-        };
 
         vm.setPictoSizeValue = setPictoSizeValue;
         // We need numeric value to ng-model
-        vm.pictoSizeValue = pictoStyle['width']
-            .substring(0,pictoStyle['width'].indexOf('p'));
-        vm.pictoStyle = {
-            'width': vm.pictoSizeValue + 'px'
-        };
+        vm.pictoStyle = angular.copy(pictoStyle);
+        vm.pictoSizeValue = vm.pictoStyle['width']
+            .substring(0,vm.pictoStyle['width'].indexOf('p'));
 
         vm.setFontSizeValue = setFontSizeValue;
         // We need numeric value to ng-model
@@ -49,24 +44,46 @@
         vm.bordersValue = configService.borders;
         vm.wordPosition = configService.wordPosition;
 
+        vm.colors = ['green','blue','red','yellow','orange','purple','black','white', 'grey', 'pink'];
+        $ionicPopover.fromTemplateUrl('templates/popovers/colors.html', {
+            scope: $scope
+        }).then(function(popover){
+            $scope.colorsBar = popover;
+        });
+
+        vm.showColorBar = showColorBar;
+        vm.selectColor = selectColor;
+
+        var typeSelected = undefined;
+        vm.modifiedColors = angular.copy(configService.typeColors);
+
         //////////////////////
+
+        function showColorBar(event, type) {
+            $scope.colorsBar.show(event);
+            typeSelected = type;
+        }
+
+        function selectColor(color) {
+            if (!angular.isUndefined(typeSelected)) {
+                typeSelected['color'] = color;
+                typeSelected = undefined;
+                $scope.colorsBar.hide();
+            }
+        }
 
         /**
          * Changes the gray scale value
          */
         function setGrayValue() {
-          vm.grayStyle = {
-            '-webkit-filter': 'grayscale('+vm.grayValue+'%)'
-          };
+          vm.pictoStyle['-webkit-filter'] = 'grayscale('+vm.grayValue+'%)';
         }
 
         /**
          * Changes the pictograph size
          */
         function setPictoSizeValue() {
-            vm.pictoStyle = {
-                'width': vm.pictoSizeValue + 'px'
-            };
+            vm.pictoStyle['width'] = vm.pictoSizeValue + 'px';
         }
 
         /**
@@ -87,6 +104,7 @@
             configService.setPictoSize(vm.pictoSizeValue);
             configService.changeBorders(vm.bordersValue);
             configService.setWordPosition(vm.wordPosition);
+            configService.setTypeColors(vm.modifiedColors);
             configService.saveConfig();
         }
 

@@ -15,11 +15,13 @@
     // Using $scope is not recomended, but I need $scope.$apply() in nextPicto()
     textController.$inject = ['textAnalyzer','configService',
         '$cordovaFile','araworddb','$scope',
-        '$ionicPopup', 'IonicClosePopupService'];
+        '$ionicPopup', 'IonicClosePopupService',
+        '$cordovaSocialSharing','accessService'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
-                            $scope, $ionicPopup, IonicClosePopupService) {
+                            $scope, $ionicPopup, IonicClosePopupService,
+                            $cordovaSocialSharing, accessService) {
 
         var vm = this;
         vm.myText = [{
@@ -45,12 +47,38 @@
         vm.getDivStyle = configService.getDivStyle;
         vm.wordPosition = wordPosition;
         vm.showOptions = showOptions;
+        vm.typeColors = configService.typeColors;
+
+        accessService.restoreConfig();
+
+        vm.shareText = shareText;
+        vm.access = accessService;
 
         if(! araworddb.ready()) {
             araworddb.startService();
         }
 
         //////////////
+
+        function shareText() {
+
+            var message = document.getElementById('text');
+
+            html2canvas(message, {
+                background: 'white',
+                onrendered: function(canvas) {
+                    var image = canvas.toDataURL("image/jpeg");
+
+                    $cordovaSocialSharing
+                        .share(null, null, image, null) // Share via native share sheet
+                        .then(function(result) {
+                            console.log(JSON.stringify(result));
+                        }, function(err) {
+                            console.log(JSON.stringify(err));
+                        });
+                }
+            })
+        }
 
         /**
          * @param word = word in which change has happened

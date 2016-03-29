@@ -18,7 +18,7 @@
 
             // Splash screen
             .state('splash', {
-                url: '/',
+                url: '/splash',
                 templateUrl: 'templates/splash.html',
                 controller: 'splashController',
                 controllerAs: 'splash'
@@ -38,9 +38,16 @@
                 templateUrl: 'templates/settings.html',
                 controller: 'settingsController',
                 controllerAs: 'sett'
+            })
+
+            .state('access', {
+                url: '/access',
+                templateUrl: 'templates/access.html',
+                controller: 'accessController',
+                controllerAs: 'access'
             });
 
-        $urlRouterProvider.otherwise('/');
+        $urlRouterProvider.otherwise('/splash');
     }
 
 })();

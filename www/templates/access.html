@@ -1,0 +1,82 @@
+<!-- CONTROLLER AS access -->
+<ion-view>
+    <ion-nav-buttons side="right">
+        <button class="button button-icon ion-volume-high" ng-disabled="true"></button>
+        <button class="button button-icon ion-android-share-alt posit" ng-disabled="true"></button>
+        <button ng-controller='navController as nav'
+                class="button button-icon ion-navicon"
+                style="padding-left: 17px; padding-right: 10px"
+                ng-click="nav.showMenu($event)"></button>
+    </ion-nav-buttons>
+
+    <ion-content class="has-header" overflow-scroll="false" style="display: block">
+        <div class="item item-divider" style="text-align: center" translate="acc_title">
+            Control de accesos
+        </div>
+        <div class="card">
+            <div class="item item-toggle" >
+                <p translate="acc_social">Redes sociales</p>
+                <label class="toggle toggle-dark">
+                    <input type="checkbox" ng-model="access.socialMedia">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="item item-toggle" >
+                <p translate="acc_save">Guardar documents</p>
+                <label class="toggle toggle-dark">
+                    <input type="checkbox" ng-model="access.saveDocs">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="item item-toggle" >
+                <p translate="acc_addPict">Añadir pictogramas</p>
+                <label class="toggle toggle-dark">
+                    <input type="checkbox" ng-model="access.addPict">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="item item-toggle" >
+                <p translate="acc_speech">Lector de texto</p>
+                <label class="toggle toggle-dark">
+                    <input type="checkbox" ng-model="access.textToSpeech">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+
+            <div class="item item-toggle" >
+                <p translate="acc_load">Cargar documentos</p>
+                <label class="toggle toggle-dark">
+                    <input type="checkbox" ng-model="access.loadDocs">
+                    <div class="track">
+                        <div class="handle"></div>
+                    </div>
+                </label>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; padding: 2%">
+            <button class="button button-dark"
+                    style="margin: 1%"
+                    ng-click="access.saveConfig()"
+                    translate="sett_button_save"
+                    ui-sref="text">
+                Guardar por defecto
+            </button>
+        </div>
+
+    </ion-content>
+
+
+</ion-view>

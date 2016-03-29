@@ -17,11 +17,12 @@
 
     function configService($window, $translate) {
         // Default configurations
-        var wordStyle = { 'fontSize': '24px', 'min-width': '100px' };
-        var pictoStyle = { 'width': '100px', '-webkit-filter': 'grayscale(0%)' };
+        var wordStyle = undefined;
+        var pictoStyle = undefined;
         // true = top, false = bottom
         var wordPosition = true;
         var borders = true;
+        var typeColors = undefined;
 
         var service = {
             wordStyle: wordStyle,
@@ -31,17 +32,24 @@
             setPictoGrayscale: setPictoGrayscale,
             wordPosition: wordPosition,
             setWordPosition: setWordPosition,
-            getDivStyle: getDivStyle,
             changeBorders: changeBorders,
             saveConfig: saveConfig,
             restoreConfig: restoreConfig,
             changeLang: changeLang,
-            borders: borders
+            borders: borders,
+            typeColors: typeColors,
+            setTypeColors: setTypeColors
         };
 
         return service;
 
         ///////////////////////////
+
+        function setTypeColors(newColors) {
+            for(var i=0;i<newColors.length;i++) {
+                service.typeColors[i] = newColors[i];
+            }
+        }
 
         /**
          * Changes font size.
@@ -84,41 +92,6 @@
             service.borders = newValue;
         }
 
-        /**
-         * If service.borders is false it returns white borders
-         * @param word = The word whose border must be set
-         * @returns {{border: string}} Siv style with the correct border configuration.
-         */
-        function getDivStyle(word) {
-            var color = null;
-            if (!service.borders) {
-                return {
-                    'border': '1px solid white'
-                }
-            }
-
-            switch (word.pictos[word.pictInd]['type']) {
-                case 0:
-                    color = 'orange';
-                    break;
-                case 1:
-                    color = 'blue';
-                    break;
-                case 2:
-                    color = 'green';
-                    break;
-                case 3:
-                    color = 'white';
-                    break;
-                case 4:
-                    color = 'yellow';
-                    break;
-                case 5:
-                    color = 'white';
-                    break;
-            }
-            word.divStyle = { 'border': '4px solid '+color };
-        }
 
         /**
          * Uses local storage so as to save configuration values.
@@ -128,6 +101,7 @@
             $window.localStorage['pictoStyle'] = JSON.stringify(service.pictoStyle);
             $window.localStorage['wordPosition'] = service.wordPosition;
             $window.localStorage['coloured'] = service.borders;
+            $window.localStorage['typeColors'] = JSON.stringify(service.typeColors);
         }
 
         /**
@@ -147,6 +121,33 @@
             // Local storage saves Strings not booleans...
             service.wordPosition = ($window.localStorage['wordPosition'] || "true") == "true";
             service.borders = ($window.localStorage['coloured'] || "true") == "true";
+
+            var defTColors = [{
+                'type': 'nombreComun',
+                'text': 'Nombre comun',
+                'color': 'orange'
+            },{
+                'type': 'descriptivo',
+                'text': 'Descriptivo',
+                'color': 'blue'
+            },{
+                'type': 'verbo',
+                'text': 'Verbo',
+                'color': 'green'
+            },{
+                'type': 'miscelanea',
+                'text': 'Miscelanea',
+                'color': 'white'
+            },{
+                'type': 'nombrePropio',
+                'text': 'Nombre propio',
+                'color': 'yellow'
+            },{
+                'type': 'contenidoSocial',
+                'text': 'Contenido social',
+                'color': 'white'
+            }];
+            service.typeColors = JSON.parse($window.localStorage['typeColors'] || JSON.stringify(defTColors));
         }
 
         /**

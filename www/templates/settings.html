@@ -1,8 +1,46 @@
 <!-- CONTROLLER AS sett -->
 <ion-view>
-    <ion-content class="has-header" overflow-scroll="false">
-        <ion-list>
 
+    <ion-nav-buttons side="right">
+        <button class="button button-icon ion-volume-high" ng-disabled="true"></button>
+        <button class="button button-icon ion-android-share-alt posit" ng-disabled="true"></button>
+        <button ng-controller='navController as nav'
+                class="button button-icon ion-navicon"
+                style="padding-left: 17px; padding-right: 10px"
+                ng-click="nav.showMenu($event)"></button>
+    </ion-nav-buttons>
+
+    <ion-content class="has-header" overflow-scroll="false" style="display: block">
+
+        <ion-list>
+            <label class="item item-input item-select">
+                <div class="input-label" translate="sett_langConf">
+                    Language
+                </div>
+                <select>
+                    <option>en</option>
+                    <option selected>es</option>
+                    <option>cat</option>
+                </select>
+            </label>
+        </ion-list>
+
+        <!-- Picto preview -->
+        <div class="card" style="float: left; height: 100%">
+            <div class="item item-divider" style="text-align: center">
+                Pictograph preview
+            </div>
+            <div style="float: left; margin: 50px; text-align: center;" class="item padding"
+                 ng-style="sett.bordersValue && {'border': '4px solid yellow'} || {}">
+                <span  ng-style="sett.fontStyle" ng-hide="sett.wordPosition">AraWord</span>
+                <img ng-style="sett.pictoStyle" class="picto padding" src="img/logo.png"/>
+                <span  ng-style="sett.fontStyle" ng-hide="!sett.wordPosition">AraWord</span>
+            </div>
+        </div>
+
+
+
+        <ion-list>
             <!-- Pictos size configuration -->
             <div class="card">
                 <div class="item item-divider" style="text-align: center" translate="sett_pictSize">
@@ -18,9 +56,7 @@
                            ng-change="sett.setPictoSizeValue()"
                            style="max-width: 80%; margin:auto;"/>
                 </div>
-                <div class="item item-divider">
-                    <img ng-src="img/logo.png" class="picto" ng-style="sett_pictoStyle">
-                </div>
+
             </div>
             <!-- End -->
 
@@ -39,9 +75,7 @@
                            ng-change="sett.setFontSizeValue()"
                            style="max-width: 80%; margin:auto;"/>
                 </div>
-                <div class="item item-divider">
-                    <h3 ng-style="sett.fontStyle" style="text-align: center;">AraWord</h3>
-                </div>
+
             </div>
             <!-- End -->
 
@@ -59,9 +93,7 @@
                            ng-change="sett.setGrayValue()"
                            style="max-width: 80%; margin:auto;"/>
                 </div>
-                <div class="item item-divider" ng-show="sett.grayValue">
-                    <img ng-src="img/logo.png" class="picto" ng-style="sett.grayStyle">
-                </div>
+
             </div>
             <!-- End -->
 
@@ -78,7 +110,7 @@
             <!-- End -->
 
             <!-- Pictos position (relative to text) configuration top/bot -->
-            <div class="item item-toggle">
+            <div class="item item-toggle last">
                 <p translate="sett_position">Texto debajo</p>
                 <label class="toggle toggle-dark">
                     <input type="checkbox" ng-model="sett.wordPosition">
@@ -86,6 +118,36 @@
                         <div class="handle"></div>
                     </div>
                 </label>
+            </div>
+
+            <div class="card">
+                <div class="item item-divider" style="text-align: center" translate="sett_bordersConf">
+                    Borders configuration
+                </div>
+                <div class="item">
+                    <ion-list style="width:50%; float: left">
+                        <div class="item item-button-right" ng-repeat="color in sett.modifiedColors.slice(0,3)">
+                            <span translate="{{'sett_'+color.type}}">{{color.text}}</span>
+                            <button
+                                    class="button item-button"
+                                    ng-style="{'background-color': color.color };"
+                                    style="border: 1px solid gray;"
+                                    ng-click="sett.showColorBar($event, color)">
+                            </button>
+                        </div>
+                    </ion-list>
+                    <ion-list style="width:50%; float:right">
+                        <div class="item item-button-right" ng-repeat="color in sett.modifiedColors.slice(3)" >
+                            <span translate="{{'sett_'+color.type}}">{{color.text}}</span>
+                            <button
+                                    class="button item-button"
+                                    ng-style="{'background-color': color.color };"
+                                    style="border: 1px solid gray;"
+                                    ng-click="sett.showColorBar($event, color)">
+                            </button>
+                        </div>
+                    </ion-list>
+                </div>
             </div>
             <!-- End -->
 
@@ -95,7 +157,8 @@
             <button class="button button-dark"
                     style="margin: 1%"
                     ng-click="sett.saveConfig()"
-                    translate="sett_button_save">
+                    translate="sett_button_save"
+                    ui-sref="text">
                 Guardar por defecto
             </button>
         </div>

@@ -69,17 +69,13 @@
                         var promise = verbsdb.getInfinitive(simpleWord.value)
                             .then(function(infinitive){
                                 inf = infinitive;
-                                return araworddb.getWordsStartingWith(infinitive);
+                                return araworddb.getVerbsStartingWith(simpleWord.value, inf);
                             }, function() {
                                 return araworddb.getWordsStartingWith(simpleWord.value);
                             });
 
                         promise
                             .then(function(compounds) {
-                                // If its a verb, we replace the given form in the context.
-                                if (!angular.isUndefined(inf)) {
-                                    wordsValuesInContext.splice(simpleWord.position,1,inf);
-                                }
                                 // We concatenate all the words in a simple String so as to can compare database
                                 // results and know if our text contains any compound word.
                                 var text = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length).join(' ');
@@ -90,16 +86,18 @@
                                     'pictInd': 0,
                                     'words': 1
                                 };
-                                // We loop over the results so as to find the longest word thata
+                                // We loop over the results so as to find the longest word that
                                 // matches with our word
                                 for(var i=0; i<compounds.length; i++) {
                                     var comp = compounds[i];
                                     var len = comp.word.length;
-                                    if (text.indexOf(comp.word)==0 &&
-                                        (text.charAt(len)==' ' ||
-                                        (text.length <= len))) {
+                                    // If it's a verb compound can start with it's infinitive form
+                                    var isVerbAndInfMatches = (!angular.isUndefined(inf)
+                                        && text.replace(wordsValuesInContext[0],inf).indexOf(comp.word)==0);
+                                    if ((text.indexOf(comp.word)==0 || isVerbAndInfMatches )
+                                            && (text.charAt(len)==' ' || (text.length <= len))) {
                                         var newLength = comp.word.split(' ').length;
-                                        // If mathces and is longest we replace match with the new compound word
+                                        // If matches and is longest we replace match with the new compound word
                                         if (match == null || newLength >= match.words) {
                                             match = {
                                                 //Allows Upper Case in text, com.word is lower case

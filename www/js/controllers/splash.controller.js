@@ -15,6 +15,7 @@
 
         var loadingBarValue = 0;
         var loadingBarMessage = 'Downloading pictographs';
+        var loadingBarCode = 'download';
 
         pictUpdater.unzip().then(function() {
             console.log('GO');
@@ -23,7 +24,7 @@
         $ionicPopup.show({
             template: '<div class="list">' +
                         ' <label class="item item-input item-select">' +
-                        ' <div class="input-label"> Language </div>' +
+                        ' <span class="input-label" translate="spl_lang"> Language </span>' +
                             ' <select>' +
                             ' <option>ES</option>' +
                             ' <option selected>EN</option>' +
@@ -31,20 +32,22 @@
                             ' </select>'+
                         ' </label>' +
                       '</div>',
-            title: 'Language configuration',
+            title: '<span translate="spl_title">Language configuration</span>',
             buttons: [
                 {
-                    text: '<b>Continue</b>',
+                    text: '<b><span translate="spl_cont">Continue</span></b>',
                     type: 'button-dark',
                     onTap: function() {
                         updateBar();
                         $timeout(function() {
                             loadingBarMessage = 'Unzipping pictographs';
+                            loadingBarCode = 'unzip';
                             loadingBarValue = 50;
                             updateBar();
                             $timeout(function() {
                                 loadingBarValue = 100;
                                 loadingBarMessage = 'Complete';
+                                loadingBarCode = 'end';
                                 updateBar();
                                 $timeout(function() {
                                     $ionicLoading.hide();
@@ -60,7 +63,7 @@
 
         function updateBar() {
             $ionicLoading.show({
-                'template': "<span>" + loadingBarMessage + "</span>"
+                'template': "<span translate='spl_"+loadingBarCode+"'>" + loadingBarMessage + "</span>"
                 + "<progress value=\"" + loadingBarValue + "\" max=\"100\"></progress>"
             });
         }
