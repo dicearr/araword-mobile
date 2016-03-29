@@ -65,7 +65,6 @@
          * Saves the whole configuration
          */
         function saveConfig() {
-            console.log('MODel='+JSON.stringify(vm.modifiedConfig));
             configService.configuration = angular.copy(vm.modifiedConfig);
             configService.saveConfig();
         }

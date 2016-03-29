@@ -24,6 +24,7 @@
 
         var service = {
             permissions: permissions,
+            logged: false,
             saveConfig: saveConfig,
             restoreConfig: restoreConfig
         };
@@ -31,6 +32,7 @@
         return service;
 
         ///////////////////////
+
 
         function saveConfig() {
             $window.localStorage['perms'] = JSON.stringify(service.permissions);

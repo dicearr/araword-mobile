@@ -68,7 +68,6 @@
          */
         function saveConfig() {
             setStyles();
-            console.log('Saving='+JSON.stringify(service.configuration));
             $window.localStorage['configuration'] = JSON.stringify(service.configuration);
         }
 
@@ -77,7 +76,6 @@
          * found it uses default values.
          */
         function restoreConfig() {
-            console.log('Retrieving='+$window.localStorage['configuration']);
             service.configuration = JSON.parse($window.localStorage['configuration'] || JSON.stringify(configuration));
             if (angular.isUndefined(service.configuration['styles'])) {
                 setStyles();

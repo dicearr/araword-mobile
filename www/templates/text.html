@@ -1,8 +1,8 @@
 <!-- CONTROLLER AS text -->
 <ion-view>
     <ion-nav-buttons side="right">
-        <button class="button button-icon ion-volume-high" ng-click="text.readText()" ng-disabled="!text.acc.permissions['toSpeech']"></button>
-        <button class="button button-icon ion-android-share-alt posit" ng-click="text.shareText()" ng-disabled="!text.acc.permissions['toShare']"></button>
+        <button class="button button-icon ion-volume-high" ng-click="text.readText()" ng-disabled="!text.acc.logged && !text.acc.permissions['toSpeech']"></button>
+        <button class="button button-icon ion-android-share-alt posit" ng-click="text.shareText()" ng-disabled="!text.acc.logged && !text.acc.permissions['toShare']"></button>
         <button ng-controller='navController as nav'
                 class="button button-icon ion-navicon"
                 style="padding-left: 17px; padding-right: 10px"
