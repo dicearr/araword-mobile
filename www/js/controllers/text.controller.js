@@ -42,17 +42,13 @@
 
         configService.restoreConfig();
 
-        vm.pictoStyle = configService.pictoStyle;
-        vm.wordStyle = configService.wordStyle;
-        vm.getDivStyle = configService.getDivStyle;
-        vm.wordPosition = wordPosition;
+        vm.conf = configService;
         vm.showOptions = showOptions;
-        vm.typeColors = configService.typeColors;
 
         accessService.restoreConfig();
 
+        vm.acc = accessService;
         vm.shareText = shareText;
-        vm.access = accessService;
 
         if(! araworddb.ready()) {
             araworddb.startService();
@@ -236,15 +232,6 @@
             });
             $scope.myPopup = myPopup;
             IonicClosePopupService.register(myPopup);
-        }
-
-        vm.test = test;
-        $scope.test = test;
-        function test() {
-            console.log('test');
-            if (!angular.isUndefined($scope.myPopup)) {
-                $scope.myPopup.close();
-            }
         }
 
     }

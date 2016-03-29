@@ -29,7 +29,7 @@
             $scope.subMenu = popover;
         });
 
-        vm.access = accessService;
+        vm.acc = accessService;
 
         ///////////////
 

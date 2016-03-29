@@ -1,8 +1,8 @@
 <ion-popover-view class="secpopover" style="display: inline-block; width: auto; height: auto;">
         <div class="list button-list" style="margin-bottom: 0%">
             <button class="button button-icon button-full icon ion-gear-a" ng-click="nav.showSubMenu()"></button>
-            <button class="button button-icon button-full icon ion-archive" ng-click="" ng-disabled="nav.access.saveDocs"></button>
-            <button class="button button-icon button-full icon ion-folder" ng-click="" ng-disabled="nav.access.loadDocs"></button>
-            <button class="button button-icon button-full icon ion-plus-round" ng-click="" ng-disabled="nav.access.addPict"></button>
+            <button class="button button-icon button-full icon ion-archive" ng-click="" ng-disabled="!nav.acc.permissions['toSave']"></button>
+            <button class="button button-icon button-full icon ion-folder" ng-click="" ng-disabled="!nav.acc.permissions['toLoad']"></button>
+            <button class="button button-icon button-full icon ion-plus-round" ng-click="" ng-disabled="!nav.acc.permissions['toAdd']"></button>
         </div>
 </ion-popover-view>

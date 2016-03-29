@@ -14,56 +14,15 @@
             Control de accesos
         </div>
         <div class="card">
-            <div class="item item-toggle" >
-                <p translate="acc_social">Redes sociales</p>
+            <div class="item item-toggle" ng-repeat="(perm, model) in access.models">
+                <p translate="acc_{{perm}}">Permission</p>
                 <label class="toggle toggle-dark">
-                    <input type="checkbox" ng-model="access.socialMedia">
+                    <input type="checkbox" ng-model="access.models[perm]">
                     <div class="track">
                         <div class="handle"></div>
                     </div>
                 </label>
             </div>
-
-            <div class="item item-toggle" >
-                <p translate="acc_save">Guardar documents</p>
-                <label class="toggle toggle-dark">
-                    <input type="checkbox" ng-model="access.saveDocs">
-                    <div class="track">
-                        <div class="handle"></div>
-                    </div>
-                </label>
-            </div>
-
-            <div class="item item-toggle" >
-                <p translate="acc_addPict">Añadir pictogramas</p>
-                <label class="toggle toggle-dark">
-                    <input type="checkbox" ng-model="access.addPict">
-                    <div class="track">
-                        <div class="handle"></div>
-                    </div>
-                </label>
-            </div>
-
-            <div class="item item-toggle" >
-                <p translate="acc_speech">Lector de texto</p>
-                <label class="toggle toggle-dark">
-                    <input type="checkbox" ng-model="access.textToSpeech">
-                    <div class="track">
-                        <div class="handle"></div>
-                    </div>
-                </label>
-            </div>
-
-            <div class="item item-toggle" >
-                <p translate="acc_load">Cargar documentos</p>
-                <label class="toggle toggle-dark">
-                    <input type="checkbox" ng-model="access.loadDocs">
-                    <div class="track">
-                        <div class="handle"></div>
-                    </div>
-                </label>
-            </div>
-
         </div>
 
         <div style="text-align: center; padding: 2%">

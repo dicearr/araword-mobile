@@ -18,33 +18,10 @@
 
         var vm = this;
 
-        var pictoStyle = configService.pictoStyle;
-        var wordStyle = configService.wordStyle;
+        // We copy the configuration to use it as a model
+        vm.modifiedConfig = angular.copy(configService.configuration);
 
-        vm.setGrayValue = setGrayValue;
-        // We need numeric value to ng-model
-        vm.grayValue = pictoStyle['-webkit-filter']
-            .substring(10,pictoStyle['-webkit-filter'].indexOf('%'));
-
-        vm.setPictoSizeValue = setPictoSizeValue;
-        // We need numeric value to ng-model
-        vm.pictoStyle = angular.copy(pictoStyle);
-        vm.pictoSizeValue = vm.pictoStyle['width']
-            .substring(0,vm.pictoStyle['width'].indexOf('p'));
-
-        vm.setFontSizeValue = setFontSizeValue;
-        // We need numeric value to ng-model
-        vm.fontSizeValue = wordStyle['fontSize']
-            .substring(0,wordStyle['fontSize'].indexOf('p'));
-        vm.fontStyle = {
-            'fontSize': vm.fontSizeValue + 'px'
-        };
-
-        vm.saveConfig = saveConfig;
-        vm.bordersValue = configService.borders;
-        vm.wordPosition = configService.wordPosition;
-
-        vm.colors = ['green','blue','red','yellow','orange','purple','black','white', 'grey', 'pink'];
+        vm.colors = ['green','blue','red','yellow','orange','purple','black','white', 'gray', 'pink'];
         $ionicPopover.fromTemplateUrl('templates/popovers/colors.html', {
             scope: $scope
         }).then(function(popover){
@@ -53,11 +30,22 @@
 
         vm.showColorBar = showColorBar;
         vm.selectColor = selectColor;
+        vm.saveConfig = saveConfig;
+        vm.updateStyles = updateStyles;
 
         var typeSelected = undefined;
-        vm.modifiedColors = angular.copy(configService.typeColors);
 
         //////////////////////
+
+        function updateStyles() {
+            vm.fontStyle = {
+                'font-size': vm.modifiedConfig['fontSize'] + 'px'
+            };
+            vm.pictoStyle = {
+                '-webkit-filter': 'grayscale('+vm.modifiedConfig['grayScale']+'\%)',
+                'width': vm.modifiedConfig['pictoSize'] + 'px'
+            };
+        }
 
         function showColorBar(event, type) {
             $scope.colorsBar.show(event);
@@ -72,39 +60,13 @@
             }
         }
 
-        /**
-         * Changes the gray scale value
-         */
-        function setGrayValue() {
-          vm.pictoStyle['-webkit-filter'] = 'grayscale('+vm.grayValue+'%)';
-        }
-
-        /**
-         * Changes the pictograph size
-         */
-        function setPictoSizeValue() {
-            vm.pictoStyle['width'] = vm.pictoSizeValue + 'px';
-        }
-
-        /**
-         * Changes the font size
-         */
-        function setFontSizeValue() {
-            vm.fontStyle = {
-                'fontSize': vm.fontSizeValue + 'px'
-            };
-        }
 
         /**
          * Saves the whole configuration
          */
         function saveConfig() {
-            configService.setWordFontSize(vm.fontSizeValue);
-            configService.setPictoGrayscale(vm.grayValue);
-            configService.setPictoSize(vm.pictoSizeValue);
-            configService.changeBorders(vm.bordersValue);
-            configService.setWordPosition(vm.wordPosition);
-            configService.setTypeColors(vm.modifiedColors);
+            console.log('MODel='+JSON.stringify(vm.modifiedConfig));
+            configService.configuration = angular.copy(vm.modifiedConfig);
             configService.saveConfig();
         }
 

@@ -13,21 +13,19 @@
     function accessController(accessService) {
         var vm = this;
 
-        vm.socialMedia = angular.copy(!accessService.socialMedia);
-        vm.saveDocs = angular.copy(!accessService.saveDocs);
-        vm.loadDocs = angular.copy(!accessService.loadDocs);
-        vm.addPict = angular.copy(!accessService.addPict);
-        vm.textToSpeech = angular.copy(!accessService.textToSpeech);
+        // We create a copy to use as a model
+        vm.models = angular.copy(accessService.permissions);
+
         vm.saveConfig = saveConfig;
 
         /////////
 
+        /**
+         * Called when configuration must be saved.
+         */
         function saveConfig() {
-            accessService.socialMedia = !vm.socialMedia;
-            accessService.saveDocs = !vm.saveDocs;
-            accessService.loadDocs = !vm.loadDocs;
-            accessService.addPict = !vm.addPict;
-            accessService.textToSpeech = !vm.textToSpeech;
+            console.log('Models='+JSON.stringify(vm.models));
+            accessService.permissions = angular.copy(vm.models);
             accessService.saveConfig();
         }
 

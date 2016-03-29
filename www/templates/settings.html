@@ -31,10 +31,10 @@
                 Pictograph preview
             </div>
             <div style="float: left; margin: 50px; text-align: center;" class="item padding"
-                 ng-style="sett.bordersValue && {'border': '4px solid yellow'} || {}">
-                <span  ng-style="sett.fontStyle" ng-hide="sett.wordPosition">AraWord</span>
+                 ng-style="sett.modifiedConfig['borders'] && {'border': '4px solid yellow'} || {}">
+                <span  ng-style="sett.fontStyle" ng-hide="sett.modifiedConfig['position']">AraWord</span>
                 <img ng-style="sett.pictoStyle" class="picto padding" src="img/logo.png"/>
-                <span  ng-style="sett.fontStyle" ng-hide="!sett.wordPosition">AraWord</span>
+                <span  ng-style="sett.fontStyle" ng-hide="!sett.modifiedConfig['position']">AraWord</span>
             </div>
         </div>
 
@@ -51,10 +51,10 @@
                            name="pictoSize"
                            min="50"
                            max="200"
-                           value="{{ sett.pictoSizeValue }}"
-                           ng-model="sett.pictoSizeValue"
-                           ng-change="sett.setPictoSizeValue()"
-                           style="max-width: 80%; margin:auto;"/>
+                           value="{{ sett.pictoSize }}"
+                           ng-model="sett.modifiedConfig['pictoSize']"
+                           style="max-width: 80%; margin:auto;"
+                           ng-change="sett.updateStyles()"/>
                 </div>
 
             </div>
@@ -70,10 +70,10 @@
                            name="fontSize"
                            min="12"
                            max="40"
-                           value="{{ sett.fontSizeValue }}"
-                           ng-model="sett.fontSizeValue"
-                           ng-change="sett.setFontSizeValue()"
-                           style="max-width: 80%; margin:auto;"/>
+                           value="{{ sett.fontSize }}"
+                           ng-model="sett.modifiedConfig['fontSize']"
+                           style="max-width: 80%; margin:auto;"
+                           ng-change="sett.updateStyles()"/>
                 </div>
 
             </div>
@@ -89,9 +89,9 @@
                            name="grayScale"
                            min="0"
                            max="100"
-                           ng-model="sett.grayValue"
-                           ng-change="sett.setGrayValue()"
-                           style="max-width: 80%; margin:auto;"/>
+                           ng-model="sett.modifiedConfig['grayScale']"
+                           style="max-width: 80%; margin:auto;"
+                           ng-change="sett.updateStyles()"/>
                 </div>
 
             </div>
@@ -101,7 +101,7 @@
             <div class="item item-toggle" >
                 <p translate="sett_borders">Bordes de colores</p>
                 <label class="toggle toggle-dark">
-                    <input type="checkbox" ng-model="sett.bordersValue">
+                    <input type="checkbox" ng-model="sett.modifiedConfig['borders']">
                     <div class="track">
                         <div class="handle"></div>
                     </div>
@@ -113,7 +113,7 @@
             <div class="item item-toggle last">
                 <p translate="sett_position">Texto debajo</p>
                 <label class="toggle toggle-dark">
-                    <input type="checkbox" ng-model="sett.wordPosition">
+                    <input type="checkbox" ng-model="sett.modifiedConfig['position']">
                     <div class="track">
                         <div class="handle"></div>
                     </div>
@@ -126,7 +126,7 @@
                 </div>
                 <div class="item">
                     <ion-list style="width:50%; float: left">
-                        <div class="item item-button-right" ng-repeat="color in sett.modifiedColors.slice(0,3)">
+                        <div class="item item-button-right" ng-repeat="color in sett.modifiedConfig['typeColors'].slice(0,3)">
                             <span translate="{{'sett_'+color.type}}">{{color.text}}</span>
                             <button
                                     class="button item-button"
@@ -137,7 +137,7 @@
                         </div>
                     </ion-list>
                     <ion-list style="width:50%; float:right">
-                        <div class="item item-button-right" ng-repeat="color in sett.modifiedColors.slice(3)" >
+                        <div class="item item-button-right" ng-repeat="color in sett.modifiedConfig['typeColors'].slice(3)" >
                             <span translate="{{'sett_'+color.type}}">{{color.text}}</span>
                             <button
                                     class="button item-button"
