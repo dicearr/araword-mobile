@@ -12,18 +12,20 @@
 
     <ion-content id="text" class="has-header" overflow-scroll="false" ng-style="text.conf.styles['fontStyle']">
         <div class="inline padding" ng-repeat="word in text.myText"
-             ng-style="{'border': '4px solid ' + text.conf.configuration.typeColors[word.pictos[word.pictInd].type].color }"
+             ng-style="text.conf.configuration.borders? {'border': '4px solid ' + text.conf.configuration.typeColors[word.pictos[word.pictInd].type].color} :{};"
              style="margin: 1px">
 
             <!-- Text can appear on top -->
             <input type="text"
                    ng-change="text.onChange(word)"
-                   ng-keyup="text.deleteIfEmpty(word)"
+                   ng-keyup="text.onKeyUp($event,word)"
                    ng-model="word.value"
+                   ng-model-options="{ debounce: 720 }"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
-                   ng-hide="text.wordPosition()"
+                   ng-hide="text.conf.configuration['position']"
                    class="word"
+                   ng-style="text.conf.styles['inputStyle']"
                    style="font-size: inherit;"/>
 
             <img class="picto"
@@ -35,12 +37,14 @@
             <!-- or bot -->
             <input type="text"
                    ng-change="text.onChange(word)"
-                   ng-keyup="text.deleteIfEmpty(word)"
+                   ng-keyup="text.onKeyUp($event,word)"
                    ng-model="word.value"
+                   ng-model-options="{ debounce: 720 }"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
-                   ng-show="text.wordPosition()"
+                   ng-show="text.conf.configuration['position']"
                    class="word"
+                   ng-style="text.conf.styles['inputStyle']"
                    style="font-size: inherit;"/>
         </div>
     </ion-content>

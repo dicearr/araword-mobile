@@ -91,15 +91,20 @@
         }
 
         function setStyles() {
-            service.styles = angular.copy({
+            var inputSize = parseInt(service.configuration['fontSize'])+10;
+            service.styles = {
                 'pictoStyle': {
                     '-webkit-filter': 'grayscale('+ service.configuration['grayScale']+ '\%)',
                     'width': service.configuration['pictoSize'] + 'px'
                 },
                 'fontStyle': {
                     'fontSize': service.configuration['fontSize'] + 'px'
+                },
+                'inputStyle': {
+                    'height':  inputSize + 'px',
+                    'min-width': service.configuration['pictoSize'] + 'px'
                 }
-            });
+            };
         }
     }
 

@@ -24,7 +24,6 @@
             processEvent: processEvent,
             deleteWord: deleteWord,
             setCaret: setCaret,
-            delteWord: deleteWord,
             addEmptyWord: addEmptyWord
         };
 
@@ -78,7 +77,8 @@
                             .then(function(compounds) {
                                 // We concatenate all the words in a simple String so as to can compare database
                                 // results and know if our text contains any compound word.
-                                var text = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length).join(' ');
+                                var nextWordsValues = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length);
+                                var text = nextWordsValues.join(' ');
                                 var match = {
                                     'value': simpleWord.value,
                                     'pictos': [emptyPicto],
@@ -91,18 +91,23 @@
                                 for(var i=0; i<compounds.length; i++) {
                                     var comp = compounds[i];
                                     var len = comp.word.length;
+
                                     // If it's a verb compound can start with it's infinitive form
                                     var isVerbAndInfMatches = (!angular.isUndefined(inf)
-                                        && text.replace(wordsValuesInContext[0],inf).indexOf(comp.word)==0);
+                                        && text.replace(nextWordsValues[0],inf).indexOf(comp.word)==0);
                                     if ((text.indexOf(comp.word)==0 || isVerbAndInfMatches )
                                             && (text.charAt(len)==' ' || (text.length <= len))) {
                                         var newLength = comp.word.split(' ').length;
-                                        // If matches and is longest we replace match with the new compound word
-                                        if (match == null || newLength >= match.words) {
+                                        // If matches and it's longest we replace match with the new compound word
+                                        if (match == null || newLength >= match.words ) {
+                                            console.log(comp.word);
+                                            if (isVerbAndInfMatches && newLength>1) {
+                                                comp.word = comp.word.replace(inf,simpleWord.value);
+                                            }
                                             match = {
                                                 //Allows Upper Case in text, com.word is lower case
                                                 'value': newLength==1?simpleWord.value:comp.word,
-                                                'pictos': comp.pictos.concat(emptyPicto),
+                                                'pictos': comp.pictos.concat(match.pictos),
                                                 'autofocus': false,
                                                 'pictInd': 0,
                                                 'words': newLength
@@ -130,6 +135,7 @@
             // Resutls looks like
             // [ {'value': 'de color', 'words': 2, 'pictos': [*]}, {'value': 'color', 'words': 1, 'pictos': [*]} ]
             $q.all(promises).then(function() {
+
                 for(var i=0; i<results.length; i++) {
                     var pos = textContext.minIndex;
                     // If we've to change the word
@@ -159,7 +165,7 @@
                     }
                     textContext.minIndex++;
                 }
-                setCaret(text,textContext.minIndex-1);
+                //setCaret(text,textContext.minIndex-1);
             });
 
             /**
@@ -179,7 +185,7 @@
                 var j = 0;
 
                 for(var i=minIndex; i<maxIndex+1; i++) {
-                    if (i==pos || text[i].words == 1) { // Compound word is made only by simple words
+                    if (i==pos || (text[i].words == 1 && text[i].value.length>0)) { // Compound word is made only by simple words
                         text[i].value.split(' ').forEach(function(simpleWord) { // But changed word could be compound
                             words.push({
                                 'value': simpleWord,
@@ -187,14 +193,13 @@
                             });
                             j++;
                         });
-                    } else if (i<pos && text[i].words > 1) { // We do not break previous compound words
+                    } else if (i<pos) { // We do not break previous compound words
                         words = []; j = 0; minIndex = i+1;
-                    } else if (i>pos && text[i].words > 1) { // We do not consider later compound words
+                    } else if (i>pos) { // We do not consider later compound words
                         var aux = i;
                         i = maxIndex+1; maxIndex = aux-1;
                     }
                 }
-
                 return {
                     'minIndex': minIndex,
                     'maxIndex': maxIndex,
@@ -213,7 +218,7 @@
                 if (pic1.pictos.length != pic2.pictos.length) return false;
                 else {
                     for (var i=0; i<pic1.pictos.length; i++) {
-                        if (pic1.pictos[i].name != pic2.pictos[i].name) return false;
+                        if (pic1.pictos[i].picto != pic2.pictos[i].picto) return false;
                     }
                     return true;
                 }
@@ -255,7 +260,6 @@
          * @param text = The whole text
          */
         function addEmptyWord(word, text) {
-            word.value = word.value.substring(0,word.value.length-1);
             var pos = text.indexOf(word)+1;
             text.splice(pos,0,{
                 'value': '',

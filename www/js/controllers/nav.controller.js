@@ -8,9 +8,9 @@
         .module('AraWord')
         .controller('navController', navController);
 
-    navController.$inject = ['$ionicPopover','$scope','accessService','$ionicPopup'];
+    navController.$inject = ['$ionicPopover','$scope','accessService','$ionicPopup','$window'];
 
-    function navController($ionicPopover, $scope, accessService, $ionicPopup) {
+    function navController($ionicPopover, $scope, accessService, $ionicPopup, $window) {
 
         var vm = this;
         vm.showMenu = showMenu;
@@ -71,7 +71,8 @@
                                 //don't allow the user to close unless he enters wifi password
                                 e.preventDefault();
                             } else {
-                                if (vm.pass === "admin") {
+                                var mainPass = $window.localStorage['mainPass'];
+                                if (vm.pass === mainPass) {
                                     vm.acc.logged = true;
                                     return true;
                                 } else {

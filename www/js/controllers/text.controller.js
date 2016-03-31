@@ -16,12 +16,13 @@
     textController.$inject = ['textAnalyzer','configService',
         '$cordovaFile','araworddb','$scope',
         '$ionicPopup', 'IonicClosePopupService',
-        '$cordovaSocialSharing','accessService'];
+        '$cordovaSocialSharing','accessService',
+        '$cordovaImagePicker'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
                             $scope, $ionicPopup, IonicClosePopupService,
-                            $cordovaSocialSharing, accessService) {
+                            $cordovaSocialSharing, accessService, $cordovaImagePicker) {
 
         var vm = this;
         vm.myText = [{
@@ -32,7 +33,7 @@
             'autofocus': true
         }];
         vm.onChange = onChange;  // Main logic
-        vm.deleteIfEmpty = deleteIfEmpty; // Deletes empty words
+        vm.onKeyUp = onKeyUp; // Deletes empty words
         // Manages double/single click by using timeout
         vm.singleClickAction = singleClickAction;
 
@@ -49,6 +50,9 @@
 
         vm.acc = accessService;
         vm.shareText = shareText;
+
+        vm.pickImage = pickImage;
+        vm.optionsPopup = undefined;
 
         if(! araworddb.ready()) {
             araworddb.startService();
@@ -80,23 +84,17 @@
          * @param word = word in which change has happened
          */
         function onChange(word) {
-            // Common case, separator at the end of the text
+            // Common case, are in KeyUp
+            var canAnalyze = true;
             if (word.value.charAt(word.value.length-1)==' ') {
-                textAnalyzer.addEmptyWord(word,vm.myText);
+                word.value = word.value.substr(0,word.value.length-1);
+                canAnalyze = word.words==1;
             }
-            else if (word.value.length==0) {
+            if (word.value.length==0) {
                 textAnalyzer.deleteWord(word,vm.myText);
-            }
-            else {
+            } else if (canAnalyze){
                 textAnalyzer.processEvent(word, vm.myText);
             }
-        }
-
-        /**
-         * @returns {wordPosition} If true text is over the image, otherwise under.
-         */
-        function wordPosition() {
-            return configService.wordPosition;
         }
 
         /**
@@ -139,8 +137,12 @@
          * If the word is empty, it will be deleted
          * @param word = The word that must be checked.
          */
-        function deleteIfEmpty(word) {
-            if (word.value.length==0) textAnalyzer.delteWord(word, vm.myText);
+        function onKeyUp(event, word) {
+            if (word.value.length==0 && event.keyCode == 8) {
+                textAnalyzer.deleteWord(word,vm.myText);
+            } else if (vm.myText.indexOf(word)==vm.myText.length-1 && event.keyCode == 32) {
+                textAnalyzer.addEmptyWord(word,vm.myText);
+            }
         }
 
         /**
@@ -225,14 +227,36 @@
         }
 
         function showOptions(word) {
-           var myPopup =  $ionicPopup.show({
+           vm.selecteWord = word;
+           vm.optionsPopup =  $ionicPopup.show({
                 templateUrl: 'templates/popups/pictos.html',
                 title: 'Options',
                 scope: $scope
             });
-            $scope.myPopup = myPopup;
-            IonicClosePopupService.register(myPopup);
+            $scope.myPopup = vm.optionsPopup;
+            IonicClosePopupService.register($scope.myPopup);
         }
 
+        function pickImage() {
+            $cordovaImagePicker.getPictures({'maximumImagesCount': 1})
+                .then(function(result){
+                    console.log('Image='+result[0]);
+                    vm.optionsPopup.close();
+                    var separator = result[0].lastIndexOf('/');
+                    var path = result[0].substr(0,separator);
+                    var file = result[0].substr(separator+1);
+                    var dirUrl = cordova.file.dataDirectory;
+                    var dirName = 'pictos/pictos_12';
+                    $cordovaFile.readAsDataURL(path,file)
+                        .then(function(res){
+                            vm.selecteWord.pictos = vm.selecteWord.pictos.concat({'picto':file,'type':'3','base64':res});
+                        });
+                    /*$cordovaFile.copyFile(path,file,dirUrl+dirName,file)
+                       .then(function(){
+                          console.log('COPIED!');
+                    });*/
+
+                });
+        }
     }
 })();
