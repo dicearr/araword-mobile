@@ -23,6 +23,7 @@
             startService: startService,
             getWordsStartingWith: getWordsStartingWith,
             getVerbsStartingWith: getVerbsStartingWith,
+            newPicto: newPicto,
             ready: ready
         };
 
@@ -36,7 +37,7 @@
          * @returns {*} Promise
          */
         function getWordsStartingWith(word) {
-
+            console.log('Searching for '+word.toLowerCase());
             return $q(function(resolve,reject){
                 // Case insensitive
                 var query = "SELECT * FROM ArawordView WHERE word like \'" + word.toLowerCase() +" \%\'" +
@@ -74,6 +75,25 @@
                 }, false);
 
             });
+        }
+
+        function newPicto(word,picto) {
+            return $q(function(resolve,reject) {
+                var query = "INSERT INTO main(word, idL, idT, name) VALUES(?,?,?,?)";
+                var params = [word.toLowerCase(),0,picto.type,picto.picto];
+
+                document.addEventListener('deviceready', executeInsert);
+
+                function executeInsert() {
+                    $cordovaSQLite.execute(db,query,params)
+                        .then(function() {
+                            return resolve();
+                        }, function(error) {
+                            console.log(JSON.stringify(error));
+                            return reject();
+                        })
+                }
+            })
         }
 
         /**
@@ -144,13 +164,10 @@
          * @returns {number} = Returns a unique identifier for each type of word.
          */
         function parseType(typeInText) {
-            if (typeInText=="nombreComun") return 0;
-            else if (typeInText=="descriptivo") return 1;
-            else if (typeInText=="verbo") return 2;
-            else if (typeInText=="miscelanea") return 3;
-            else if (typeInText=="nombrePropio") return 4;
-            else { return 5; }
+            var types = ['nombreComun','descriptivo','verbo','miscelanea','nombrePropio','contenidoSocial'];
+            return types.indexOf(typeInText);
         }
+
     };
 
 })();

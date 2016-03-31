@@ -51,6 +51,7 @@
         vm.acc = accessService;
         vm.shareText = shareText;
 
+        vm.modifyText = modifyText;
         vm.pickImage = pickImage;
         vm.optionsPopup = undefined;
 
@@ -84,16 +85,20 @@
          * @param word = word in which change has happened
          */
         function onChange(word) {
-            // Common case, are in KeyUp
-            var canAnalyze = true;
-            if (word.value.charAt(word.value.length-1)==' ') {
-                word.value = word.value.substr(0,word.value.length-1);
-                canAnalyze = word.words==1;
-            }
-            if (word.value.length==0) {
-                textAnalyzer.deleteWord(word,vm.myText);
-            } else if (canAnalyze){
-                textAnalyzer.processEvent(word, vm.myText);
+            if(angular.isUndefined(word.unbind) || !word.unbind) {
+                console.log('Binded!');
+                // Common case, are in KeyUp
+                var canAnalyze = true;
+                if (word.value.charAt(word.value.length-1)==' ') {
+                    word.value = word.value.substr(0,word.value.length-1);
+                    canAnalyze &= word.words==1;
+                }
+
+                if (word.value.length==0) {
+                    textAnalyzer.deleteWord(word,vm.myText);
+                } else if (canAnalyze){
+                    textAnalyzer.processEvent(word, vm.myText);
+                }
             }
         }
 
@@ -227,7 +232,7 @@
         }
 
         function showOptions(word) {
-           vm.selecteWord = word;
+           vm.selectedWord = word;
            vm.optionsPopup =  $ionicPopup.show({
                 templateUrl: 'templates/popups/pictos.html',
                 title: 'Options',
@@ -247,16 +252,27 @@
                     var file = result[0].substr(separator+1);
                     var dirUrl = cordova.file.dataDirectory;
                     var dirName = 'pictos/pictos_12';
+                    var type = undefined;
                     $cordovaFile.readAsDataURL(path,file)
                         .then(function(res){
-                            vm.selecteWord.pictos = vm.selecteWord.pictos.concat({'picto':file,'type':'3','base64':res});
+                            type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type;
+                            if (angular.isUndefined(type)) {
+                                type = 3;
+                            }
+                            araworddb.newPicto(vm.selectedWord.value,{'picto':file,'type':type})
+                                .then(function() {
+                                    vm.selectedWord.pictos = [{'picto':file,'type':type,'base64':res}].concat(vm.selectedWord.pictos);
+                                    vm.selectedWord.pictInd = 0;
+                                })
                         });
-                    /*$cordovaFile.copyFile(path,file,dirUrl+dirName,file)
-                       .then(function(){
-                          console.log('COPIED!');
-                    });*/
-
+                    $cordovaFile.copyFile(path,file,dirUrl+dirName,file);
                 });
+        }
+
+        function modifyText() {
+            vm.selectedWord['unbind'] = true;
+            vm.optionsPopup.close();
+            textAnalyzer.setCaret(vm.myText,vm.myText.indexOf(vm.selectedWord));
         }
     }
 })();

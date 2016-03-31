@@ -104,6 +104,9 @@
                                             if (isVerbAndInfMatches && newLength>1) {
                                                 comp.word = comp.word.replace(inf,simpleWord.value);
                                             }
+                                            if (newLength>match.words) {
+                                                match.pictos = [emptyPicto];
+                                            }
                                             match = {
                                                 //Allows Upper Case in text, com.word is lower case
                                                 'value': newLength==1?simpleWord.value:comp.word,
@@ -242,8 +245,8 @@
         }
 
         /**
-         * @param text = The whole text.
-         * @param newCaretPosition = The position inside the text where the caret must be set.
+         * @param text {{= The whole text.}}
+         * @param newCaretPosition {{= The position inside the text where the caret must be set.}}
          */
         function setCaret(text, newCaretPosition) {
             // Can be a deleted word because of a compound
