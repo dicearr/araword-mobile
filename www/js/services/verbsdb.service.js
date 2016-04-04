@@ -1,5 +1,7 @@
 /**
  * Created by diego on 6/03/16.
+ *
+ * Manages the verbs database.
  */
 
 (function() {
@@ -26,6 +28,11 @@
 
         //////////
 
+        /**
+         * Returns the infinitive of a given formed verb.
+         * @param verb {{ Formed verb }}
+         * @returns {[String]}
+         */
         function getInfinitive(verb) {
             return $q(function(resolve,reject){
                 // Case insensitive

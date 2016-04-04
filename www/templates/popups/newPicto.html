@@ -1,0 +1,19 @@
+<div class="list">
+    <label class="item item-input">
+        <input type="text" ng-model="nav.newPictWord" placeholder="Word"/>
+    </label>
+    <label class="item item-input item-select">
+        <div class="input-label">
+            Type
+        </div>
+        <select dng-model="nav.newPict.type">
+            <option value="0">Name</option>
+            <option value="1">Descriptive</option>
+            <option value="2">Verb</option>
+            <option value="3">Miscelanea</option>
+            <option value="4">Own Name</option>
+            <option value="5">Social Content</option>
+        </select>
+    </label>
+    <button class="item button button-full" type="file" ng-click="nav.pickImage()">Choose Picto</button>
+</div>

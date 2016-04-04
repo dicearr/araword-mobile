@@ -55,6 +55,8 @@
         vm.pickImage = pickImage;
         vm.optionsPopup = undefined;
 
+        textAnalyzer.text = vm.myText;
+
         if(! araworddb.ready()) {
             araworddb.startService();
         }
@@ -231,6 +233,10 @@
             })
         }
 
+        /**
+         * Displays the options popup for a word.
+         * @param word
+         */
         function showOptions(word) {
            vm.selectedWord = word;
            vm.optionsPopup =  $ionicPopup.show({
@@ -242,6 +248,9 @@
             IonicClosePopupService.register($scope.myPopup);
         }
 
+        /**
+         * Displays the image picker.
+         */
         function pickImage() {
             $cordovaImagePicker.getPictures({'maximumImagesCount': 1})
                 .then(function(result){
@@ -269,10 +278,14 @@
                 });
         }
 
+        /**
+         * Allows user to modify a text without modifying pictographs
+         */
         function modifyText() {
             vm.selectedWord['unbind'] = true;
             vm.optionsPopup.close();
             textAnalyzer.setCaret(vm.myText,vm.myText.indexOf(vm.selectedWord));
         }
+
     }
 })();

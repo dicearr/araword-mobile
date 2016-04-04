@@ -1,5 +1,8 @@
 /**
- * Created by diego on 7/03/16.
+ * Created by Diego on 7/03/16.
+ *
+ * Manages the translations by using:
+ *  https://angular-translate.github.io/
  */
 
 (function() {
@@ -17,6 +20,7 @@
 
         var translations = {
             'es': {
+                // templates/settings.html
                 sett_pictSize: 'Tamaño de pictograma',
                 sett_fontSize: 'Tamaño de letra',
                 sett_grayScale: 'Escala de grises',
@@ -31,14 +35,14 @@
                 sett_nombrePropio: 'Nombre propio',
                 sett_miscelanea: 'Miscelanea',
                 sett_langConf: 'Idioma del documento',
-
+                // templates/access.html
                 acc_title: 'Control de accesos',
                 acc_toSave: 'Guardar documentos',
                 acc_toLoad: 'Abrir documentos',
                 acc_toSpeech: 'Usar lector',
                 acc_toShare: 'Compartir en redes sociales',
                 acc_toAdd: 'Añadir pictogramas',
-
+                // templates/splash.html
                 spl_download: 'Descargando pictogramas',
                 spl_unzip: 'Descomprimiendo pictogramas',
                 spl_end: 'Completado',
@@ -47,6 +51,7 @@
                 spl_lang: 'Idioma'
             },
             'en': {
+                // templates/settings.html
                 sett_pictSize: 'Pictograph size',
                 sett_fontSize: 'Font size',
                 sett_grayScale: 'Gray scale value',
@@ -61,14 +66,14 @@
                 sett_nombrePropio: 'Own name',
                 sett_miscelanea: 'Miscellany',
                 sett_langConf: 'Document language',
-
+                // templates/access.html
                 acc_title: 'Access control',
                 acc_toSave: 'Save documents',
                 acc_toLoad: 'Open documents',
                 acc_toSpeech: 'Text to speech',
                 acc_toShare: 'Share',
                 acc_toAdd: 'Add pictographs',
-
+                // templates/splash.html
                 spl_download: 'Downloading pictographs',
                 spl_unzip: 'Unzipping pictographs',
                 spl_end: 'Completed',

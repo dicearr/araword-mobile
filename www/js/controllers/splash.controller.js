@@ -1,5 +1,8 @@
 /**
- * Created by diego on 11/03/16.
+ * Created by Diego on 11/03/16.
+ *
+ * Manages the initial screen where pictures are downloaded and unzipped.
+ * Also, language configuration and password are settled here.
  */
 
 (function() {
@@ -19,10 +22,6 @@
 
         var vm = this;
         vm.pass = '';
-
-        pictUpdater.unzip().then(function() {
-            console.log('GO');
-        });
 
         if (!havePass()) {
             $ionicPopup.show({
@@ -53,9 +52,7 @@
                                 $timeout(function() {
                                     loadingBarMessage = 'Unzipping pictographs';
                                     loadingBarCode = 'unzip';
-                                    loadingBarValue = 50;
-                                    updateBar();
-                                    $timeout(function() {
+                                    pictUpdater.unzip(onProgress).then(function() {
                                         loadingBarValue = 100;
                                         loadingBarMessage = 'Complete';
                                         loadingBarCode = 'end';
@@ -64,7 +61,7 @@
                                             $ionicLoading.hide();
                                             $location.path('/text');
                                         },1000);
-                                    }, 10000)
+                                    });
                                 }, 10000);
                             }
                         }
@@ -76,9 +73,20 @@
             $location.path('/text');
         }
 
+        /////////////////////////////
 
+        /**
+         * Executed when unzip process advances
+         * @param progress {{ new progress }}
+         */
+        function onProgress(progress) {
+            loadingBarValue = Math.round((progress.loaded / progress.total) * 100);
+            updateBar();
+        }
 
-
+        /**
+         * Changes the view template with new progress values
+         */
         function updateBar() {
             $ionicLoading.show({
                 'template': "<span translate='spl_"+loadingBarCode+"'>" + loadingBarMessage + "</span>"
@@ -86,10 +94,16 @@
             });
         }
 
+        /**
+         * Saves the password in local storage
+         */
         function savePass() {
             $window.localStorage['mainPass'] = vm.pass;
         }
 
+        /**
+         * @returns {boolean} {{ True if password exists, otherwise false}}
+         */
         function havePass() {
             return !angular.isUndefined($window.localStorage['mainPass']);
         }

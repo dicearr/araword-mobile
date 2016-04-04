@@ -1,5 +1,5 @@
 /**
- * Created by diego on 29/02/16.
+ * Created by Diego on 29/02/16.
  *
  * Manages views, controllers and paths.
  */
@@ -24,7 +24,7 @@
                 controllerAs: 'splash'
             })
 
-            // Text editor (main route)
+            // Text editor
             .state('text', {
                 url: '/text',
                 templateUrl: 'templates/text.html',
@@ -32,14 +32,14 @@
                 controllerAs: 'text'
             })
 
-            // Settings
+            // Profile settings
             .state('settings', {
                 url: '/settings',
                 templateUrl: 'templates/settings.html',
                 controller: 'settingsController',
                 controllerAs: 'sett'
             })
-
+            // Control access settings
             .state('access', {
                 url: '/access',
                 templateUrl: 'templates/access.html',

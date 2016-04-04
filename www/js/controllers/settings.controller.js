@@ -37,6 +37,9 @@
 
         //////////////////////
 
+        /**
+         * Updates styles to be fetched from the view.
+         */
         function updateStyles() {
             vm.fontStyle = {
                 'font-size': vm.modifiedConfig['fontSize'] + 'px'
@@ -47,11 +50,20 @@
             };
         }
 
+        /**
+         * Shows the color bar when any type is tapped
+         * @param event {{ used to positioning popover }}
+         * @param type {{ type tapped }}
+         */
         function showColorBar(event, type) {
             $scope.colorsBar.show(event);
             typeSelected = type;
         }
 
+        /**
+         * Chooses a color from the popover.
+         * @param color {{ choosen color }}
+         */
         function selectColor(color) {
             if (!angular.isUndefined(typeSelected)) {
                 typeSelected['color'] = color;

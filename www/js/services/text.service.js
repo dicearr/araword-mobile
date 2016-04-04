@@ -19,12 +19,14 @@
         var radius = 3;
         var caretPosition = 0;
         var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='};
+        var text = [];
 
         var service = {
             processEvent: processEvent,
             deleteWord: deleteWord,
             setCaret: setCaret,
-            addEmptyWord: addEmptyWord
+            addEmptyWord: addEmptyWord,
+            text: text
         };
 
         if(!verbsdb.ready()) {
@@ -78,7 +80,7 @@
                                 // We concatenate all the words in a simple String so as to can compare database
                                 // results and know if our text contains any compound word.
                                 var nextWordsValues = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length);
-                                var text = nextWordsValues.join(' ');
+                                var text = nextWordsValues.join(' ').replace(/[.,]/g,'');
                                 var match = {
                                     'value': simpleWord.value,
                                     'pictos': [emptyPicto],
@@ -91,16 +93,17 @@
                                 for(var i=0; i<compounds.length; i++) {
                                     var comp = compounds[i];
                                     var len = comp.word.length;
+                                    var inftext = text.replace(nextWordsValues[0],inf);
 
                                     // If it's a verb compound can start with it's infinitive form
                                     var isVerbAndInfMatches = (!angular.isUndefined(inf)
-                                        && text.replace(nextWordsValues[0],inf).indexOf(comp.word)==0);
+                                        && inftext.indexOf(comp.word)==0);
                                     if ((text.indexOf(comp.word)==0 || isVerbAndInfMatches )
-                                            && (text.charAt(len)==' ' || (text.length <= len))) {
+                                            && ((!angular.isUndefined(inf) && inftext.charAt(len)==' ')
+                                                || text.charAt(len)==' ' || (text.length <= len))) {
                                         var newLength = comp.word.split(' ').length;
                                         // If matches and it's longest we replace match with the new compound word
                                         if (match == null || newLength >= match.words ) {
-                                            console.log(comp.word);
                                             if (isVerbAndInfMatches && newLength>1) {
                                                 comp.word = comp.word.replace(inf,simpleWord.value);
                                             }
@@ -121,6 +124,7 @@
                                 results[simpleWord.position] = match;
                                 resolve();
                             }, function () {
+                                console.log('Not found='+simpleWord.value);
                                 // If word it's not in our database we use empty pictograph
                                 results[simpleWord.position] = {
                                     'value': simpleWord.value,
@@ -138,7 +142,6 @@
             // Resutls looks like
             // [ {'value': 'de color', 'words': 2, 'pictos': [*]}, {'value': 'color', 'words': 1, 'pictos': [*]} ]
             $q.all(promises).then(function() {
-
                 for(var i=0; i<results.length; i++) {
                     var pos = textContext.minIndex;
                     // If we've to change the word
@@ -152,6 +155,7 @@
                         }
                         // If not we simply modify simple word values
                         else {
+                            console.log('Modifiy. POs='+pos+' val='+results[i].value+' pict='+results[i].pictos.length);
                             text[pos].value = results[i].value;
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;

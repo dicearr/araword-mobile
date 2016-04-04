@@ -38,6 +38,7 @@
          */
         function getWordsStartingWith(word) {
             console.log('Searching for '+word.toLowerCase());
+            word = word.replace(/[.,]/g,'');
             return $q(function(resolve,reject){
                 // Case insensitive
                 var query = "SELECT * FROM ArawordView WHERE word like \'" + word.toLowerCase() +" \%\'" +
@@ -59,7 +60,8 @@
          * @returns {*} Promise
          */
         function getVerbsStartingWith(form, infinitive) {
-
+            form = form.replace(/[.,]/g,'');
+            console.log('Searching for '+form.toLowerCase());
             return $q(function(resolve,reject){
                 // Case insensitive
                 var query = "SELECT * FROM ArawordView WHERE word like \'" + form.toLowerCase() +" \%\'" +
@@ -77,10 +79,19 @@
             });
         }
 
+        /**
+         * Allows you to add new pictograph to the database
+         * @param word {{ Word }}
+         * @param picto {{ [ 'type':1, 'picto':'foo_bar.jpeg' ] }}
+         * @returns {promise}
+         */
         function newPicto(word,picto) {
+            word = word.replace(/[.,]/g,'');
             return $q(function(resolve,reject) {
                 var query = "INSERT INTO main(word, idL, idT, name) VALUES(?,?,?,?)";
                 var params = [word.toLowerCase(),0,picto.type,picto.picto];
+
+                console.log(JSON.stringify(params));
 
                 document.addEventListener('deviceready', executeInsert);
 

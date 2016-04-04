@@ -1,5 +1,7 @@
 /**
  * Created by diego on 17/02/16.
+ *
+ * Manages procedures related to pictos like database unzipping or download new pictos
  */
 
 (function() {
@@ -29,7 +31,13 @@
 
         };
 
-        function unzip() {
+        /**
+         * Tries to unzip the picto database, if pictos are already unzipped
+         * does nothing.
+         * @param progressCallback {{ callback executed each progress event }}
+         * @returns {promise}
+         */
+        function unzip(progressCallback) {
 
             return $q(function(resolve,reject){
 
@@ -53,7 +61,7 @@
                                             zip.unzip(destDirZip+fileName, dirUrl+dirName,
                                                 function (result) {
                                                     resolve(result);
-                                                });
+                                                },progressCallback);
                                         }, function (error) {
                                             console.log(JSON.stringify(error));
                                             reject(error);

@@ -1,7 +1,8 @@
 /**
  * Created by diego on 28/03/16.
+ *
+ * Manages the acces control permissions.
  */
-
 (function() {
     'use strict';
 
@@ -13,6 +14,7 @@
 
     function accessService($window) {
 
+        // Permissions set
         var permissions = {
             'toShare': true,
             'toSave' : true,
@@ -33,11 +35,16 @@
 
         ///////////////////////
 
-
+        /**
+         * Stores permissions.
+         */
         function saveConfig() {
             $window.localStorage['perms'] = JSON.stringify(service.permissions);
         }
 
+        /**
+         * Restores permissions.
+         */
         function restoreConfig() {
             service.permissions = JSON.parse($window.localStorage['perms'] || JSON.stringify(permissions));
         }
