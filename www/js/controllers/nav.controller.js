@@ -12,11 +12,11 @@
 
     navController.$inject = ['$ionicPopover','$scope','accessService',
         '$ionicPopup','$window','$cordovaImagePicker', 'araworddb',
-        '$cordovaFile','textAnalyzer','$location'];
+        '$cordovaFile','textAnalyzer','$location','docsService','$q'];
 
     function navController($ionicPopover, $scope, accessService, $ionicPopup,
                            $window, $cordovaImagePicker, araworddb, $cordovaFile,
-                           textAnalyzer, $location) {
+                           textAnalyzer, $location, docsService,$q) {
 
         var vm = this;
         vm.showMenu = showMenu;
@@ -82,7 +82,7 @@
 
         /**
          * Shows the login popup and executes callback if login is correct.
-         * @param callback {{ function to be executed on successful login }}
+         * @param {function} callback Function to be executed on successful login
          */
         function login(callback) {
             // Password written model
@@ -193,14 +193,7 @@
                                 e.preventDefault();
                             } else {
                                 console.log(vm.docName);
-                                $cordovaFile.writeFile(cordova.file.dataDirectory,vm.docName+'.araw',textAnalyzer.text,true)
-                                    .then(function(res) {
-                                        console.log(JSON.stringify(res));
-                                        $scope.menu.hide();
-                                    }, function(err) {
-                                        console.log(JSON.stringify(err));
-                                        $scope.menu.hide();
-                                    })
+                                docsService.saveDoc(textAnalyzer.text,null,vm.docName);
                             }
                         }
                     }
@@ -214,77 +207,32 @@
          */
         function loadDoc() {
             vm.listFiles = [];
-            var entries = listDir(cordova.file.dataDirectory, callback);
+            docsService.getDocsList(null)
+                .then(function(files) {
 
-            function callback(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isFile && entry.nativeURL.lastIndexOf('.araw')==(entry.nativeURL.length-5)){
-                        var separator = entry.nativeURL.lastIndexOf('/');
-                        vm.listFiles.push({'name': entry.nativeURL.substr(separator+1)});
+                    vm.listFiles = files;
+                    vm.fileToOpen = vm.listFiles[0].name;
 
-                    }
-                });
-
-                vm.fileToOpen = vm.listFiles[0].name;
-                $ionicPopup.show({
-                    templateUrl: 'templates/popups/listFiles.html',
-                    title: 'Select a file',
-                    scope: $scope,
-                    buttons: [
-                        { text: 'Cancel' },
-                        {
-                            text: '<b>Open</b>',
-                            type: 'button-positive',
-                            onTap: function(e) {
-                                if(!vm.fileToOpen) {
-                                    e.preventDefault();
-                                } else {
-                                    $cordovaFile.readAsText(cordova.file.dataDirectory,vm.fileToOpen)
-                                        .then(function(succ) {
-                                            var vec = JSON.parse(succ);
-                                            for(var i=0; i<vec.length;i++) {
-                                                if(i<textAnalyzer.text.length) {
-                                                    textAnalyzer.text[i] = vec[i];
-                                                } else {
-                                                    textAnalyzer.text.push(vec[i]);
-                                                }
-                                            }
-                                            $scope.menu.hide();
-                                        }, function(err) {
-                                            console.log(JSON.stringify(err));
-                                        })
+                    $ionicPopup.show({
+                        templateUrl: 'templates/popups/listFiles.html',
+                        title: 'Select a file',
+                        scope: $scope,
+                        buttons: [
+                            { text: 'Cancel' },
+                            {
+                                text: '<b>Open</b>',
+                                type: 'button-positive',
+                                onTap: function(e) {
+                                    if(!vm.fileToOpen) {
+                                        e.preventDefault();
+                                    } else {
+                                        docsService.openDoc(null,vm.fileToOpen);
+                                    }
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    });
                 });
-
-            }
-
-
-        }
-
-        /**
-         * List all the files in a path and executes callback when finished.
-         * @param path {{ directory }}
-         * @param callback {{ function to be executed }}
-         */
-        function listDir(path, callback){
-            window.resolveLocalFileSystemURL(path,
-                function (fileSystem) {
-                    var reader = fileSystem.createReader();
-                    reader.readEntries(
-                        function (entries) {
-                            callback(entries);
-                        },
-                        function (err) {
-                            console.log(err);
-                        }
-                    );
-                }, function (err) {
-                    console.log(err);
-                }
-            );
         }
     }
 
