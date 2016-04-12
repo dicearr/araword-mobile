@@ -71,7 +71,6 @@
                 background: 'white',
                 onrendered: function(canvas) {
                     var image = canvas.toDataURL("image/jpeg");
-                    window.open(image);
                     $cordovaSocialSharing
                         .share(null, null, image, null) // Share via native share sheet
                         .then(function(result) {
