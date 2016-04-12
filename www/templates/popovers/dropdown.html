@@ -4,6 +4,6 @@
             <button class="button button-icon button-full icon ion-archive" ng-click="nav.saveDoc()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toSave']"></button>
             <button class="button button-icon button-full icon ion-folder" ng-click="nav.loadDoc()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toLoad']"></button>
             <button class="button button-icon button-full icon ion-plus-round" ng-click="nav.newPicto()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toAdd']"></button>
-            <button class="button button-icon button-full icon ion-help" ng-click=""></button>
+            <button class="button button-icon button-full icon ion-help" ng-click="nav.help()"></button>
         </div>
 </ion-popover-view>

@@ -24,6 +24,7 @@
         vm.closeMenus = closeMenus;
         vm.login = login;
         vm.pickImage = pickImage;
+        vm.otherFile = null;
 
         // Options popover [Configuration, Save, Load, Add picto, Info]
         $ionicPopover.fromTemplateUrl('templates/popovers/dropdown.html', {
@@ -48,7 +49,21 @@
         vm.newPict = {'type': 0}; // new picto info (model)
         vm.newPictWord = ''; // new picto word (model)
 
+        vm.help = help;
+
         ///////////////
+
+        function help() {
+            $ionicPopup.alert({
+                title: 'Acerca de Araword',
+                template: '<p style="text-align: center">**Desarrollador**<br>Diego Ceresuela Arrazola (EINA)<br>' +
+                '**Director**<br>Dr. Joaquín Ezpeleta (EINA)<br>' +
+                '**Colaborador**<br>José Manuel Marcos (CPEE Alborada)<br>' +
+                '**Entidades**<br>Universidad de Zaragoza (UZ)<br>' +
+                'Colegio público de educación especial Alborada (CPEE Alborada)<br>' +
+                '** Pictogramas ARASAAC http://arasaac.org **</p>'
+            });
+        }
 
         /**
          * Displays the options popover.
@@ -194,6 +209,7 @@
                             } else {
                                 console.log(vm.docName);
                                 docsService.saveDoc(textAnalyzer.text,null,vm.docName);
+                                closeMenus();
                             }
                         }
                     }
@@ -227,6 +243,7 @@
                                         e.preventDefault();
                                     } else {
                                         docsService.openDoc(null,vm.fileToOpen);
+                                        closeMenus();
                                     }
                                 }
                             }
