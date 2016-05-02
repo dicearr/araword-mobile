@@ -18,7 +18,7 @@
         var permissions = {
             'toShare': true,
             'toSave' : true,
-            'toLoad':false,
+            'toLoad':true,
             'toAdd': true,
             'toSpeech': true
         };
