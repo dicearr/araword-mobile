@@ -86,20 +86,25 @@
          * @param word = word in which change has happened
          */
         function onChange(word) {
+            console.log('CHANGE_FIRED');
             if(angular.isUndefined(word.unbind) || !word.unbind) {
-                console.log('Binded!');
-                // Common case, are in KeyUp
+                // Common case
                 var canAnalyze = true;
                 if (word.value.charAt(word.value.length-1)==' ') {
                     word.value = word.value.substr(0,word.value.length-1);
                     canAnalyze &= word.words==1;
+                    console.log('\tSEPARATOR_ADDED canAnalyze='+canAnalyze);
                 }
 
                 if (word.value.length==0) {
+                    console.log('\tWORD_DELETED');
                     textAnalyzer.deleteWord(word,vm.myText);
                 } else if (canAnalyze){
                     textAnalyzer.processEvent(word, vm.myText);
+                    console.log('\tANALYZING_WORD');
                 }
+            } else {
+                console.log('\tNOT_BINDED');
             }
         }
 
@@ -144,9 +149,12 @@
          * @param word = The word that must be checked.
          */
         function onKeyUp(event, word) {
-            if (word.value.length==0 && event.keyCode == 8) {
+            if (event.target.value.length==0) {
                 textAnalyzer.deleteWord(word,vm.myText);
-            } else if (vm.myText.indexOf(word)==vm.myText.length-1 && event.keyCode == 32) {
+            } else if (vm.myText.indexOf(word)==vm.myText.length-1 &&
+                ( event.target.value === word.value+" "
+                || word.value == ""
+                && (event.target.value.charAt(event.target.value.length-1) == ' '))) { // event.keyCode doesn't work. Workaround.
                 textAnalyzer.addEmptyWord(word,vm.myText);
             }
         }
@@ -253,7 +261,6 @@
         function pickImage() {
             $cordovaImagePicker.getPictures({'maximumImagesCount': 1})
                 .then(function(result){
-                    console.log('Image='+result[0]);
                     vm.optionsPopup.close();
                     var separator = result[0].lastIndexOf('/');
                     var path = result[0].substr(0,separator);

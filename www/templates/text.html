@@ -22,13 +22,14 @@
                    ng-change="text.onChange(word)"
                    ng-keyup="text.onKeyUp($event,word)"
                    ng-model="word.value"
-                   ng-model-options="{ debounce: 850 }"
+                   ng-model-options="{ debounce: { default:1000, blur:0 } }"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
-                   ng-hide="text.conf.configuration['position']"
+                   ng-if="!text.conf.configuration['position']"
                    class="word"
                    ng-style="text.conf.styles['inputStyle']"
-                   style="font-size: inherit;"/>
+                   style="font-size: inherit;"
+                   single/>
 
             <img class="picto"
                  ng-src="{{  word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
@@ -41,13 +42,14 @@
                    ng-change="text.onChange(word)"
                    ng-keyup="text.onKeyUp($event,word)"
                    ng-model="word.value"
-                   ng-model-options="{ debounce: 850 }"
+                   ng-model-options="{ debounce: { default:1000, blur:0 } }"
                    focus="{{ word.autofocus }}"
                    pu-elastic-input
-                   ng-show="text.conf.configuration['position']"
+                   ng-if="text.conf.configuration['position']"
                    class="word"
                    ng-style="text.conf.styles['inputStyle']"
-                   style="font-size: inherit;"/>
+                   style="font-size: inherit;"
+                   single />
         </div>
         </div>
     </ion-content>

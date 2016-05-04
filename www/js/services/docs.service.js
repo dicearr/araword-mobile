@@ -16,7 +16,9 @@
 
         function docsService($cordovaFile, $q, textAnalyzer, configService) {
 
-            var docs_default_path = 'file:///storage/emulated/0/AraWord';
+            var docs_default_path = "";
+            document.addEventListener('deviceready', function(){docs_default_path=cordova.file.externalDataDirectory;}, false);
+
             var empty_picto = {
                 'picto': '',
                 'type': '3',
@@ -35,7 +37,7 @@
             ////////////////
 
             /**
-             * Returns all the files with '.aw' extension inside of /AraWord folder
+             * Returns all the files with '.awz' extension inside of /AraWord folder
              * @returns {[Entry]} Entries File objects to work with
              */
             function getDocsList(path) {
@@ -151,22 +153,27 @@
                     return $q(function (resolve, reject) {
                         $cordovaFile.removeRecursively(path, 'exportbbdd')
                             .then(function () {
-                                zip.unzip(path + '/' + docName,
-                                    path,
-                                    internal_unzip,
-                                    internal_unzip);
-
-                                function internal_unzip() {
-                                    zip.unzip(path + '/' + docName, path, function (code) {
-                                        if (code != 0) {
-                                            reject('ERROR');
-                                        } else {
-                                            resolve('SUCCESS')
-                                        }
-                                    })
+                                internal_unzip(reject,resolve);
+                            },function(err) {
+                                if (err.code==1) {
+                                    internal_unzip(reject,resolve);
+                                } else {
+                                    console.log(JSON.stringify(err));
                                 }
                             });
-                    })
+                    });
+
+                    function internal_unzip(reject,resolve) {
+                        zip.unzip(path + '/' + docName, path, function (code) {
+                            if (code != 0) {
+                                console.log('error');
+                                reject('ERROR');
+                            } else {
+                                console.log('right');
+                                resolve('SUCCESS')
+                            }
+                        })
+                    }
                 }
 
                 /**

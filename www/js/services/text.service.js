@@ -44,7 +44,6 @@
          * @param text = The whole text
          */
         function processEvent(w, text) {
-
             var wordPosition = text.indexOf(w);
             var textContext = [];
             textContext = getTextContext(wordPosition, radius);
@@ -124,7 +123,6 @@
                                 results[simpleWord.position] = match;
                                 resolve();
                             }, function () {
-                                console.log('Not found='+simpleWord.value);
                                 // If word it's not in our database we use empty pictograph
                                 results[simpleWord.position] = {
                                     'value': simpleWord.value,
@@ -155,7 +153,6 @@
                         }
                         // If not we simply modify simple word values
                         else {
-                            console.log('Modifiy. POs='+pos+' val='+results[i].value+' pict='+results[i].pictos.length);
                             text[pos].value = results[i].value;
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;
@@ -245,7 +242,7 @@
                 text[pos]['pictos'][0] = emptyPicto;
                 text[pos]['pictInd'] = 0;
             }
-            setCaret(text, pos==0?pos:pos-1);
+            setCaret(text, pos<=0?0:pos-1);
         }
 
         /**
