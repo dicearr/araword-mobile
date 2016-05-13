@@ -12,21 +12,23 @@
         .module('AraWord')
         .factory('textAnalyzer', textAnalyzer);
 
-    textAnalyzer.$inject = ['araworddb','$q','verbsdb'];
+    textAnalyzer.$inject = ['araworddb','$q','verbsdb','accessService'];
 
-    function textAnalyzer(araworddb, $q, verbsdb){
+    function textAnalyzer(araworddb, $q, verbsdb, accessService){
 
         var radius = 3;
         var caretPosition = 0;
         var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='};
         var text = [];
+        var errors = [];
 
         var service = {
             processEvent: processEvent,
             deleteWord: deleteWord,
             setCaret: setCaret,
             addEmptyWord: addEmptyWord,
-            text: text
+            text: text,
+            errors: errors
         };
 
         if(!verbsdb.ready()) {
@@ -242,7 +244,7 @@
                 text[pos]['pictos'][0] = emptyPicto;
                 text[pos]['pictInd'] = 0;
             }
-            setCaret(text, pos<=0?0:pos-1);
+            setCaret(text, pos<=0?text.length-1:pos-1);
         }
 
         /**

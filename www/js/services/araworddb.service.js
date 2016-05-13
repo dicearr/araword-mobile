@@ -10,9 +10,9 @@
         .module('AraWord')
         .factory('araworddb', araworddb);
 
-    araworddb.$inject = ['$cordovaSQLite','$q'];
+    araworddb.$inject = ['$cordovaSQLite','$q','accessService'];
 
-    function araworddb($cordovaSQLite, $q) {
+    function araworddb($cordovaSQLite, $q, accessService) {
 
         var db = undefined;
         var db = undefined;
@@ -111,7 +111,8 @@
          * @param reject = promise reject
          */
         function executeQuery(compounds, words, query, resolve, reject) {
-            $cordovaSQLite.execute(db, query).then(function(res) {
+            db.executeSql(query,[],function(res) {
+                console.log(JSON.stringify(res));
                 for(var i = 0; i < res.rows.length; i++) {
                     var word = res.rows.item(i).word;
                     var pictoName = res.rows.item(i).name;
@@ -142,6 +143,7 @@
                 }
                 resolve(compounds);
             }, function (err) {
+                console.log(JSON.stringify(err));
                 reject(err);
             });
         }
@@ -154,7 +156,8 @@
             document.addEventListener('deviceready', openDB, false);
 
             function openDB() {
-                db = window.sqlitePlugin.openDatabase( {name: dbname, createFromLocation: 1} );
+                db = window.sqlitePlugin.openDatabase( {name: dbname, createFromLocation: 1, location: 'default'} );
+                console.log(JSON.stringify(db));
             }
         }
 

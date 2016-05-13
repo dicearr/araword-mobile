@@ -17,12 +17,13 @@
         '$cordovaFile','araworddb','$scope',
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
-        '$cordovaImagePicker'];
+        '$cordovaImagePicker','$window'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
                             $scope, $ionicPopup, IonicClosePopupService,
-                            $cordovaSocialSharing, accessService, $cordovaImagePicker) {
+                            $cordovaSocialSharing, accessService, $cordovaImagePicker,
+                            $window) {
 
         var vm = this;
         vm.myText = [{
@@ -61,6 +62,7 @@
             araworddb.startService();
         }
 
+
         //////////////
 
         function shareText() {
@@ -86,25 +88,20 @@
          * @param word = word in which change has happened
          */
         function onChange(word) {
-            console.log('CHANGE_FIRED');
             if(angular.isUndefined(word.unbind) || !word.unbind) {
                 // Common case
                 var canAnalyze = true;
                 if (word.value.charAt(word.value.length-1)==' ') {
+                    vm.message = 'separator';
                     word.value = word.value.substr(0,word.value.length-1);
                     canAnalyze &= word.words==1;
-                    console.log('\tSEPARATOR_ADDED canAnalyze='+canAnalyze);
                 }
 
                 if (word.value.length==0) {
-                    console.log('\tWORD_DELETED');
                     textAnalyzer.deleteWord(word,vm.myText);
                 } else if (canAnalyze){
                     textAnalyzer.processEvent(word, vm.myText);
-                    console.log('\tANALYZING_WORD');
                 }
-            } else {
-                console.log('\tNOT_BINDED');
             }
         }
 
@@ -128,9 +125,11 @@
                 $cordovaFile.readAsDataURL(dirUrl+dirName+'/pictos_12', picto['picto'])
                     .then(function(success){
                         picto['base64'] = success;
-                    },function(){
+                    },function(err){
                         picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
                     });
+
+
             }
 
         }
@@ -151,7 +150,7 @@
         function onKeyUp(event, word) {
             if (event.target.value.length==0) {
                 textAnalyzer.deleteWord(word,vm.myText);
-            } else if (vm.myText.indexOf(word)==vm.myText.length-1 &&
+            } else if (
                 ( event.target.value === word.value+" "
                 || word.value == ""
                 && (event.target.value.charAt(event.target.value.length-1) == ' '))) { // event.keyCode doesn't work. Workaround.
@@ -265,7 +264,7 @@
                     var separator = result[0].lastIndexOf('/');
                     var path = result[0].substr(0,separator);
                     var file = result[0].substr(separator+1);
-                    var dirUrl = cordova.file.dataDirectory;
+                    var dirUrl = cordova.file.applicationStorageDirectory;
                     var dirName = 'pictos/pictos_12';
                     var type = undefined;
                     $cordovaFile.readAsDataURL(path,file)

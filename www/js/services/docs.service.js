@@ -12,9 +12,9 @@
             .module('AraWord')
             .factory('docsService', docsService);
 
-        docsService.$inject = ['$cordovaFile', '$q', 'textAnalyzer', 'configService'];
+        docsService.$inject = ['$cordovaFile', '$q', 'textAnalyzer', 'configService','$window'];
 
-        function docsService($cordovaFile, $q, textAnalyzer, configService) {
+        function docsService($cordovaFile, $q, textAnalyzer, configService, $window) {
 
             var docs_default_path = "";
             document.addEventListener('deviceready', function(){docs_default_path=cordova.file.externalDataDirectory;}, false);
@@ -335,7 +335,7 @@
              */
             function listFiles(search_path, callback) {
                 return $q(function (resolve, reject) {
-                    window.resolveLocalFileSystemURL(search_path,
+                    $window.resolveLocalFileSystemURL(search_path,
                         function (fileSystem) {
                             var reader = fileSystem.createReader();
                             reader.readEntries(function (success) {

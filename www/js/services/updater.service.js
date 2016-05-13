@@ -11,9 +11,9 @@
         .module('AraWord')
         .factory('pictUpdater',  pictUpdater);
 
-    pictUpdater.$inject = ['$cordovaFile','$q'];
+    pictUpdater.$inject = ['$cordovaFile','$q','$window'];
 
-    function pictUpdater($cordovaFile, $q) {
+    function pictUpdater($cordovaFile, $q, $window) {
 
         var fileName = 'pictos.zip';
         var dirName = 'pictos';
@@ -45,9 +45,9 @@
 
                 function unzipHandler() {
 
-                    var dirUrl = cordova.file.dataDirectory;
+                    var dirUrl =  cordova.file.dataDirectory;
                     var origDirZip = cordova.file.applicationDirectory + 'www';
-                    var destDirZip = cordova.file.dataDirectory;
+                    var destDirZip = dirUrl;
 
                     $cordovaFile.checkDir(dirUrl,dirName)
                         .then(function(){
@@ -71,6 +71,8 @@
                                     reject(error);
                                 });
                         });
+
+
                 };
             });
         };
