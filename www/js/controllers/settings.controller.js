@@ -12,9 +12,11 @@
         .module('AraWord')
         .controller('settingsController', settingsController);
 
-    settingsController.$inject = ['configService','$ionicPopover','$scope','$translate'];
+    settingsController.$inject = ['configService','$ionicPopover','$scope','$translate','verbsdb',
+        'araworddb', '$rootScope', '$timeout','textAnalyzer'];
 
-    function settingsController(configService, $ionicPopover, $scope) {
+    function settingsController(configService, $ionicPopover, $scope, $translate, verbsdb,
+                                araworddb, $rootScope, $timeout,textAnalyzer) {
 
         var vm = this;
 
@@ -32,6 +34,8 @@
         vm.selectColor = selectColor;
         vm.saveConfig = saveConfig;
         vm.updateStyles = updateStyles;
+        vm.supported = configService.configuration.supportedLangs;
+        vm.canChangeLang = textAnalyzer.text.length>1;
 
         var typeSelected = undefined;
 
@@ -77,6 +81,13 @@
          * Saves the whole configuration
          */
         function saveConfig() {
+            if (vm.modifiedConfig.docLang != configService.configuration.docLang) {
+                $timeout(function () {
+                    $rootScope.$broadcast('reloadText', 'newLang');
+                });
+            }
+            verbsdb.setLang(vm.modifiedConfig.docLang);
+            araworddb.setLang(vm.modifiedConfig.docLang);
             configService.configuration = angular.copy(vm.modifiedConfig);
             configService.saveConfig();
         }

@@ -28,7 +28,8 @@
             setCaret: setCaret,
             addEmptyWord: addEmptyWord,
             text: text,
-            errors: errors
+            errors: errors,
+            docName: ''
         };
 
         if(!verbsdb.ready()) {
@@ -46,6 +47,7 @@
          * @param text = The whole text
          */
         function processEvent(w, text) {
+            var deferred = $q.defer();
             var wordPosition = text.indexOf(w);
             var textContext = [];
             textContext = getTextContext(wordPosition, radius);
@@ -68,7 +70,7 @@
                 promises.push(
                     $q(function(resolve) {
                         // If it's a verb we have to use the infinitive instead of the given form
-                        var promise = verbsdb.getInfinitive(simpleWord.value)
+                        var promise = verbsdb.getInfinitive(simpleWord.value.replace(/[.,]/g,''))
                             .then(function(infinitive){
                                 inf = infinitive;
                                 return araworddb.getVerbsStartingWith(simpleWord.value, inf);
@@ -253,6 +255,7 @@
          */
         function setCaret(text, newCaretPosition) {
             // Can be a deleted word because of a compound
+            console.log('CARET_TRACK['+caretPosition+'->'+newCaretPosition+']');
             if (!angular.isUndefined(text[caretPosition])) {
                 text[caretPosition].autofocus = false;
             }

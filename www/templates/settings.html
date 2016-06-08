@@ -2,101 +2,106 @@
 <ion-view>
 
     <ion-nav-buttons side="right">
-        <button class="button button-icon ion-volume-high" ng-disabled="true"></button>
-        <button class="button button-icon ion-android-share-alt posit" ng-disabled="true"></button>
+        <button class="button button-icon"
+                ng-disabled="true"><i class="icon ion-paper-airplane"></i></button>
+        <button class="button button-icon" ng-disabled="true"><i class="icon ion-volume-high"></i></button>
+        <button class="button button-icon posit" ng-disabled="true"><i class="icon ion-android-share-alt"></i></button>
         <button ng-controller='navController as nav'
-                class="button button-icon ion-navicon"
+                class="button button-icon"
                 style="padding-left: 17px; padding-right: 10px"
-                ng-click="nav.showMenu($event)"></button>
+                ng-click="nav.showMenu($event)"><i class="icon ion-navicon"></i></button>
     </ion-nav-buttons>
 
     <ion-content class="has-header" overflow-scroll="false" style="display: block">
 
-        <ion-list>
-            <label class="item item-input item-select">
-                <div class="input-label" translate="sett_langConf">
-                    Language
-                </div>
-                <select>
-                    <option>en</option>
-                    <option selected>es</option>
-                    <option>cat</option>
-                </select>
-            </label>
-        </ion-list>
+        <label class="item item-input item-select">
+            <div class="input-label" translate="sett_langConf">
+                Language
+            </div>
+            <select ng-model="sett.modifiedConfig['docLang']" ng-disabled="sett.canChangeLang">
+                <option ng-repeat="lang in sett.supported">{{lang}}</option>
+            </select>
+        </label>
 
-        <!-- Picto preview -->
-        <div class="card" style="float: left; height: 100%">
-            <div class="item item-divider" style="text-align: center">
-                Pictograph preview
+
+        <div class="row responsive-sm">
+            <div class="col">
+                <!-- Picto preview -->
+                <div class="card" style="float: left; height: 100%">
+                    <div class="item item-divider" style="text-align: center">
+                        Pictograph preview
+                    </div>
+                    <div style="float: left; margin: 50px; text-align: center;" class="item padding"
+                         ng-style="sett.modifiedConfig['borders'] && {'border': '4px solid yellow'} || {}">
+                        <span  ng-style="sett.fontStyle" ng-hide="sett.modifiedConfig['position']">AraWord</span>
+                        <img ng-style="sett.pictoStyle" class="picto padding" src="img/logo.png"/>
+                        <span  ng-style="sett.fontStyle" ng-hide="!sett.modifiedConfig['position']">AraWord</span>
+                    </div>
+                </div>
             </div>
-            <div style="float: left; margin: 50px; text-align: center;" class="item padding"
-                 ng-style="sett.modifiedConfig['borders'] && {'border': '4px solid yellow'} || {}">
-                <span  ng-style="sett.fontStyle" ng-hide="sett.modifiedConfig['position']">AraWord</span>
-                <img ng-style="sett.pictoStyle" class="picto padding" src="img/logo.png"/>
-                <span  ng-style="sett.fontStyle" ng-hide="!sett.modifiedConfig['position']">AraWord</span>
+            <div class="col">
+                <ion-list style="margin:auto">
+                    <!-- Pictos size configuration -->
+                    <div class="card">
+                        <div class="item item-divider" style="text-align: center" translate="sett_pictSize">
+                            Tamaño pictograma
+                        </div>
+                        <div class="item range">
+                            <input type="range"
+                                   name="pictoSize"
+                                   min="50"
+                                   max="200"
+                                   value="{{ sett.pictoSize }}"
+                                   ng-model="sett.modifiedConfig['pictoSize']"
+                                   style=" margin:auto;"
+                                   ng-change="sett.updateStyles()"/>
+                        </div>
+
+                    </div>
+                    <!-- End -->
+
+                    <!-- Font size configuration -->
+                    <div class="card">
+                        <div class="item item-divider" style="text-align: center" translate="sett_fontSize">
+                            Tamaño de letra
+                        </div>
+                        <div class="item range">
+                            <input type="range"
+                                   name="fontSize"
+                                   min="12"
+                                   max="40"
+                                   value="{{ sett.fontSize }}"
+                                   ng-model="sett.modifiedConfig['fontSize']"
+                                   style=" margin:auto;"
+                                   ng-change="sett.updateStyles()"/>
+                        </div>
+
+                    </div>
+                    <!-- End -->
+
+                    <!-- Gray scale configuration -->
+                    <div class="card">
+                        <div class="item item-divider" style="text-align: center" translate="sett_grayScale">
+                            Escala de grises
+                        </div>
+                        <div class="item range">
+                            <input type="range"
+                                   name="grayScale"
+                                   min="0"
+                                   max="100"
+                                   ng-model="sett.modifiedConfig['grayScale']"
+                                   style=" margin:auto;"
+                                   ng-change="sett.updateStyles()"/>
+                        </div>
+
+                    </div>
+                    <!-- End -->
+                </ion-list>
             </div>
+
         </div>
 
-
-
         <ion-list>
-            <!-- Pictos size configuration -->
-            <div class="card">
-                <div class="item item-divider" style="text-align: center" translate="sett_pictSize">
-                    Tamaño pictograma
-                </div>
-                <div class="item range">
-                    <input type="range"
-                           name="pictoSize"
-                           min="50"
-                           max="200"
-                           value="{{ sett.pictoSize }}"
-                           ng-model="sett.modifiedConfig['pictoSize']"
-                           style="max-width: 80%; margin:auto;"
-                           ng-change="sett.updateStyles()"/>
-                </div>
-
-            </div>
-            <!-- End -->
-
-            <!-- Font size configuration -->
-            <div class="card">
-                <div class="item item-divider" style="text-align: center" translate="sett_fontSize">
-                    Tamaño de letra
-                </div>
-                <div class="item range">
-                    <input type="range"
-                           name="fontSize"
-                           min="12"
-                           max="40"
-                           value="{{ sett.fontSize }}"
-                           ng-model="sett.modifiedConfig['fontSize']"
-                           style="max-width: 80%; margin:auto;"
-                           ng-change="sett.updateStyles()"/>
-                </div>
-
-            </div>
-            <!-- End -->
-
-            <!-- Gray scale configuration -->
-            <div class="card">
-                <div class="item item-divider" style="text-align: center" translate="sett_grayScale">
-                    Escala de grises
-                </div>
-                <div class="item range">
-                    <input type="range"
-                           name="grayScale"
-                           min="0"
-                           max="100"
-                           ng-model="sett.modifiedConfig['grayScale']"
-                           style="max-width: 80%; margin:auto;"
-                           ng-change="sett.updateStyles()"/>
-                </div>
-
-            </div>
-            <!-- End -->
-
             <!-- Borders configuration enabled/disabled -->
             <div class="item item-toggle" >
                 <p translate="sett_borders">Bordes de colores</p>

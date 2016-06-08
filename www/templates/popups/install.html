@@ -1,0 +1,12 @@
+<div class="list">
+    <label class="item item-input item-select">
+        <span translate="spl_lang">Language</span>
+        <select multiple ng-model='splash.models'
+                ng-options="lang.name for lang in splash.langs"
+                ng-change="splash.change()">
+        </select>
+    </label>
+    <input class="item item-input" style="margin-top: 4px" placeholder="Password" type="password"
+           ng-model="splash.pass"/>
+</div>
+

@@ -1,9 +1,11 @@
-<ion-popover-view class="secpopover" style="display: inline-block; width: auto; height: auto;">
-        <div class="list button-list" style="margin-bottom: 0%">
-            <button class="button button-icon button-full icon ion-gear-a" ng-click="nav.showSubMenu()"></button>
-            <button class="button button-icon button-full icon ion-archive" ng-click="nav.saveDoc()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toSave']"></button>
-            <button class="button button-icon button-full icon ion-folder" ng-click="nav.loadDoc()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toLoad']"></button>
-            <button class="button button-icon button-full icon ion-plus-round" ng-click="nav.newPicto()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toAdd']"></button>
-            <button class="button button-icon button-full icon ion-help" ng-click="nav.help()"></button>
+<ion-popover-view  style="width: auto;">
+        <div class="list button-list drop">
+            <button class="button button-icon button-full"
+                    style="margin-top: 1px"
+                    ng-click="nav.showSubMenu()"><i class="icon ion-gear-a"></i></button>
+            <button class="button button-icon button-full" ng-click="nav.saveDoc()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toSave']"><i class="icon ion-archive"></i></button>
+            <button class="button button-icon button-full" ng-click="nav.loadDoc()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toLoad']"><i class="icon ion-folder"></i></button>
+            <button class="button button-icon button-full" ng-click="nav.newPicto()" ng-disabled="!nav.acc.logged && !nav.acc.permissions['toAdd']"><i class="icon ion-plus-round"></i></button>
+            <button class="button button-icon button-full" ng-click="nav.help()"><i class="icon ion-help"></i></button>
         </div>
 </ion-popover-view>

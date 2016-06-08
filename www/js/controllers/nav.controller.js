@@ -105,12 +105,12 @@
 
             var myPopup = $ionicPopup.show({
                 template: '<input type="password" ng-model="nav.pass">',
-                title: 'Enter Password',
+                title: '<span translate="pu_pass">Enter Password</span>',
                 scope: $scope,
                 buttons: [
-                    { text: 'Cancel' },
+                    { text: '<span translate="com_cancel">Cancel</span>' },
                     {
-                        text: '<b>Save</b>',
+                        text: '<b translate="spl_cont">Continue</b>',
                         type: 'button-positive',
                         onTap: function(e) {
                             if (!vm.pass) {
@@ -135,8 +135,8 @@
             myPopup.then(function(res){
                 if(res) {
                     $ionicPopup.alert({
-                            title: 'WARNING!!',
-                            template: 'Now you are in admin mode, rememeber to restart the app so as to come back user mode.'
+                            title: '<span translate="adm_title">WARNING!!</span>',
+                            template: '<p translate="adm_message">Now you are in admin mode, rememeber to restart the app so as to come back user mode.</p>'
                     });
                     callback();
                 }
@@ -150,12 +150,12 @@
         function newPicto() {
             $ionicPopup.show({
                 templateUrl: 'templates/popups/newPicto.html',
-                title: 'Add new pictograph',
+                title: '<span translate="pu_addpict">Add pictograph</span>',
                 scope: $scope,
                 buttons: [
                     { text: 'Cancel' },
                     {
-                        text: '<b>Save</b>',
+                        text: '<b translate="com_save">Save</b>',
                         type: 'button-positive',
                         onTap: function(e) {
                             if (!vm.newPictWord || !vm.newPict.picto || !vm.newPict.origPath || !vm.newPict.destPath) {
@@ -178,14 +178,16 @@
         function pickImage() {
             $cordovaImagePicker.getPictures({'maximumImagesCount': 1})
                 .then(function(result){
-                    var separator = result[0].lastIndexOf('/');
-                    var path = result[0].substr(0,separator);
-                    var file = result[0].substr(separator+1);
-                    var dirUrl = cordova.file.dataDirectory;
-                    var dirName = 'pictos/pictos_12';
-                    vm.newPict.picto = file;
-                    vm.newPict.destPath = dirUrl+dirName;
-                    vm.newPict.origPath = path;
+                    if (result) {
+                        var separator = result[0].lastIndexOf('/');
+                        var path = result[0].substr(0,separator);
+                        var file = result[0].substr(separator+1);
+                        var dirUrl = cordova.file.dataDirectory;
+                        var dirName = 'pictos/pictos_12';
+                        vm.newPict.picto = file;
+                        vm.newPict.destPath = dirUrl+dirName;
+                        vm.newPict.origPath = path;
+                    }
                 });
         }
 
@@ -195,19 +197,18 @@
         function saveDocument() {
             $ionicPopup.show({
                 template: '<input type="text" ng-model="nav.docName"/>',
-                title: 'Set document name',
+                title: '<span translate="pu_saveDocTitle">Set document name</span>',
                 scope: $scope,
                 buttons: [
-                    { text: 'Cancel' },
+                    { text: '<span translate="com_cancel">Cancel</span>' },
                     {
-                        text: '<b>Save</b>',
+                        text: '<b translate="com_save">Save</b>',
                         type: 'button-positive',
                         onTap: function(e) {
                             if (!vm.docName) {
                                 //don't allow the user to close unless he enters wifi password
                                 e.preventDefault();
                             } else {
-                                console.log(vm.docName);
                                 docsService.saveDoc(textAnalyzer.text,null,vm.docName);
                                 closeMenus();
                             }
@@ -215,7 +216,8 @@
                     }
                 ]
             });
-            vm.docName = '';
+            vm.docName = textAnalyzer.docName.split('.')[0];
+
         }
 
         /**
@@ -227,16 +229,18 @@
                 .then(function(files) {
 
                     vm.listFiles = files;
-                    vm.fileToOpen = vm.listFiles[0].name;
+                    if (vm.listFiles[0]) {
+                        vm.fileToOpen = vm.listFiles[0].name;
+                    }
 
                     $ionicPopup.show({
                         templateUrl: 'templates/popups/listFiles.html',
-                        title: 'Select a file',
+                        title: '<span translate="pu_openDocTitle">Select a file</span>',
                         scope: $scope,
                         buttons: [
-                            { text: 'Cancel' },
+                            { text: '<span translate="com_cancel">Cancel</span>' },
                             {
-                                text: '<b>Open</b>',
+                                text: '<b translate="com_open">Open</b>',
                                 type: 'button-positive',
                                 onTap: function(e) {
                                     if(!vm.fileToOpen) {

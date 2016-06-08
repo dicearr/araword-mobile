@@ -20,6 +20,10 @@
 
         var translations = {
             'es': {
+                //common
+                com_save: 'Guardar',
+                com_cancel: 'Cancelar',
+                com_open: 'Abrir',
                 // templates/settings.html
                 sett_pictSize: 'Tamaño de pictograma',
                 sett_fontSize: 'Tamaño de letra',
@@ -47,10 +51,27 @@
                 spl_unzip: 'Descomprimiendo pictogramas',
                 spl_end: 'Completado',
                 spl_cont: 'Continuar',
-                spl_title: 'Configuración de idioma',
-                spl_lang: 'Idioma'
+                spl_title: 'Configuración inicial',
+                spl_lang: 'Idioma',
+                spl_dverbs: 'Descargando verbos',
+                spl_dpict: 'Descargando pictogramas',
+                spl_addpict: 'Añadiendo pictogramas',
+                // popups
+                pu_file: 'Fichero',
+                pu_choosepict: 'Elegir picto',
+                pu_addpict: 'Añadir picto',
+                pu_changetext: 'Cambiar texto',
+                pu_pass: 'Configura la contraseña',
+                pu_saveDocTitle: 'Elige nombre del documento',
+                pu_openDocTitle: 'Elige un archivo',
+                // admin alert
+                adm_title: '¡CUIDADO!',
+                adm_message: 'Araword se encuentra en modo administrador, recuerde salir de la aplicación para volver a modo usuario.'
             },
             'en': {
+                com_cancel: 'Cancel',
+                com_save: 'Save',
+                com_open: 'Open',
                 // templates/settings.html
                 sett_pictSize: 'Pictograph size',
                 sett_fontSize: 'Font size',
@@ -78,8 +99,22 @@
                 spl_unzip: 'Unzipping pictographs',
                 spl_end: 'Completed',
                 spl_cont: 'Continue',
-                spl_title: 'Language configuration',
-                spl_lang: 'Language'
+                spl_title: 'Initial configuration',
+                spl_lang: 'Language',
+                spl_dverbs: 'Downloading verbs',
+                spl_dpict: 'Downloading pictographs',
+                spl_addpict: 'Adding pictographs',
+                // popups
+                pu_file: 'File',
+                pu_choosepict: 'Choose picto',
+                pu_addpict: 'Add picto',
+                pu_changetext: 'Change text',
+                pu_pass: 'Enter a password',
+                pu_saveDocTitle: 'Set document name',
+                pu_openDocTitle: 'Choose a file',
+                // admin alert
+                adm_title: 'WARNING!',
+                adm_message: 'Now you are in admin mode, rememeber to restart the app so as to come back user mode.'
             }
         };
 

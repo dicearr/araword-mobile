@@ -12,3 +12,26 @@
     text-align: center;
 }
 
+.drop .button .icon:before {
+    font-size: 50px !important;
+}
+
+.bigger {
+    height: 55px !important;
+}
+
+.bigger .button {
+    height: 50px !important;
+}
+
+.bigger .button .icon:before {
+    font-size: 50px !important;
+}
+
+.bigger .title {
+    line-height: 55px !important;
+}
+
+.has-header {
+    top: 55px !important;
+}

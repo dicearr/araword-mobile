@@ -20,7 +20,8 @@
             'toSave' : true,
             'toLoad':true,
             'toAdd': true,
-            'toSpeech': true
+            'toSpeech': true,
+            'toSend': true
         };
 
 

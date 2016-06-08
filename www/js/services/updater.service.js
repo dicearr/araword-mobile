@@ -4,32 +4,148 @@
  * Manages procedures related to pictos like database unzipping or download new pictos
  */
 
-(function() {
+(function () {
     'use strict';
 
     angular
         .module('AraWord')
-        .factory('pictUpdater',  pictUpdater);
+        .factory('pictUpdater', pictUpdater);
 
-    pictUpdater.$inject = ['$cordovaFile','$q','$window'];
+    pictUpdater.$inject = ['$cordovaFile', '$q', '$window', 'configService', 'docsService', '$http', '$cordovaFileTransfer', 'araworddb'];
 
-    function pictUpdater($cordovaFile, $q, $window) {
+    function pictUpdater($cordovaFile, $q, $window, configService, docsService, $http, $cordovaFileTransfer, araworddb) {
 
-        var fileName = 'pictos.zip';
-        var dirName = 'pictos';
+        var pictosPath = undefined;
+
+        document.addEventListener('deviceready', function() {
+            pictosPath = cordova.file.dataDirectory + 'pictos/';
+        });
+
+        var server = "http://192.168.1.103:3000";
 
         var service = {
-            update: update,
-            unzip: unzip
+            getVerbs: getVerbs,
+            unzip: unzip,
+            downloadPictos: downloadPictos,
+            updatePictos: updatePictos
         };
 
         return service;
 
         /////////////////////////////////
 
-        function update() {
+        function download(deferred, path, onProgress) {
+            var fileTransfer = new FileTransfer();
+            fileTransfer.onprogress = onProgress;
+            var uri = encodeURI(server + path);
+            $cordovaFile.checkDir(cordova.file.dataDirectory, 'pictos')
+                .then(function(succ) {
+                    fileTransfer.download(
+                        uri,
+                        pictosPath + 'update.zip',
+                        function (entry) {
+                            $window.localStorage['lastUpdate'] = new Date();
+                            deferred.resolve();
 
-        };
+                        },
+                        function (error) {
+                            deferred.reject(error);
+                            console.log("download error source " + error.source);
+                            console.log("download error target " + error.target);
+                            console.log("upload error code" + error.code);
+                        },
+                        true
+                    );
+                }, function (err) {
+                   $cordovaFile.createDir(cordova.file.dataDirectory,'pictos')
+                       .then(function(succ) {
+                           fileTransfer.download(
+                               uri,
+                               pictosPath + 'update.zip',
+                               function (entry) {
+                                   console.log('Downloaded on ' + entry.toURL());
+                                   $window.localStorage['lastUpdate'] = new Date();
+                                   deferred.resolve();
+                               },
+                               function (error) {
+                                   deferred.reject(error);
+                                   console.log("download error source " + error.source);
+                                   console.log("download error target " + error.target);
+                                   console.log("upload error code" + error.code);
+                               },
+                               true
+                           );
+                       }, function (err) {
+                           deferred.reject('FOLDER_EXISTS');
+                       });
+                });
+
+        }
+
+        function downloadPictos(onProgress) {
+            var deferred = $q.defer();
+            if (!$window.localStorage['lastUpdate']) {
+                download(deferred, '/pictos/download', onProgress);
+            } else {
+                download(deferred, "/pictos/download?date=" +
+                    $window.localStorage['lastUpdate'], onProgress);
+            }
+            return deferred.promise;
+        }
+
+        function updatePictos() {
+
+            var deferred = $q.defer();
+
+            $cordovaFile.readAsText(pictosPath, 'images.xml')
+                .then(function (xml) {
+                    parseXML(xml);
+                    deferred.resolve();
+                }, function (err) {
+                    deferred.reject(err);
+                });
+
+            return deferred.promise;
+
+        }
+
+        function getVerbs(langs) {
+            var promises = [];
+            var deferred = $q.defer();
+            configService.configuration.supportedLangs = [];
+
+            langs.forEach(function (lang) {
+                configService.configuration.supportedLangs.push(lang.name);
+                promises.push($q(function (resolve, reject) {
+                    var fileTransfer = new FileTransfer();
+                    var uri = encodeURI(server + "/verbs/" + lang.name);
+                    fileTransfer.download(
+                        uri,
+                        cordova.file.applicationStorageDirectory + 'databases/' + lang.name + '_database.db',
+                        function (entry) {
+                            deferred.notify({'lang': lang.name, 'entry': entry.toURL()});
+                            resolve();
+                        },
+                        function (error) {
+                            reject();
+                            console.log("download error source " + error.source);
+                            console.log("download error target " + error.target);
+                            console.log("upload error code" + error.code);
+                        },
+                        true
+                    );
+                }))
+            });
+
+            $q.all(promises).then(function () {
+                deferred.resolve()
+            }, function () {
+                deferred.reject()
+            });
+
+            return deferred.promise;
+
+        }
 
         /**
          * Tries to unzip the picto database, if pictos are already unzipped
@@ -39,85 +155,82 @@
          */
         function unzip(progressCallback) {
 
-            return $q(function(resolve,reject){
+            return $q(function (resolve, reject) {
 
                 document.addEventListener('deviceready', unzipHandler, false);
 
                 function unzipHandler() {
 
-                    var dirUrl =  cordova.file.dataDirectory;
-                    var origDirZip = cordova.file.applicationDirectory + 'www';
-                    var destDirZip = dirUrl;
+                    zip.unzip(pictosPath + 'update.zip',
+                        pictosPath,
+                        function (result) {
+                            if (result!=0) {
+                                reject(result);
+                            }
+                            resolve(result);
+                        }, progressCallback);
 
-                    $cordovaFile.checkDir(dirUrl,dirName)
-                        .then(function(){
-                            console.log('PIC_ALREADY_UNZIPPED');
-                            resolve('PIC_ALREADY_UNZIPPED');
-                        }, function() {
-                            $cordovaFile.copyFile(origDirZip, fileName, destDirZip, fileName)
-                                .then(function () {
-                                    $cordovaFile.createDir(dirUrl,dirName,false)
-                                        .then(function() {
-                                            zip.unzip(destDirZip+fileName, dirUrl+dirName,
-                                                function (result) {
-                                                    resolve(result);
-                                                },progressCallback);
-                                        }, function (error) {
-                                            console.log(JSON.stringify(error));
-                                            reject(error);
-                                        });
-                                }, function (error) {
-                                    console.log(JSON.stringify(error));
-                                    reject(error);
-                                });
-                        });
-
-
-                };
+                }
             });
-        };
+        }
+
+
+        function parseXML(xml) {
+            var x2js = new X2JS();
+            var images = x2js.xml_str2json(xml);
+            var picto = {};
+            var wordVal = '';
+            if (!araworddb.ready()) {
+                araworddb.startService();
+            }
+            console.log(JSON.stringify(images));
+            if (angular.isArray(images.database.image)) {
+                images.database.image.forEach(function (image) {
+                    picto.picto = image._name;
+                    picto.pictoNN = image._id;
+                    picto.lang = deparseLang(image.language._id);
+                    if (angular.isArray(image.word)) {
+                        image.word.forEach(function (word) {
+                            picto.type = parseType(word._type);
+                            wordVal = word.__text;
+                            araworddb.newPicto(wordVal, picto);
+                        })
+                    } else {
+                        picto.type = parseType(image.word._type);
+                        wordVal = image.word.__text;
+                        araworddb.newPicto(wordVal, picto);
+                    }
+
+                });
+            } else {
+                picto.picto = images.database.image._name;
+                picto.pictoNN = images.database.image._id;
+                picto.lang = deparseLang(images.database.image.language._id);
+                if (angular.isArray(images.database.image.language.word)) {
+                    images.database.image.language.word.forEach(function (word) {
+                        picto.type = parseType(word._type);
+                        wordVal = word.__text;
+                        araworddb.newPicto(wordVal, picto);
+                    })
+                } else {
+                    picto.type = parseType(images.database.image.language.word._type);
+                    wordVal = images.database.image.language.word.__text;
+                    araworddb.newPicto(wordVal, picto);
+                }
+            }
+
+        }
+
+        function deparseLang(lang) {
+            var langs = ['Castellano', 'Ingles', 'Frances', 'Catalan', 'Italiano', 'Aleman', 'Portugues', 'Portugues Brasil', 'Gallego', 'Euskera'];
+            return langs.indexOf(lang);
+        }
+
+        function parseType(typeInText) {
+            var types = ['nombreComun', 'descriptivo', 'verbo', 'miscelanea', 'nombrePropio', 'contenidoSocial'];
+            var ind = types.indexOf(typeInText);
+            return ind >= 0 ? ind : 3;
+        }
+
     };
 })();
-
-/* DESCARGA pictogramas
- document.addEventListener('deviceready', function() {
-
- $cordovaFile.getFreeDiskSpace()
- .then(function(success) {
- console.log('ORIGINALSIZE: '+ success);
- });
-
- var url = 'https://arasaac.os-eu-mad-1.instantservers.telefonica.com/zonadescargas/pictos.zip?Signature=PD%2BtKmdn%2Bg7zOjrPiOMNBjp6Qrw%3D&Expires=11423062190&AWSAccessKeyId=cs20642893';
- var targetPath = cordova.file.dataDirectory + "pictos.zip";
-
- $cordovaFileTransfer.download(url, targetPath, {encodeURI: false}, true)
- .then(function(result) {
- $cordovaFile.getFreeDiskSpace()
- .then(function(success) {
- console.log('NEWSIZE: '+ success);
- });
- }, function(error) {
- console.log('ERROR: '+ JSON.stringify(error));
- }, function(progress) {
- $timeout(function() {
- console.log('Downloading: '+(progress.loaded/progress.total).toFixed()+'%');
- });
- });
- }, false);*/
-
-
-/* COMPROBAR version de los pictogramas
- document.addEventListener('deviceready', function() {
- $http({
- method: 'get',
- url: 'http://arasaac.org/zona_descargas/arasuite/pictos_data',
- transformResponse: undefined,
- transformRequest: undefined
- }).then(
- function (data) {
- console.log('SUCCESS', JSON.stringify(data));
- },
- function (error) {
- console.log('ERROR', JSON.stringify(error));
- }
- )}, false);*/

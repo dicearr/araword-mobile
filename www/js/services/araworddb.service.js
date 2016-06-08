@@ -24,12 +24,33 @@
             getWordsStartingWith: getWordsStartingWith,
             getVerbsStartingWith: getVerbsStartingWith,
             newPicto: newPicto,
-            ready: ready
+            ready: ready,
+            setLang: setLang
         };
 
         return service;
 
         ///////////////////////////////////////////////////////////////////
+
+        function setLang(lang) {
+            var langs = ['es','en','fr','cat','it','ger','pt','br','gal','eus'];
+            var idL = langs.indexOf(lang);
+
+            var query1 = "DROP VIEW IF EXISTS ArawordView";
+            var query2 = "CREATE VIEW ArawordView AS SELECT M.word word, T.name type, M.name name FROM main M, type T WHERE M.idT = T.id AND M.idL = \'" + idL + "\' ORDER BY word";
+
+
+            document.addEventListener('deviceready', function() {
+               db.transaction(function (tx) {
+                  tx.executeSql(query1);
+                  tx.executeSql(query2);
+               }, function(error) {
+                   console.log('transaction error: ' + error.message);
+               }, function() {
+                   console.log('transaction ok');
+               });
+            });
+        }
 
         /**
          * Searches all the words that starts with the given word.
@@ -80,14 +101,14 @@
         /**
          * Allows you to add new pictograph to the database
          * @param word {{ Word }}
-         * @param picto {{ [ 'type':1, 'picto':'foo_bar.jpeg' ] }}
+         * @param picto {{ [ 'type':1, 'picto':'foo_bar.jpeg', 'lang':1 ] }}
          * @returns {promise}
          */
         function newPicto(word,picto) {
             word = word.replace(/[.,]/g,'');
             return $q(function(resolve,reject) {
-                var query = "INSERT INTO main(word, idL, idT, name) VALUES(?,?,?,?)";
-                var params = [word.toLowerCase(),0,picto.type,picto.picto];
+                var query = "INSERT INTO main(word, idL, idT, name, nameNN) VALUES(?,?,?,?)";
+                var params = [word.toLowerCase(),picto.lang ,picto.type, picto.picto, picto.pictoNN];
 
                 document.addEventListener('deviceready', executeInsert);
 
@@ -112,7 +133,6 @@
          */
         function executeQuery(compounds, words, query, resolve, reject) {
             db.executeSql(query,[],function(res) {
-                console.log(JSON.stringify(res));
                 for(var i = 0; i < res.rows.length; i++) {
                     var word = res.rows.item(i).word;
                     var pictoName = res.rows.item(i).name;
@@ -143,7 +163,6 @@
                 }
                 resolve(compounds);
             }, function (err) {
-                console.log(JSON.stringify(err));
                 reject(err);
             });
         }
@@ -157,7 +176,6 @@
 
             function openDB() {
                 db = window.sqlitePlugin.openDatabase( {name: dbname, createFromLocation: 1, location: 'default'} );
-                console.log(JSON.stringify(db));
             }
         }
 

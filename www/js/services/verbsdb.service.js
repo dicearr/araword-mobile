@@ -11,22 +11,29 @@
         .module('AraWord')
         .factory('verbsdb',verbsdb);
 
-    verbsdb.$inject = ['$q','$cordovaSQLite'];
+    verbsdb.$inject = ['$q','configService'];
 
-    function verbsdb($q, $cordovaSQLite) {
+    function verbsdb($q, configService) {
 
         var db = undefined;
-        var dbname = 'Castellano_verbs.db';
+        var dbname = undefined;
 
         var service = {
             startService: startService,
             getInfinitive: getInfinitive,
-            ready: ready
+            ready: ready,
+            setLang: setLang
         };
 
         return service;
 
         //////////
+
+        function setLang(lang) {
+            close();
+            dbname = lang+'_database.db';
+            startService();
+        }
 
         /**
          * Returns the infinitive of a given formed verb.
@@ -43,7 +50,6 @@
 
                 function executeQuery() {
                     db.executeSql(query, [], function(res) {
-                        console.log(JSON.stringify(res));
                         for(var i = 0; i < res.rows.length; i++) {
                             result = res.rows.item(0).verb;
                         }
@@ -65,15 +71,24 @@
             document.addEventListener('deviceready', openDB, false);
 
             function openDB() {
-                db = window.sqlitePlugin.openDatabase( {name: dbname, createFromLocation: 1, location: 'default' }, function(tx) {}, function(err) {
+                if (!dbname) {
+                    dbname = configService.configuration.docLang + '_database.db';
+                }
+                db = window.sqlitePlugin.openDatabase( {
+                    name: dbname, createFromLocation: 1,
+                    location: 'default'
+                }, function(tx) {}, function(err) {
                     console.log(JSON.stringify(err));
                 });
-                console.log(JSON.stringify(db));
             }
         }
 
         function ready() {
             return !angular.isUndefined(db);
+        }
+
+        function close() {
+            db.close();
         }
     }
 })();

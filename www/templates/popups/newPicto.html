@@ -7,13 +7,14 @@
             Type
         </div>
         <select ng-model="nav.newPict.type">
-            <option value="0">Name</option>
-            <option value="1">Descriptive</option>
-            <option value="2">Verb</option>
-            <option value="3">Miscelanea</option>
-            <option value="4">Own Name</option>
-            <option value="5">Social Content</option>
+            <option value="0" translate="sett_nombreComun">Name</option>
+            <option value="1" translate="sett_descriptivo">Descriptive</option>
+            <option value="2" translate="sett_verbo">Verb</option>
+            <option value="3" translate="sett_miscelanea">Miscelanea</option>
+            <option value="4" translate="sett_nombrePropio">Own Name</option>
+            <option value="5" translate="sett_contenidoSocial">Social Content</option>
         </select>
     </label>
-    <button class="item button button-full" type="file" ng-click="nav.pickImage()">Choose Picto</button>
+    <button class="item button button-full" type="file"
+            ng-click="nav.pickImage()" translate="pu_choosepict">Choose picto</button>
 </div>

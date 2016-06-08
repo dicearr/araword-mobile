@@ -17,13 +17,14 @@
         '$cordovaFile','araworddb','$scope',
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
-        '$cordovaImagePicker','$window'];
+        '$cordovaImagePicker','docsService','$timeout'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
                             $scope, $ionicPopup, IonicClosePopupService,
                             $cordovaSocialSharing, accessService, $cordovaImagePicker,
-                            $window) {
+                            docsService, $timeout) {
+
 
         var vm = this;
         vm.myText = [{
@@ -33,7 +34,7 @@
             'words': 1,
             'autofocus': true
         }];
-        vm.onChange = onChange;  // Main logic
+        vm.onChange = onChange;
         vm.onKeyUp = onKeyUp; // Deletes empty words
         // Manages double/single click by using timeout
         vm.singleClickAction = singleClickAction;
@@ -58,10 +59,19 @@
 
         textAnalyzer.text = vm.myText;
 
+        vm.sendDocument = sendDocument;
+
         if(! araworddb.ready()) {
             araworddb.startService();
         }
 
+        $scope.$on('reloadText', function(event, value) {
+            vm.myText.forEach(function(word,ind) {
+                $timeout(function() {
+                    textAnalyzer.processEvent(word, vm.myText);
+                },7);
+            })
+        });
 
         //////////////
 
@@ -112,17 +122,18 @@
         function readPicto(picto) {
 
             // Digest cycles are faster than read fs so we return empty picto to avoid multiple reads
-            if (!picto['base64'])
+            if (picto && !picto['base64'])
                 picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
-            document.addEventListener('deviceready', readPictHandler, false);
+            if (picto)
+                document.addEventListener('deviceready', readPictHandler, false);
 
             function readPictHandler() {
 
                 var dirUrl = cordova.file.dataDirectory;
-                var dirName = 'pictos';
+                var dirName = 'pictos/';
 
-                $cordovaFile.readAsDataURL(dirUrl+dirName+'/pictos_12', picto['picto'])
+                $cordovaFile.readAsDataURL(dirUrl+dirName, picto['picto'])
                     .then(function(success){
                         picto['base64'] = success;
                     },function(err){
@@ -166,12 +177,9 @@
             TTS.speak({
                 text: word.value,
                 locale: 'es-ES',
-                rate: 0.75
-            }, function() {
-                TTS.speak('');
-            }, function() {
-                TTS.speak('');
-            })
+                rate: 1.1
+            }, function(success) { console.log(JSON.stringify(success)) },
+                function(error) { console.log(JSON.stringify(error)) })
         }
 
         // Used in singleClickAction to manage double clicks
@@ -252,6 +260,32 @@
             });
             $scope.myPopup = vm.optionsPopup;
             IonicClosePopupService.register($scope.myPopup);
+        }
+
+        function sendDocument() {
+            docsService.saveDoc(vm.myText,null,'tmp_mail')
+                .then(function(data) {
+                    if (!data.target.error) {
+                        resolveLocalFileSystemURL(data.target.localURL, function(entry) {
+                            var nativePath = entry.toURL();
+                            window.plugins.socialsharing.shareViaEmail(
+                                'Enviado desde Araword móvil.', // can contain HTML tags, but support on Android is rather limited:  http://stackoverflow.com/questions/15136480/how-to-send-html-content-with-image-through-android-default-email-client
+                                'Documento Araword',
+                                null, // TO: must be null or an array
+                                null, // CC: must be null or an array
+                                null, // BCC: must be null or an array
+                                [nativePath], // FILES: can be null, a string, or an array
+                                function() {
+                                    $cordovaFile.removeFile(cordova.file.externalDataDirectory,'tmp_mail.awz');
+                                }, // called when sharing worked, but also when the user cancelled sharing via email. On iOS, the callbacks' boolean result parameter is true when sharing worked, false if cancelled. On Android, this parameter is always true so it can't be used). See section "Notes about the successCallback" below.
+                                function(error) {
+                                    console.log(JSON.stringify(error))
+                                }
+                            )
+                        });
+                    }
+                });
+
         }
 
         /**

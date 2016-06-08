@@ -12,9 +12,11 @@
         .module('AraWord')
         .controller('splashController',splashController);
 
-    splashController.$inject = ['pictUpdater','$timeout','$ionicLoading', '$location', '$ionicPopup', '$window', '$scope'];
+    splashController.$inject = ['pictUpdater','$timeout','$ionicLoading', '$location',
+            '$ionicPopup', '$window', '$scope', '$translate', 'configService','$http'];
 
-    function splashController(pictUpdater, $timeout, $ionicLoading, $location, $ionicPopup, $window, $scope) {
+    function splashController(pictUpdater, $timeout, $ionicLoading, $location,
+                              $ionicPopup, $window, $scope, $translate, configService,$http) {
 
         var loadingBarValue = 0;
         var loadingBarMessage = 'Downloading pictographs';
@@ -22,21 +24,34 @@
 
         var vm = this;
         vm.pass = '';
+        vm.langs = [];
+        vm.models = [];
+        vm.change = function() {
+            console.log(JSON.stringify(vm.models));
+        };
+
+        console.log(JSON.stringify(JSZip.support));
+
+        // TODO server IP
+        $http({
+            'method': 'get',
+            'url': 'http://192.168.1.103:3000/verbs/list'
+            })
+            .then(function(succ) {
+                succ.data.doc.forEach(function (lang, ind) {
+                    vm.langs.push({
+                        id: ind,
+                        name: lang.code
+                    })
+                })
+            }, function(err) {
+                // Installation error
+            });
 
         if (!havePass()) {
             $ionicPopup.show({
-                template: '<div class="list">' +
-                ' <label class="item item-input item-select">' +
-                ' <span class="input-label" translate="spl_lang"> Language </span>' +
-                ' <select>' +
-                ' <option>ES</option>' +
-                ' <option selected>EN</option>' +
-                ' <option>CAT</option>' +
-                ' </select>'+
-                ' </label>' +
-                ' <input class="item item-input" style="margin-top: 4px" placeholder="Password" type="password" ng-model="splash.pass"/>'+
-                '</div>',
-                title: '<span translate="spl_title">Language configuration</span>',
+                templateUrl: 'templates/popups/install.html',
+                title: '<span translate="spl_title">Inital configuration</span>',
                 scope: $scope,
                 buttons: [
                     {
@@ -44,25 +59,47 @@
                         type: 'button-dark',
                         onTap: function(e) {
                             if (!vm.pass) {
-                                console.log('EmptyPass!')
                                 e.preventDefault();
                             } else {
                                 savePass();
+                                var nLangs = vm.langs.length;
+                                loadingBarValue = 0;
+                                loadingBarMessage = 'Downloading verbs';
+                                loadingBarCode = 'dverbs';
                                 updateBar();
-                                $timeout(function() {
-                                    loadingBarMessage = 'Unzipping pictographs';
-                                    loadingBarCode = 'unzip';
-                                    pictUpdater.unzip(onProgress).then(function() {
-                                        loadingBarValue = 100;
-                                        loadingBarMessage = 'Complete';
-                                        loadingBarCode = 'end';
+                                pictUpdater.getVerbs(vm.models)
+                                    .then(function() {
+                                        loadingBarMessage = 'Downloading pictographs';
+                                        loadingBarCode = 'dpict';
                                         updateBar();
-                                        $timeout(function() {
-                                            $ionicLoading.hide();
-                                            $location.path('/text');
-                                        },1000);
+                                        pictUpdater.downloadPictos(onProgress)
+                                            .then(function() {
+                                                loadingBarMessage = 'Unzipping pictographs';
+                                                loadingBarCode = 'unzip';
+                                                updateBar();
+                                                pictUpdater.unzip(onProgress).then(function() {
+                                                    loadingBarValue = 0;
+                                                    loadingBarMessage = 'Adding pictographs';
+                                                    loadingBarCode = 'addpict';
+                                                    pictUpdater.updatePictos().then(function() {
+                                                        $ionicLoading.hide();
+                                                        $location.path('/text');
+                                                    }, function() {}, function(sum) {
+                                                        loadingBarValue+=sum;
+                                                        updateBar();
+                                                    })
+                                                });
+                                            }, function (err) {
+                                                console.log(JSON.stringify(err));
+                                            });
+
+                                    }, function(error) {
+                                        console.log('Download error');
+                                        // Instalation error
+                                    }, function() {
+                                        loadingBarValue += 100/nLangs;
+                                        updateBar();
                                     });
-                                }, 10000);
                             }
                         }
 
@@ -80,7 +117,11 @@
          * @param progress {{ new progress }}
          */
         function onProgress(progress) {
-            loadingBarValue = Math.round((progress.loaded / progress.total) * 100);
+            if (progress.lenghtComputable) {
+                loadingBarValue = Math.round((progress.loaded / progress.total) * 100);
+            } else {
+                loadingBarValue += 1;
+            }
             updateBar();
         }
 

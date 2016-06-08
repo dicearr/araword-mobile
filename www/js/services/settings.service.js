@@ -24,6 +24,8 @@
             'grayScale': 0,
             'borders': true,
             'possition': true,
+            'docLang': 'es',
+            'supportedLangs': ['es'],
             'typeColors': [{
                 'type': 'nombreComun',
                 'text': 'Nombre comun',
@@ -55,8 +57,7 @@
             configuration: configuration,
             styles: undefined,
             saveConfig: saveConfig,
-            restoreConfig: restoreConfig,
-            changeLang: changeLang
+            restoreConfig: restoreConfig
         };
 
         return service;
@@ -80,14 +81,6 @@
             if (angular.isUndefined(service.configuration['styles'])) {
                 setStyles();
             }
-        }
-
-        /**
-         * Changes the selected language
-         * @param key = new language {'en', 'es', etc.. }
-         */
-        function changeLang(key) {
-            $translate.use(key);
         }
 
         function setStyles() {

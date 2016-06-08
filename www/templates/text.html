@@ -1,21 +1,23 @@
 <!-- CONTROLLER AS text -->
 <ion-view style="overflow: visible;">
     <ion-nav-buttons side="right">
-        <button class="button button-icon ion-volume-high" ng-click="text.readText()"
-                ng-disabled="!text.acc.logged && !text.acc.permissions['toSpeech']"></button>
-        <button class="button button-icon ion-android-share-alt posit" ng-click="text.shareText()"
-                ng-disabled="!text.acc.logged && !text.acc.permissions['toShare']"></button>
+        <button class="button button-icon" ng-click="text.sendDocument()"
+                ng-disabled="!text.acc.send && !text.acc.permissions['toSend']"><i class="icon ion-paper-airplane"></i></button>
+        <button class="button button-icon" ng-click="text.readText()"
+                ng-disabled="!text.acc.logged && !text.acc.permissions['toSpeech']"><i class="icon ion-volume-high"></i></button>
+        <button class="button button-icon  posit" ng-click="text.shareText()"
+                ng-disabled="!text.acc.logged && !text.acc.permissions['toShare']"><i class="icon ion-android-share-alt"></i></button>
         <button ng-controller='navController as nav'
-                class="button button-icon ion-navicon"
+                class="button button-icon "
                 style="padding-left: 17px; padding-right: 10px"
-                ng-click="nav.showMenu($event)"></button>
+                ng-click="nav.showMenu($event)"><i class="icon ion-navicon"></i></button>
     </ion-nav-buttons>
 
 
     <ion-content class="has-header" overflow-scroll="false" ng-style="text.conf.styles['fontStyle']"
                  style="overflow: visible;">
 
-        <div id="text" style="display: inline-block;">
+        <div id="text" style="display: inline-block; overflow: visible;">
             <div class="inline padding" ng-repeat="word in text.myText"
                  ng-style="text.conf.configuration.borders? {'border': '4px solid ' + text.conf.configuration.typeColors[word.pictos[word.pictInd].type].color} :{};"
                  style="margin: 5px; max-width: 300px;"
@@ -34,7 +36,7 @@
                        ng-style="text.conf.styles['inputStyle']"
                        style="font-size: inherit;"
                        single
-                       autocapitalize="none" />
+                       autocapitalize="off" />
 
                 <img class="picto"
                      data-ng-src="{{  word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
@@ -55,7 +57,7 @@
                        ng-style="text.conf.styles['inputStyle']"
                        style="font-size: inherit;"
                        single
-                       autocapitalize="none" />
+                       autocapitalize="off" />
             </div>
         </div>
     </ion-content>
