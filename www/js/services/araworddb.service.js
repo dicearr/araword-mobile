@@ -10,14 +10,39 @@
         .module('AraWord')
         .factory('araworddb', araworddb);
 
-    araworddb.$inject = ['$cordovaSQLite','$q','accessService'];
+    araworddb.$inject = ['$q'];
 
-    function araworddb($cordovaSQLite, $q, accessService) {
+    function araworddb($q) {
 
-        var db = undefined;
         var db = undefined;
         var dbname = 'AraSuite.db'; // Pre filled db
-
+        var json2sqlite = {
+            "data": {
+                "inserts":{
+                    "type":[{
+                        'id': 0,
+                        'name': 'nombreComun'
+                    },{
+                        'id': 1,
+                        'name': 'descriptivo'
+                    },{
+                        'id': 2,
+                        'name': 'verbo'
+                    },{
+                        'id': 3,
+                        'name': 'miscelanea'
+                    },{
+                        'id': 4,
+                        'name': 'nombrePropio'
+                    },{
+                        'id': 5,
+                        'name': 'contenidoSocial'
+                    }],
+                    "language": [],
+                    "main": []
+                }
+            }
+        };
 
         var service = {
             startService: startService,
@@ -25,12 +50,41 @@
             getVerbsStartingWith: getVerbsStartingWith,
             newPicto: newPicto,
             ready: ready,
-            setLang: setLang
+            setLang: setLang,
+            createDB: createDB,
+            addPictoBulk: addPictoBulk,
+            executeBulk: executeBulk,
+            addLanguagesBulk: addLanguagesBulk
         };
 
         return service;
 
         ///////////////////////////////////////////////////////////////////
+
+        function createDB() {
+            var deferred = $q.defer();
+
+            var createMain = "CREATE TABLE main (word VARCHAR(50), idL INTEGER, idT INTEGER, name VARCHAR(50), nameNN VARCHAR(50));";
+            var createType = "CREATE TABLE type (id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
+            var createLang = "CREATE TABLE language(id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
+            var createIndex = "CREATE UNIQUE INDEX main_index ON main (word, idL, idT, name, nameNN);";
+
+            document.addEventListener('deviceready', function() {
+                db.transaction(function (tx) {
+                    tx.executeSql(createMain);
+                    tx.executeSql(createLang);
+                    tx.executeSql(createType);
+                    tx.executeSql(createIndex);
+                }, function(error) {
+                    console.log('INIT_DB_ERROR',JSON.stringify(error));
+                    deferred.reject(error);
+                }, function() {
+                    deferred.resolve();
+                });
+            });
+
+            return deferred.promise;
+        }
 
         function setLang(lang) {
             var langs = ['es','en','fr','cat','it','ger','pt','br','gal','eus'];
@@ -45,10 +99,10 @@
                   tx.executeSql(query1);
                   tx.executeSql(query2);
                }, function(error) {
-                   console.log('transaction error: ' + error.message);
-               }, function() {
-                   console.log('transaction ok');
-               });
+                   console.log('CREATE_VIEW_ERROR',JSON.stringify(error));
+               }, function(success) {
+                   console.log('CREATE_VIEW',JSON.stringify(success));
+               })
             });
         }
 
@@ -70,6 +124,15 @@
                     executeQuery(compounds, words, query, resolve, reject);
                 }, false);
 
+            });
+        }
+
+        function addLanguagesBulk(langs) {
+            langs.forEach(function(lang, ind) {
+                json2sqlite.data.inserts.language.push({
+                    "id": ind,
+                    "name": lang
+                })
             });
         }
 
@@ -99,28 +162,65 @@
         }
 
         /**
-         * Allows you to add new pictograph to the database
-         * @param word {{ Word }}
-         * @param picto {{ [ 'type':1, 'picto':'foo_bar.jpeg', 'lang':1 ] }}
-         * @returns {promise}
+         *
+         * @param word
+         * @param picto
+         * @returns {*}
          */
-        function newPicto(word,picto) {
+        function newPicto(word, picto) {
             word = word.replace(/[.,]/g,'');
             return $q(function(resolve,reject) {
                 var query = "INSERT INTO main(word, idL, idT, name, nameNN) VALUES(?,?,?,?)";
                 var params = [word.toLowerCase(),picto.lang ,picto.type, picto.picto, picto.pictoNN];
 
+
                 document.addEventListener('deviceready', executeInsert);
 
                 function executeInsert() {
-                    $cordovaSQLite.execute(db,query,params)
-                        .then(function() {
-                            return resolve();
-                        }, function(error) {
-                            return reject();
-                        })
+                    db.transaction(function (tx) {
+                        tx.executeSql(query, params);
+                    }, function(s) {
+                        console.log('SUCESS',JSON.stringify(s));
+                        resolve();
+                    }, function(error) {
+                        console.log('ERROR',JSON.stringify(error));
+                        reject(error);
+                    })
                 }
             })
+        }
+
+        function addPictoBulk(word,picto) {
+            json2sqlite.data.inserts.main.push({
+                'word': word,
+                'idL': picto.lang,
+                'idT': picto.type,
+                'name': picto.picto,
+                'nameNN': picto.pictoNN
+            })
+        }
+
+        function executeBulk(rootDeferred) {
+            var def = $q.defer();
+            var successFn = function(){
+                def.resolve();
+            };
+            var errorFn = function(error){
+                def.reject(error);
+            };
+            var progressFn = function(current, total){
+                rootDeferred.notify({
+                    "lengthComputable": true,
+                    "total": total,
+                    "loaded": current
+                });
+            };
+            cordova.plugins.sqlitePorter.importJsonToDb(db, json2sqlite, {
+                successFn: successFn,
+                errorFn: errorFn,
+                progressFn: progressFn
+            });
+            return def.promise;
         }
 
         /**
@@ -133,6 +233,7 @@
          */
         function executeQuery(compounds, words, query, resolve, reject) {
             db.executeSql(query,[],function(res) {
+                console.log(word, JSON.stringify(res));
                 for(var i = 0; i < res.rows.length; i++) {
                     var word = res.rows.item(i).word;
                     var pictoName = res.rows.item(i).name;
@@ -163,6 +264,7 @@
                 }
                 resolve(compounds);
             }, function (err) {
+                console.log('QUERY',JSON.stringify(err));
                 reject(err);
             });
         }
@@ -175,7 +277,7 @@
             document.addEventListener('deviceready', openDB, false);
 
             function openDB() {
-                db = window.sqlitePlugin.openDatabase( {name: dbname, createFromLocation: 1, location: 'default'} );
+                db = window.sqlitePlugin.openDatabase( {name: dbname, location: 'default'} );
             }
         }
 

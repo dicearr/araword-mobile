@@ -11,9 +11,9 @@
         .module('AraWord')
         .factory('pictUpdater', pictUpdater);
 
-    pictUpdater.$inject = ['$cordovaFile', '$q', '$window', 'configService', 'docsService', '$http', '$cordovaFileTransfer', 'araworddb'];
+    pictUpdater.$inject = ['$cordovaFile', '$q', '$window', 'configService', '$http', 'araworddb', '$timeout'];
 
-    function pictUpdater($cordovaFile, $q, $window, configService, docsService, $http, $cordovaFileTransfer, araworddb) {
+    function pictUpdater($cordovaFile, $q, $window, configService, $http, araworddb, $timeout) {
 
         var pictosPath = undefined;
 
@@ -21,22 +21,26 @@
             pictosPath = cordova.file.dataDirectory + 'pictos/';
         });
 
-        var server = "http://192.168.1.103:3000";
+        var server = "http://192.168.0.129:3000";
 
         var service = {
             getVerbs: getVerbs,
             unzip: unzip,
             downloadPictos: downloadPictos,
-            updatePictos: updatePictos
+            updatePictos: updatePictos,
+            getVerbsLangs: getVerbsLangs,
+            getSupportedLangs: getSupportedLangs
         };
 
         return service;
 
         /////////////////////////////////
 
-        function download(deferred, path, onProgress) {
+        function download(deferred, path) {
             var fileTransfer = new FileTransfer();
-            fileTransfer.onprogress = onProgress;
+            fileTransfer.onprogress = function(progress) {
+                deferred.notify(progress);
+            };
             var uri = encodeURI(server + path);
             $cordovaFile.checkDir(cordova.file.dataDirectory, 'pictos')
                 .then(function(succ) {
@@ -82,31 +86,32 @@
 
         }
 
-        function downloadPictos(onProgress) {
+        function downloadPictos() {
             var deferred = $q.defer();
             if (!$window.localStorage['lastUpdate']) {
-                download(deferred, '/pictos/download', onProgress);
+                download(deferred, '/pictos/download');
             } else {
                 download(deferred, "/pictos/download?date=" +
-                    $window.localStorage['lastUpdate'], onProgress);
+                    $window.localStorage['lastUpdate']);
             }
             return deferred.promise;
         }
 
         function updatePictos() {
-
             var deferred = $q.defer();
-
             $cordovaFile.readAsText(pictosPath, 'images.xml')
                 .then(function (xml) {
-                    parseXML(xml);
-                    deferred.resolve();
+                    parseXML(xml,deferred)
+                        .then(function() {
+                            deferred.resolve()
+                        }, function(err) {
+                            deferred.reject(err)
+                        })
                 }, function (err) {
                     deferred.reject(err);
                 });
 
             return deferred.promise;
-
         }
 
         function getVerbs(langs) {
@@ -114,16 +119,18 @@
             var deferred = $q.defer();
             configService.configuration.supportedLangs = [];
 
-            langs.forEach(function (lang) {
+            langs.forEach(function (lang, ind) {
                 configService.configuration.supportedLangs.push(lang.name);
                 promises.push($q(function (resolve, reject) {
                     var fileTransfer = new FileTransfer();
+                    fileTransfer.onprogress = function(progress) {
+                      deferred.notify(progress);
+                    };
                     var uri = encodeURI(server + "/verbs/" + lang.name);
                     fileTransfer.download(
                         uri,
                         cordova.file.applicationStorageDirectory + 'databases/' + lang.name + '_database.db',
-                        function (entry) {
-                            deferred.notify({'lang': lang.name, 'entry': entry.toURL()});
+                        function () {
                             resolve();
                         },
                         function (error) {
@@ -153,9 +160,9 @@
          * @param progressCallback {{ callback executed each progress event }}
          * @returns {promise}
          */
-        function unzip(progressCallback) {
+        function unzip() {
 
-            return $q(function (resolve, reject) {
+            var deferred = $q.defer();
 
                 document.addEventListener('deviceready', unzipHandler, false);
 
@@ -165,60 +172,80 @@
                         pictosPath,
                         function (result) {
                             if (result!=0) {
-                                reject(result);
+                                deferred.reject(result);
                             }
-                            resolve(result);
-                        }, progressCallback);
+                            deferred.resolve(result);
+                        }, function(progress) {
+                            deferred.notify({
+                                "lengthComputable": true,
+                                "loaded": progress.loaded,
+                                "total": progress.total})
+                        });
 
                 }
-            });
+
+            return deferred.promise;
         }
 
-
-        function parseXML(xml) {
-            var x2js = new X2JS();
-            var images = x2js.xml_str2json(xml);
-            var picto = {};
-            var wordVal = '';
-            if (!araworddb.ready()) {
-                araworddb.startService();
-            }
-            console.log(JSON.stringify(images));
-            if (angular.isArray(images.database.image)) {
-                images.database.image.forEach(function (image) {
-                    picto.picto = image._name;
-                    picto.pictoNN = image._id;
-                    picto.lang = deparseLang(image.language._id);
-                    if (angular.isArray(image.word)) {
-                        image.word.forEach(function (word) {
-                            picto.type = parseType(word._type);
-                            wordVal = word.__text;
-                            araworddb.newPicto(wordVal, picto);
-                        })
-                    } else {
-                        picto.type = parseType(image.word._type);
-                        wordVal = image.word.__text;
-                        araworddb.newPicto(wordVal, picto);
-                    }
-
-                });
+        function parseXML(xml, rootDeferred) {
+            var deferred = $q.defer();
+            var db = new X2JS().xml_str2json(xml).database;
+            var images = db.image;
+            var langs = db.languages;
+            if (angular.isArray(langs.language)) {
+                console.log(JSON.stringify(langs.language));
+                araworddb.addLanguagesBulk(langs.language);
             } else {
-                picto.picto = images.database.image._name;
-                picto.pictoNN = images.database.image._id;
-                picto.lang = deparseLang(images.database.image.language._id);
-                if (angular.isArray(images.database.image.language.word)) {
-                    images.database.image.language.word.forEach(function (word) {
-                        picto.type = parseType(word._type);
-                        wordVal = word.__text;
-                        araworddb.newPicto(wordVal, picto);
-                    })
-                } else {
-                    picto.type = parseType(images.database.image.language.word._type);
-                    wordVal = images.database.image.language.word.__text;
-                    araworddb.newPicto(wordVal, picto);
-                }
+                araworddb.addLanguagesBulk([langs.language]);
+            }
+            if (angular.isArray(images)) {
+                images.forEach(function(image) {
+                    addImage(image);
+                });
+                araworddb.executeBulk(rootDeferred)
+                    .then(deferred.resolve, deferred.reject);
+            } else {
+                addImage(images);
+                araworddb.executeBulk(rootDeferred)
+                    .then(deferred.resolve, deferred.reject);s
             }
 
+            return deferred.promise;
+        }
+
+        function addImage(image) {
+            var picto = {
+                "picto": image._name,
+                "pictoNN": image._name
+            };
+            if (angular.isArray(image.language)) {
+                image.language.forEach(function(lang) {
+                    picto.lang = deparseLang(lang._id);
+                    addLanguage(lang, picto);
+                })
+            } else {
+                picto.lang = deparseLang(image.language._id);
+                addLanguage(image.language, picto);
+            }
+        }
+
+        function addLanguage(lang, picto) {
+            if (angular.isArray(lang.word)) {
+                lang.word.forEach(function(word) {
+                    addWord(word, picto);
+                })
+            } else {
+                araworddb.addPictoBulk(lang.word, picto);
+            }
+        }
+
+        function addWord(word, picto) {
+            picto.type = parseType(word._type);
+            if (word.__text) {
+                araworddb.addPictoBulk(word.__text,picto);
+            } else {
+                araworddb.addPictoBulk(word,picto);
+            }
         }
 
         function deparseLang(lang) {
@@ -232,5 +259,19 @@
             return ind >= 0 ? ind : 3;
         }
 
-    };
+        function getVerbsLangs() {
+            return $http({
+                'method': 'get',
+                'url': 'http://192.168.0.129:3000/verbs/list'
+            })
+        }
+
+        function getSupportedLangs() {
+            return $http({
+                'method': 'get',
+                'url': 'http://192.168.0.129:3000/pictos/list'
+            })
+        }
+
+    }
 })();

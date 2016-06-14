@@ -129,14 +129,12 @@
                 document.addEventListener('deviceready', readPictHandler, false);
 
             function readPictHandler() {
-
                 var dirUrl = cordova.file.dataDirectory;
                 var dirName = 'pictos/';
-
                 $cordovaFile.readAsDataURL(dirUrl+dirName, picto['picto'])
                     .then(function(success){
                         picto['base64'] = success;
-                    },function(err){
+                    },function(){
                         picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
                     });
 
@@ -298,8 +296,8 @@
                     var separator = result[0].lastIndexOf('/');
                     var path = result[0].substr(0,separator);
                     var file = result[0].substr(separator+1);
-                    var dirUrl = cordova.file.applicationStorageDirectory;
-                    var dirName = 'pictos/pictos_12';
+                    var dirUrl = cordova.file.dataDirectory;
+                    var dirName = 'pictos/';
                     var type = undefined;
                     $cordovaFile.readAsDataURL(path,file)
                         .then(function(res){

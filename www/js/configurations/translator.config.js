@@ -56,6 +56,7 @@
                 spl_dverbs: 'Descargando verbos',
                 spl_dpict: 'Descargando pictogramas',
                 spl_addpict: 'Añadiendo pictogramas',
+                spl_fverbs: 'Conjugaciones',
                 // popups
                 pu_file: 'Fichero',
                 pu_choosepict: 'Elegir picto',
@@ -104,6 +105,7 @@
                 spl_dverbs: 'Downloading verbs',
                 spl_dpict: 'Downloading pictographs',
                 spl_addpict: 'Adding pictographs',
+                spl_fverbs: 'Formed verbs',
                 // popups
                 pu_file: 'File',
                 pu_choosepict: 'Choose picto',

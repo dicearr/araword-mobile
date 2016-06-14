@@ -255,7 +255,7 @@
          */
         function setCaret(text, newCaretPosition) {
             // Can be a deleted word because of a compound
-            console.log('CARET_TRACK['+caretPosition+'->'+newCaretPosition+']');
+           // console.log('CARET_TRACK['+caretPosition+'->'+newCaretPosition+']');
             if (!angular.isUndefined(text[caretPosition])) {
                 text[caretPosition].autofocus = false;
             }
