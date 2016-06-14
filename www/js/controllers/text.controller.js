@@ -17,13 +17,14 @@
         '$cordovaFile','araworddb','$scope',
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
-        '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate'];
+        '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate','$ionicPlatform', '$ionicHistory'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
                             $scope, $ionicPopup, IonicClosePopupService,
                             $cordovaSocialSharing, accessService, $cordovaImagePicker,
-                            docsService, $timeout, $ionicScrollDelegate) {
+                            docsService, $timeout, $ionicScrollDelegate,
+                            $ionicPlatform, $ionicHistory) {
 
 
         var vm = this;
@@ -34,6 +35,13 @@
             'words': 1,
             'autofocus': true
         }];
+
+        $ionicPlatform.onHardwareBackButton(function() {
+            if ($ionicHistory.currentStateName()=='text') {
+                ionic.Platform.exitApp();
+            }
+        });
+
         vm.onChange = onChange;
         vm.onKeyUp = onKeyUp; // Deletes empty words
         // Manages double/single click by using timeout
@@ -94,7 +102,7 @@
                                 });
                         }
                     })
-                }, 40) // Time to render correctly 
+                }, 40) // Time to render correctly
             },5); // Time to compile the content
 
 
@@ -331,6 +339,8 @@
             vm.optionsPopup.close();
             textAnalyzer.setCaret(vm.myText,vm.myText.indexOf(vm.selectedWord));
         }
+
+
 
     }
 })();
