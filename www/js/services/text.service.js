@@ -144,6 +144,7 @@
             // Resutls looks like
             // [ {'value': 'de color', 'words': 2, 'pictos': [*]}, {'value': 'color', 'words': 1, 'pictos': [*]} ]
             $q.all(promises).then(function() {
+                var pushed = false;
                 for(var i=0; i<results.length; i++) {
                     var pos = textContext.minIndex;
                     // If we've to change the word
@@ -168,12 +169,15 @@
                     // we cannot access old text[pos] items so we simply push new
                     // words at the end.
                     else if (pos>=text.length) {
+                        pushed=true;
                         text.push(results[i]);
                         i = i + results[i].words - 1;
                     }
                     textContext.minIndex++;
                 }
-                //setCaret(text,textContext.minIndex-1);
+                if (pushed) {
+                    setCaret(text, text.length-1);
+                }
             });
 
             /**
@@ -246,16 +250,18 @@
                 text[pos]['pictos'][0] = emptyPicto;
                 text[pos]['pictInd'] = 0;
             }
+            console.log('CARET_TRACK[deleteWord]');
             setCaret(text, pos<=0?text.length-1:pos-1);
         }
 
         /**
-         * @param text {{= The whole text.}}
-         * @param newCaretPosition {{= The position inside the text where the caret must be set.}}
+         *
+         * @param text
+         * @param newCaretPosition
          */
         function setCaret(text, newCaretPosition) {
             // Can be a deleted word because of a compound
-           // console.log('CARET_TRACK['+caretPosition+'->'+newCaretPosition+']');
+            console.log('CARET_TRACK['+caretPosition+'->'+newCaretPosition+']');
             if (!angular.isUndefined(text[caretPosition])) {
                 text[caretPosition].autofocus = false;
             }
@@ -276,6 +282,7 @@
                 'pictInd': 0,
                 'words': 1
             });
+            console.log('CARET_TRACK[addEmptyWord]');
             setCaret(text, pos);
         }
 

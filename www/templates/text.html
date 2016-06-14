@@ -1,5 +1,6 @@
 <!-- CONTROLLER AS text -->
-<ion-view style="overflow: visible;">
+<ion-view style="overflow-y: visible">
+
     <ion-nav-buttons side="right">
         <button class="button button-icon" ng-click="text.sendDocument()"
                 ng-disabled="!text.acc.send && !text.acc.permissions['toSend']"><i class="icon ion-paper-airplane"></i></button>
@@ -14,10 +15,10 @@
     </ion-nav-buttons>
 
 
-    <ion-content class="has-header" overflow-scroll="false" ng-style="text.conf.styles['fontStyle']"
-                 style="overflow: visible;">
+    <ion-content class="has-header" overflow-scroll="false" ng-style="text.conf.styles['fontStyle']" delegate-handle="content">
 
-        <div id="text" style="display: inline-block; overflow: visible;">
+        <div id="text" style="display: inline-block; overflow-y: visible">
+
             <div class="inline padding" ng-repeat="word in text.myText"
                  ng-style="text.conf.configuration.borders? {'border': '4px solid ' + text.conf.configuration.typeColors[word.pictos[word.pictInd].type].color} :{};"
                  style="margin: 5px; max-width: 300px;"

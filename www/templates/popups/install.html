@@ -7,7 +7,7 @@
     </label>
     <label class="item item-input item-select">
         <span translate="spl_fverbs">Formed verbs</span>
-        <select multiple ng-model='splash.verbsSelect.selected'
+        <select multiple [(ng-model)]='splash.verbsSelect.selected'
                 ng-options="lang.name for lang in splash.verbsSelect.langs">
         </select>
     </label>

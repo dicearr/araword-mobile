@@ -180,10 +180,8 @@
                     db.transaction(function (tx) {
                         tx.executeSql(query, params);
                     }, function(s) {
-                        console.log('SUCESS',JSON.stringify(s));
                         resolve();
                     }, function(error) {
-                        console.log('ERROR',JSON.stringify(error));
                         reject(error);
                     })
                 }
@@ -233,7 +231,6 @@
          */
         function executeQuery(compounds, words, query, resolve, reject) {
             db.executeSql(query,[],function(res) {
-                console.log(word, JSON.stringify(res));
                 for(var i = 0; i < res.rows.length; i++) {
                     var word = res.rows.item(i).word;
                     var pictoName = res.rows.item(i).name;

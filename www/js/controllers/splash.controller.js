@@ -33,15 +33,13 @@
 
         vm.langSelect = {
             'langs': [],
-            'selected': []
+            'selected': undefined
         };
 
         vm.verbsSelect = {
             'langs': [],
             'selected': []
         };
-
-        vm.selected = selected;
 
         if (!havePass()) {
             getVerbsLangs()
@@ -161,12 +159,12 @@
             var deferred = $q.defer();
             pictUpdater.getVerbsLangs()
             .then(function(succ) {
-                vm.verbsSelect.langs = [];
                 succ.data.doc.forEach(function (lang, ind) {
                     vm.verbsSelect.langs.push({
                         id: ind,
                         name: lang.code
                     });
+                    vm.verbsSelect.selected = vm.verbsSelect.langs;
                     deferred.resolve();
                 })
             }, function(error) {
@@ -179,12 +177,12 @@
             var deferred = $q.defer();
             pictUpdater.getSupportedLangs()
                 .then(function(succ) {
-                    vm.langSelect.langs = [];
                     succ.data.doc.forEach(function (lang, ind) {
                         vm.langSelect.langs.push({
                             id: ind,
                             name: lang.code
                         });
+                        vm.langSelect.selected = vm.langSelect.langs[0];
                         deferred.resolve();
                     })
                 }, function(error) {
@@ -199,9 +197,6 @@
             if(code) vm.bar.code = code;
         }
 
-        function selected(lang) {
-            return lang.id == 0;
-        }
     }
 
 })();

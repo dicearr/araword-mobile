@@ -17,13 +17,13 @@
         '$cordovaFile','araworddb','$scope',
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
-        '$cordovaImagePicker','docsService','$timeout'];
+        '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
                             $scope, $ionicPopup, IonicClosePopupService,
                             $cordovaSocialSharing, accessService, $cordovaImagePicker,
-                            docsService, $timeout) {
+                            docsService, $timeout, $ionicScrollDelegate) {
 
 
         var vm = this;
@@ -77,21 +77,29 @@
 
         function shareText() {
 
-            var message = document.getElementById('text');
+            $timeout(function() {
+                $ionicScrollDelegate.$getByHandle('content').scrollTop();
+                $timeout(function() {
+                    var message = document.getElementById('text');
+                    html2canvas(message, {
+                        background: 'white',
+                        onrendered: function(canvas) {
+                            var image = canvas.toDataURL("image/jpeg");
+                            $cordovaSocialSharing
+                                .share(null, null, image, null) // Share via native share sheet
+                                .then(function(result) {
+                                    console.log(JSON.stringify(result));
+                                }, function(err) {
+                                    console.log(JSON.stringify(err));
+                                });
+                        }
+                    })
+                }, 40) // Time to render correctly 
+            },5); // Time to compile the content
 
-            html2canvas(message, {
-                background: 'white',
-                onrendered: function(canvas) {
-                    var image = canvas.toDataURL("image/jpeg");
-                    $cordovaSocialSharing
-                        .share(null, null, image, null) // Share via native share sheet
-                        .then(function(result) {
-                            console.log(JSON.stringify(result));
-                        }, function(err) {
-                            console.log(JSON.stringify(err));
-                        });
-                }
-            })
+
+
+
         }
 
         /**
