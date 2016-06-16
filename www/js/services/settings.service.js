@@ -13,9 +13,9 @@
         .module('AraWord')
         .factory('configService', configService);
 
-    configService.$inject = ['$window','$translate'];
+    configService.$inject = ['$window'];
 
-    function configService($window, $translate) {
+    function configService($window) {
 
         // Default configuration
         var configuration = {

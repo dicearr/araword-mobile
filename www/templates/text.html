@@ -1,6 +1,10 @@
 <!-- CONTROLLER AS text -->
 <ion-view style="overflow-y: visible">
 
+    <ion-nav-buttons side="left">
+        <button class="button button-icon" ng-click="text.newDocument()"><i class="icon ion-compose"></i></button>
+    </ion-nav-buttons>
+
     <ion-nav-buttons side="right">
         <button class="button button-icon" ng-click="text.sendDocument()"
                 ng-disabled="!text.acc.send && !text.acc.permissions['toSend']"><i class="icon ion-paper-airplane"></i></button>
@@ -23,6 +27,7 @@
                  ng-style="text.conf.configuration.borders? {'border': '4px solid ' + text.conf.configuration.typeColors[word.pictos[word.pictInd].type].color} :{};"
                  style="margin: 5px; max-width: 300px;"
                  unbindable>
+
                 <!-- Text can appear on top -->
                 <input type="text"
                        ng-change="text.onChange(word)"
@@ -63,5 +68,3 @@
     </ion-content>
 
 </ion-view>
-
-

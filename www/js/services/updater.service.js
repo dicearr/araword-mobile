@@ -22,6 +22,7 @@
         });
 
         var server = "http://192.168.0.129:3000";
+        var allProgress = {};
 
         var service = {
             getVerbs: getVerbs,
@@ -54,9 +55,6 @@
                         },
                         function (error) {
                             deferred.reject(error);
-                            console.log("download error source " + error.source);
-                            console.log("download error target " + error.target);
-                            console.log("upload error code" + error.code);
                         },
                         true
                     );
@@ -67,15 +65,11 @@
                                uri,
                                pictosPath + 'update.zip',
                                function (entry) {
-                                   console.log('Downloaded on ' + entry.toURL());
                                    $window.localStorage['lastUpdate'] = new Date();
                                    deferred.resolve();
                                },
                                function (error) {
                                    deferred.reject(error);
-                                   console.log("download error source " + error.source);
-                                   console.log("download error target " + error.target);
-                                   console.log("upload error code" + error.code);
                                },
                                true
                            );
@@ -114,17 +108,33 @@
             return deferred.promise;
         }
 
+        function notify(deferred, progress, lang) {
+            if (!allProgress[lang].total) allProgress[lang].total = progress.total;
+            allProgress[lang].loaded = progress.loaded;
+            var total = 0, loaded = 0;
+            angular.forEach(allProgress, function(value, key) {
+                total += value.total;
+                loaded += value.loaded;
+            });
+            deferred.notify({
+                'lengthComputable': true,
+                'total': total,
+                'loaded': loaded
+            });
+        }
+
         function getVerbs(langs) {
             var promises = [];
             var deferred = $q.defer();
             configService.configuration.supportedLangs = [];
 
             langs.forEach(function (lang, ind) {
+                allProgress[lang.name] = {};
                 configService.configuration.supportedLangs.push(lang.name);
                 promises.push($q(function (resolve, reject) {
                     var fileTransfer = new FileTransfer();
                     fileTransfer.onprogress = function(progress) {
-                      deferred.notify(progress);
+                      notify(deferred, progress, lang.name);
                     };
                     var uri = encodeURI(server + "/verbs/" + lang.name);
                     fileTransfer.download(
@@ -135,9 +145,6 @@
                         },
                         function (error) {
                             reject();
-                            console.log("download error source " + error.source);
-                            console.log("download error target " + error.target);
-                            console.log("upload error code" + error.code);
                         },
                         true
                     );
@@ -193,7 +200,6 @@
             var images = db.image;
             var langs = db.languages;
             if (angular.isArray(langs.language)) {
-                console.log(JSON.stringify(langs.language));
                 araworddb.addLanguagesBulk(langs.language);
             } else {
                 araworddb.addLanguagesBulk([langs.language]);

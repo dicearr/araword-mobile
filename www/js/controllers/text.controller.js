@@ -17,14 +17,15 @@
         '$cordovaFile','araworddb','$scope',
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
-        '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate','$ionicPlatform', '$ionicHistory'];
+        '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate',
+        '$ionicPlatform', '$ionicHistory','popupsService','$window'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
                             $scope, $ionicPopup, IonicClosePopupService,
                             $cordovaSocialSharing, accessService, $cordovaImagePicker,
                             docsService, $timeout, $ionicScrollDelegate,
-                            $ionicPlatform, $ionicHistory) {
+                            $ionicPlatform, $ionicHistory, popupsService, $window) {
 
 
         var vm = this;
@@ -81,10 +82,37 @@
             })
         });
 
+        vm.newDocument = newDocument;
+
+
         //////////////
 
-        function shareText() {
+        function newDocument() {
+            $scope.data = {
+                docName: textAnalyzer.docName
+            };
+            var saveDoc = popupsService.saveDocument;
+            saveDoc.onSave = function (e) {
+                if (!$scope.data.docName) {
+                    e.preventDefault();
+                } else {
+                    docsService.saveDoc(textAnalyzer.text, null, $scope.data.docName);
+                }
+            };
+            var promise = saveDoc.show($scope,true);
+            promise.then(function() {
+                textAnalyzer.docName = '';
+                vm.myText = [{
+                    'value': 'AraWord',
+                    'pictos': [{'picto':'25748.png', 'type':4}],
+                    'pictInd': 0,
+                    'words': 1,
+                    'autofocus': true
+                }]
+            })
+        }
 
+        function shareText() {
             $timeout(function() {
                 $ionicScrollDelegate.$getByHandle('content').scrollTop();
                 $timeout(function() {
@@ -102,12 +130,8 @@
                                 });
                         }
                     })
-                }, 40) // Time to render correctly
+                }, 40); // Time to render correctly
             },5); // Time to compile the content
-
-
-
-
         }
 
         /**
@@ -147,10 +171,13 @@
             function readPictHandler() {
                 var dirUrl = cordova.file.dataDirectory;
                 var dirName = 'pictos/';
+                console.log('READING',dirUrl+dirName+picto['picto']);
                 $cordovaFile.readAsDataURL(dirUrl+dirName, picto['picto'])
                     .then(function(success){
+                        console.log('SUCCESS');
                         picto['base64'] = success;
-                    },function(){
+                    },function(error){
+                        console.log('E',JSON.stringify(error));
                         picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
                     });
 
@@ -277,7 +304,7 @@
         }
 
         function sendDocument() {
-            docsService.saveDoc(vm.myText,null,'tmp_mail')
+            docsService.saveDoc(vm.myText,null,textAnalyzer.docName?textAnalyzer.docName:'document')
                 .then(function(data) {
                     if (!data.target.error) {
                         resolveLocalFileSystemURL(data.target.localURL, function(entry) {
@@ -290,7 +317,7 @@
                                 null, // BCC: must be null or an array
                                 [nativePath], // FILES: can be null, a string, or an array
                                 function() {
-                                    $cordovaFile.removeFile(cordova.file.externalDataDirectory,'tmp_mail.awz');
+                                    $cordovaFile.removeFile(cordova.file.externalDataDirectory,'document.awz');
                                 }, // called when sharing worked, but also when the user cancelled sharing via email. On iOS, the callbacks' boolean result parameter is true when sharing worked, false if cancelled. On Android, this parameter is always true so it can't be used). See section "Notes about the successCallback" below.
                                 function(error) {
                                     console.log(JSON.stringify(error))
@@ -308,26 +335,51 @@
         function pickImage() {
             $cordovaImagePicker.getPictures({'maximumImagesCount': 1})
                 .then(function(result){
-                    vm.optionsPopup.close();
                     var separator = result[0].lastIndexOf('/');
                     var path = result[0].substr(0,separator);
                     var file = result[0].substr(separator+1);
                     var dirUrl = cordova.file.dataDirectory;
                     var dirName = 'pictos/';
-                    var type = undefined;
-                    $cordovaFile.readAsDataURL(path,file)
-                        .then(function(res){
-                            type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type;
-                            if (angular.isUndefined(type)) {
-                                type = 3;
-                            }
-                            araworddb.newPicto(vm.selectedWord.value,{'picto':file,'type':type})
-                                .then(function() {
-                                    vm.selectedWord.pictos = [{'picto':file,'type':type,'base64':res}].concat(vm.selectedWord.pictos);
+                    var type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type || 3;
+                    var format = undefined;
+
+                    if (file.substr(name.lastIndexOf('.')) == 'png') {
+                        format = ImageResizer.FORMAT_PNG;
+                    } else {
+                        format = ImageResizer.FORMAT_JPG;
+                    }
+
+                    var options = {
+                        'imageDataType': ImageResizer.IMAGE_DATA_TYPE_URL,
+                        'format': format,
+                        'directory': dirUrl+'/'+dirName,
+                        'filename': file,
+                        'storeImage': true,
+                        'resizeType': ImageResizer.RESIZE_TYPE_MAX_PIXEL
+
+                    };
+
+                    $window.imageResizer.resizeImage(
+                        function() {
+                            $cordovaFile.readAsDataURL(dirUrl+'/'+dirName,file)
+                                .then(function(data) {
+                                    vm.selectedWord.pictos = [{'picto':file,'type':type,'base64':data}].concat(vm.selectedWord.pictos);
                                     vm.selectedWord.pictInd = 0;
                                 })
+                        },
+                        angular.noop,
+                        path + '/' + file,
+                        0, 512, options);
+
+                    araworddb.newPicto(vm.selectedWord.value,
+                        {
+                            'picto': file,
+                            'type': parseInt(type),
+                            'lang': configService.configuration.docLang,
+                            'pictoNN': file
                         });
-                    $cordovaFile.copyFile(path,file,dirUrl+dirName,file);
+
+                    vm.optionsPopup.close();
                 });
         }
 

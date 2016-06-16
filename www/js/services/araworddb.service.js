@@ -64,10 +64,10 @@
         function createDB() {
             var deferred = $q.defer();
 
-            var createMain = "CREATE TABLE main (word VARCHAR(50), idL INTEGER, idT INTEGER, name VARCHAR(50), nameNN VARCHAR(50));";
-            var createType = "CREATE TABLE type (id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
-            var createLang = "CREATE TABLE language(id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
-            var createIndex = "CREATE UNIQUE INDEX main_index ON main (word, idL, idT, name, nameNN);";
+            var createMain = "CREATE TABLE IF NOT EXISTS main (word VARCHAR(50), idL INTEGER, idT INTEGER, name VARCHAR(50), nameNN VARCHAR(50));";
+            var createType = "CREATE TABLE IF NOT EXISTS type (id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
+            var createLang = "CREATE TABLE IF NOT EXISTS language(id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
+            var createIndex = "CREATE UNIQUE INDEX IF NOT EXISTS main_index ON main (word, idL, idT, name, nameNN);";
 
             document.addEventListener('deviceready', function() {
                 db.transaction(function (tx) {
@@ -170,16 +170,13 @@
         function newPicto(word, picto) {
             word = word.replace(/[.,]/g,'');
             return $q(function(resolve,reject) {
-                var query = "INSERT INTO main(word, idL, idT, name, nameNN) VALUES(?,?,?,?)";
-                var params = [word.toLowerCase(),picto.lang ,picto.type, picto.picto, picto.pictoNN];
-
+                var query = "INSERT INTO main(word, idL, idT, name, nameNN) VALUES(?,?,?,?,?)";
+                var params = [word.toLowerCase(), parseLang(picto.lang), picto.type, picto.picto, picto.pictoNN];
 
                 document.addEventListener('deviceready', executeInsert);
 
                 function executeInsert() {
-                    db.transaction(function (tx) {
-                        tx.executeSql(query, params);
-                    }, function(s) {
+                    db.executeSql(query,params,function(s) {
                         resolve();
                     }, function(error) {
                         reject(error);
@@ -292,6 +289,11 @@
         function parseType(typeInText) {
             var types = ['nombreComun','descriptivo','verbo','miscelanea','nombrePropio','contenidoSocial'];
             return types.indexOf(typeInText);
+        }
+
+        function parseLang(lang) {
+            var langCode = ['es', 'en', 'fr', 'cat', 'it', 'ger', 'pt', 'br', 'gal', 'eus'];
+            return langCode.indexOf(lang);
         }
 
     };

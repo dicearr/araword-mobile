@@ -12,10 +12,10 @@
         .module('AraWord')
         .controller('settingsController', settingsController);
 
-    settingsController.$inject = ['configService','$ionicPopover','$scope','$translate','verbsdb',
+    settingsController.$inject = ['configService','$ionicPopover','$scope','verbsdb',
         'araworddb', '$rootScope', '$timeout','textAnalyzer'];
 
-    function settingsController(configService, $ionicPopover, $scope, $translate, verbsdb,
+    function settingsController(configService, $ionicPopover, $scope, verbsdb,
                                 araworddb, $rootScope, $timeout,textAnalyzer) {
 
         var vm = this;
@@ -88,6 +88,7 @@
             }
             verbsdb.setLang(vm.modifiedConfig.docLang);
             araworddb.setLang(vm.modifiedConfig.docLang);
+            configService.docLang = vm.modifiedConfig.docLang;
             configService.configuration = angular.copy(vm.modifiedConfig);
             configService.saveConfig();
         }

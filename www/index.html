@@ -47,15 +47,16 @@
 
       <!-- Controllers -->
       <script type="text/javascript" src="js/controllers/settings.controller.js"></script>
+      <script type="text/javascript" src="js/controllers/nav.controller.js"></script>
       <script type="text/javascript" src="js/controllers/text.controller.js"></script>
       <script type="text/javascript" src="js/controllers/splash.controller.js"></script>
-      <script type="text/javascript" src="js/controllers/nav.controller.js"></script>
       <script type="text/javascript" src="js/controllers/access.controller.js"></script>
 
       <!-- Custom directives -->
       <script type="text/javascript" src="js/directives/focus.directive.js"></script>
 
       <!-- Services -->
+      <script type="text/javascript" src="js/services/popups.sevice.js"></script>
       <script type="text/javascript" src="js/services/text.service.js"></script>
       <script type="text/javascript" src="js/services/updater.service.js"></script>
       <script type="text/javascript" src="js/services/settings.service.js"></script>
@@ -67,9 +68,7 @@
   <body ng-app="AraWord">
       <ion-nav-bar align-title="center" class="bar-white bigger">
           <ion-nav-buttons side="left">
-              <button class="button button-icon" ui-sref="text"><i class="icon ion-compose"></i></button>
           </ion-nav-buttons>
-          <ion-nav-title class="title">AraWord</ion-nav-title>
       </ion-nav-bar>
       <ion-nav-view></ion-nav-view>
   </body>

@@ -250,7 +250,6 @@
                 text[pos]['pictos'][0] = emptyPicto;
                 text[pos]['pictInd'] = 0;
             }
-            console.log('CARET_TRACK[deleteWord]');
             setCaret(text, pos<=0?text.length-1:pos-1);
         }
 
@@ -261,7 +260,6 @@
          */
         function setCaret(text, newCaretPosition) {
             // Can be a deleted word because of a compound
-            console.log('CARET_TRACK['+caretPosition+'->'+newCaretPosition+']');
             if (!angular.isUndefined(text[caretPosition])) {
                 text[caretPosition].autofocus = false;
             }
@@ -282,7 +280,6 @@
                 'pictInd': 0,
                 'words': 1
             });
-            console.log('CARET_TRACK[addEmptyWord]');
             setCaret(text, pos);
         }
 

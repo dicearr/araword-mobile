@@ -24,6 +24,7 @@
                 com_save: 'Guardar',
                 com_cancel: 'Cancelar',
                 com_open: 'Abrir',
+                com_discard: 'Descartar',
                 // templates/settings.html
                 sett_pictSize: 'Tamaño de pictograma',
                 sett_fontSize: 'Tamaño de letra',
@@ -65,14 +66,19 @@
                 pu_pass: 'Configura la contraseña',
                 pu_saveDocTitle: 'Elige nombre del documento',
                 pu_openDocTitle: 'Elige un archivo',
+                pu_saveDocQuest: '¿Guardar cambios?',
+                pu_insError: 'Error de instalción',
                 // admin alert
                 adm_title: '¡CUIDADO!',
-                adm_message: 'Araword se encuentra en modo administrador, recuerde salir de la aplicación para volver a modo usuario.'
+                adm_message: 'Araword se encuentra en modo administrador, recuerde salir de la aplicación para volver a modo usuario.',
+                error_message: 'Error durante la instalción. Es posible que el dispositivo no tenga acceso a internet o capacidad suficiente.'
+                + 'Si el problema persiste intente reinstalar la aplicación.'
             },
             'en': {
                 com_cancel: 'Cancel',
                 com_save: 'Save',
                 com_open: 'Open',
+                com_discard: 'Discard',
                 // templates/settings.html
                 sett_pictSize: 'Pictograph size',
                 sett_fontSize: 'Font size',
@@ -114,9 +120,13 @@
                 pu_pass: 'Enter a password',
                 pu_saveDocTitle: 'Set document name',
                 pu_openDocTitle: 'Choose a file',
+                pu_saveDocQuest: 'Save changes?',
+                pu_insError: 'Installation error',
                 // admin alert
                 adm_title: 'WARNING!',
-                adm_message: 'Now you are in admin mode, rememeber to restart the app so as to come back user mode.'
+                adm_message: 'Now you are in admin mode, rememeber to restart the app so as to come back user mode.',
+                error_message: 'An unexpected error ocurred. Your device may not be connected to the internet or may not have enough storage space.'
+                + 'If the problem persists try to reinstall the application.'
             }
         };
 

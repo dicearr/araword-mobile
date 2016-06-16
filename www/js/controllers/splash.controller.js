@@ -13,22 +13,19 @@
         .controller('splashController',splashController);
 
     splashController.$inject = ['pictUpdater','$ionicLoading', '$location',
-            '$ionicPopup', '$window', '$scope', '$q', 'araworddb' ];
+            '$ionicPopup', '$window', '$scope', '$q', 'araworddb', 'configService', 'popupsService', '$interval'];
 
     function splashController(pictUpdater, $ionicLoading, $location,
-                              $ionicPopup, $window, $scope, $q, araworddb) {
+                              $ionicPopup, $window, $scope, $q, araworddb,
+                              configService, popupsService, $interval) {
 
 
         var vm = this;
-
+        var initialPopup = undefined;
         vm.bar = {
             'code': 'download',
             'message':'Downloading pictographs',
             'value': 0
-        };
-
-        vm.change = function() {
-            console.log(JSON.stringify(vm.select));
         };
 
         vm.langSelect = {
@@ -41,11 +38,12 @@
             'selected': []
         };
 
-        if (!havePass()) {
+        if (firstTime()) {
             getVerbsLangs()
                 .then(getLangs, errorCallback)
                 .then(createDB, errorCallback)
                 .then(showPopup, errorCallback);
+
         } else {
             $location.path('/text');
         }
@@ -53,7 +51,7 @@
         /////////////////////////////
 
         function showPopup() {
-            $ionicPopup.show({
+            initialPopup = {
                 templateUrl: 'templates/popups/install.html',
                 title: '<span translate="spl_title">Inital configuration</span>',
                 scope: $scope,
@@ -82,7 +80,8 @@
                         }
                     }
                 ]
-            });
+            };
+            $ionicPopup.show(initialPopup);
         }
 
         function createDB() {
@@ -114,13 +113,22 @@
 
         function hidePopup() {
             setLang(vm.langSelect.selected.name);
+            $window.localStorage["installed"] = true;
             $ionicLoading.hide();
             $location.path('/text');
         }
 
         function errorCallback(error) {
-            console.log('ERROR OCURRED');
-            console.log(JSON.stringify(error));
+            if (JSON.stringify(error) != 'CHAINED_ERROR') {
+                if (initialPopup) initialPopup.close();
+                $ionicLoading.hide();
+                $window.localStorage.removeItem('mainPass');
+                var promise = popupsService.installError.show();
+                promise.then(function() {
+                    ionic.Platform.exitApp();
+                })
+            }
+            return $q.reject('CHAINED_ERROR');
         }
 
         function onProgress(progressEvent) {
@@ -135,6 +143,7 @@
 
         function setLang(lang) {
             araworddb.setLang(lang);
+            configService.docLang = lang;
         }
 
         /**
@@ -147,8 +156,8 @@
         /**
          * @returns {boolean} {{ True if password exists, otherwise false}}
          */
-        function havePass() {
-            return !angular.isUndefined($window.localStorage['mainPass']);
+        function firstTime() {
+            return angular.isUndefined($window.localStorage.getItem('installed'));
         }
 
         /**
@@ -184,7 +193,8 @@
                         });
                         vm.langSelect.selected = vm.langSelect.langs[0];
                         deferred.resolve();
-                    })
+                    });
+                    configService.configuration.supportedLangs = vm.langSelect.langs;
                 }, function(error) {
                     deferred.reject(error);
                 });
