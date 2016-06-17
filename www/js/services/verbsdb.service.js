@@ -72,7 +72,7 @@
 
             function openDB() {
                 if (!dbname) {
-                    dbname = configService.configuration.docLang + '_database.db';
+                    dbname = 'es_database.db';
                 }
                 db = window.sqlitePlugin.openDatabase( {
                     name: dbname, createFromLocation: 1,

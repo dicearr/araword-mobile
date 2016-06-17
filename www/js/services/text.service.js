@@ -12,9 +12,9 @@
         .module('AraWord')
         .factory('textAnalyzer', textAnalyzer);
 
-    textAnalyzer.$inject = ['araworddb','$q','verbsdb','accessService'];
+    textAnalyzer.$inject = ['araworddb','$q','verbsdb'];
 
-    function textAnalyzer(araworddb, $q, verbsdb, accessService){
+    function textAnalyzer(araworddb, $q, verbsdb){
 
         var radius = 3;
         var caretPosition = 0;

@@ -9,7 +9,7 @@
         <button class="button button-icon" ng-click="text.sendDocument()"
                 ng-disabled="!text.acc.send && !text.acc.permissions['toSend']"><i class="icon ion-paper-airplane"></i></button>
         <button class="button button-icon" ng-click="text.readText()"
-                ng-disabled="!text.acc.logged && !text.acc.permissions['toSpeech']"><i class="icon ion-volume-high"></i></button>
+                ng-disabled="!text.conf.configuration.docLang.locale || ( !text.acc.logged && !text.acc.permissions['toSpeech'] )"><i class="icon ion-volume-high"></i></button>
         <button class="button button-icon  posit" ng-click="text.shareText()"
                 ng-disabled="!text.acc.logged && !text.acc.permissions['toShare']"><i class="icon ion-android-share-alt"></i></button>
         <button ng-controller='navController as nav'

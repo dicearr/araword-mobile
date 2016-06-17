@@ -12,12 +12,12 @@
         .module('AraWord')
         .controller('splashController',splashController);
 
-    splashController.$inject = ['pictUpdater','$ionicLoading', '$location',
-            '$ionicPopup', '$window', '$scope', '$q', 'araworddb', 'configService', 'popupsService', '$interval'];
+    splashController.$inject = ['$ionicLoading', '$location',
+            '$ionicPopup', '$window', '$scope', '$q', 'araworddb', 'configService', 'popupsService', 'pictoService'];
 
-    function splashController(pictUpdater, $ionicLoading, $location,
+    function splashController( $ionicLoading, $location,
                               $ionicPopup, $window, $scope, $q, araworddb,
-                              configService, popupsService, $interval) {
+                              configService, popupsService, pictoService) {
 
 
         var vm = this;
@@ -39,8 +39,8 @@
         };
 
         if (firstTime()) {
-            getVerbsLangs()
-                .then(getLangs, errorCallback)
+
+            getLangs()
                 .then(createDB, errorCallback)
                 .then(showPopup, errorCallback);
 
@@ -71,11 +71,9 @@
                                 });
 
                                 savePass();
-                                getVerbs()
-                                    .then(downloadPictos, errorCallback, onProgress)
-                                    .then(unzipPictos, errorCallback, onProgress)
-                                    .then(updateDB, errorCallback, onProgress)
-                                    .then(hidePopup, errorCallback, onProgress);
+                                downloadFormedVerbs()
+                                    .then(downloadPictos, errorCallback)
+                                    .then(hidePopup, errorCallback);
                             }
                         }
                     }
@@ -84,6 +82,26 @@
             $ionicPopup.show(initialPopup);
         }
 
+        /**
+         * Downloads all the formed verbs databases specified in vm.verbsSelect.selectd
+         * @returns {Promise}
+         */
+        function downloadFormedVerbs() {
+            return pictoService.downloadVerbsDB(vm.verbsSelect.selected,vm.bar);
+        }
+
+        /**
+         * Downloads all the pictographs required to use the app.
+         * @returns {*|Promise}
+         */
+        function downloadPictos() {
+            return pictoService.updatePictos(vm.bar);
+        }
+
+        /**
+         * Creates the basic DB structure if it has not been created previously.
+         * @returns {Promise} - Resolved if DB is ready, otherwise rejected
+         */
         function createDB() {
             if (!araworddb.ready()) {
                 araworddb.startService();
@@ -91,36 +109,25 @@
             return araworddb.createDB();
         }
 
-        function getVerbs() {
-            updateBar(0,'Downloading verbs','dverbs');
-            return pictUpdater.getVerbs(vm.verbsSelect.selected);
-        }
-
-        function downloadPictos() {
-            updateBar(0,'Downloading pictographs','dpict');
-            return pictUpdater.downloadPictos();
-        }
-
-        function unzipPictos() {
-            updateBar(0,'Unzipping pictographs','unzip');
-            return pictUpdater.unzip();
-        }
-
-        function updateDB() {
-            updateBar(0,'Adding pictographs', 'addpict');
-            return pictUpdater.updatePictos();
-        }
-
+        /**
+         * Last function into the chain, sets the app as installed and configures the
+         * database language.
+         */
         function hidePopup() {
-            setLang(vm.langSelect.selected.name);
+            setLang(vm.langSelect.selected);
             $window.localStorage["installed"] = true;
             $ionicLoading.hide();
             $location.path('/text');
         }
 
+        /**
+         * Propagates the error through the chain but only exectued once.
+         * @param {Object} error - The error which has triggered this callback
+         * @returns {Promise.reject}
+         */
         function errorCallback(error) {
             if (JSON.stringify(error) != 'CHAINED_ERROR') {
-                if (initialPopup) initialPopup.close();
+                if (initialPopup && initialPopup.close) initialPopup.close();
                 $ionicLoading.hide();
                 $window.localStorage.removeItem('mainPass');
                 var promise = popupsService.installError.show();
@@ -131,19 +138,13 @@
             return $q.reject('CHAINED_ERROR');
         }
 
-        function onProgress(progressEvent) {
-            if (progressEvent) {
-                if (progressEvent && progressEvent.lengthComputable) {
-                    updateBar(window.Math.round(progressEvent.loaded*100 / progressEvent.total));
-                } else {
-                    vm.bar.value++;
-                }
-            }
-        }
-
+        /**
+         * Sets the application language to the user selected one
+         * @param {String} lang - Selected language.
+         */
         function setLang(lang) {
-            araworddb.setLang(lang);
-            configService.docLang = lang;
+            araworddb.setLang(lang.code);
+            configService.docLang = configService.configuration.supportedLangs[lang.id];
         }
 
         /**
@@ -157,54 +158,40 @@
          * @returns {boolean} {{ True if password exists, otherwise false}}
          */
         function firstTime() {
-            return angular.isUndefined($window.localStorage.getItem('installed'));
+            var value = $window.localStorage.getItem('installed');
+            return angular.isUndefined(value) || value!="true";
         }
 
+
         /**
-         * Downloads the available verbs langs form the server and populates the
-         * select structure with them.
+         * Downloads the list of supported langs and fills the installation
+         * popup selects with them.
+         * @returns {Promise} - Resolved if download goes well, otherwise rejected
          */
-        function getVerbsLangs() {
+        function getLangs() {
             var deferred = $q.defer();
-            pictUpdater.getVerbsLangs()
-            .then(function(succ) {
-                succ.data.doc.forEach(function (lang, ind) {
-                    vm.verbsSelect.langs.push({
-                        id: ind,
-                        name: lang.code
+            pictoService.getSupportedLangs()
+                .then(function(data) {
+                    configService.configuration.supportedLangs = data['mainLangs'];
+                    data['mainLangs'].forEach(function(lang) {
+                        vm.langSelect.langs.push({
+                            'id': lang.id,
+                            'name': lang.locale?lang.locale:lang.code,
+                            'code': lang.code
+                        })
+                    });
+                    vm.langSelect.selected = vm.langSelect.langs[0];
+                    data['verbLangs'].forEach(function(lang) {
+                        vm.verbsSelect.langs.push({
+                            'id': lang.id,
+                            'name': lang.locale?lang.locale:lang.code,
+                            'code': lang.code
+                        })
                     });
                     vm.verbsSelect.selected = vm.verbsSelect.langs;
                     deferred.resolve();
-                })
-            }, function(error) {
-                deferred.reject(error);
-            });
-            return deferred.promise;
-        }
-
-        function getLangs() {
-            var deferred = $q.defer();
-            pictUpdater.getSupportedLangs()
-                .then(function(succ) {
-                    succ.data.doc.forEach(function (lang, ind) {
-                        vm.langSelect.langs.push({
-                            id: ind,
-                            name: lang.code
-                        });
-                        vm.langSelect.selected = vm.langSelect.langs[0];
-                        deferred.resolve();
-                    });
-                    configService.configuration.supportedLangs = vm.langSelect.langs;
-                }, function(error) {
-                    deferred.reject(error);
                 });
             return deferred.promise;
-        }
-
-        function updateBar(value, message, code) {
-            if(angular.isDefined(value)) vm.bar.value = value;
-            if(message) vm.bar.message = message;
-            if(code) vm.bar.code = code;
         }
 
     }

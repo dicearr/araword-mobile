@@ -13,13 +13,12 @@
     </ion-nav-buttons>
 
     <ion-content class="has-header" overflow-scroll="false" style="display: block">
-
         <label class="item item-input item-select">
             <div class="input-label" translate="sett_langConf">
                 Language
             </div>
-            <select ng-model="sett.modifiedConfig['docLang']" ng-disabled="sett.canChangeLang">
-                <option ng-repeat="lang in sett.supported">{{lang}}</option>
+            <select ng-model="sett.modifiedConfig['docLang'].code" ng-disabled="sett.canChangeLang">
+                <option ng-repeat="lang in sett.supported">{{lang.code}}</option>
             </select>
         </label>
 

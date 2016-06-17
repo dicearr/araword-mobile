@@ -96,9 +96,9 @@
                         var words = baseaw.document.content.AWElement;
 
                         configService.configuration.docLang =
-                            deparseLang(baseaw.document.preferences.documentLanguage);
-                        verbsdb.setLang(configService.configuration.docLang);
-                        araworddb.setLang(configService.configuration.docLang);
+                            getLang(baseaw.document.preferences.documentLanguage);
+                        verbsdb.setLang(configService.configuration.docLang.code);
+                        araworddb.setLang(configService.configuration.docLang.code);
 
                         words = words.filter(isWord);
 
@@ -294,7 +294,7 @@
                 var result = {
                     "document": {
                         "preferences": {
-                            "documentLanguage": parseLang(configService.configuration.docLang),
+                            "documentLanguage": parseLang(configService.configuration.docLang.code),
                             "imageSize": 100,
                             "font": {
                                 "name": "Verdana",
@@ -376,10 +376,12 @@
         return typeN >= types.length ? types[3] : types[typeN];
     }
 
-    function deparseLang(lang) {
-        var langs = ['Castellano', 'Ingles', 'Frances', 'Catalan', 'Italiano', 'Aleman', 'Portugues', 'Portugues Brasil', 'Gallego', 'Euskera'];
-        var langCode = ['es', 'en', 'fr', 'cat', 'it', 'ger', 'pt', 'br', 'gal', 'eus'];
-        return langCode[langs.indexOf(lang)];
+    function getLang(longLang) {
+        configService.configuration.supportedLangs.forEach(function(lang) {
+            if (lang.long == longLang) {
+                configService.docLang = lang;
+            }
+        })
     }
 
     function parseLang(lang) {

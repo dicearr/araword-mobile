@@ -34,9 +34,8 @@
         vm.selectColor = selectColor;
         vm.saveConfig = saveConfig;
         vm.updateStyles = updateStyles;
-        vm.supported = configService.configuration.supportedLangs;
+        vm.supported = vm.modifiedConfig.supportedLangs;
         vm.canChangeLang = textAnalyzer.text.length>1;
-
         var typeSelected = undefined;
 
         //////////////////////
@@ -81,15 +80,19 @@
          * Saves the whole configuration
          */
         function saveConfig() {
-            if (vm.modifiedConfig.docLang != configService.configuration.docLang) {
+            if (vm.modifiedConfig.docLang.code != configService.configuration.docLang.code) {
                 $timeout(function () {
                     $rootScope.$broadcast('reloadText', 'newLang');
                 });
             }
-            verbsdb.setLang(vm.modifiedConfig.docLang);
-            araworddb.setLang(vm.modifiedConfig.docLang);
-            configService.docLang = vm.modifiedConfig.docLang;
+            verbsdb.setLang(vm.modifiedConfig.docLang.code);
+            araworddb.setLang(vm.modifiedConfig.docLang.code);
             configService.configuration = angular.copy(vm.modifiedConfig);
+            configService.configuration.supportedLangs.forEach(function(lang) {
+                if (lang.code == configService.configuration.docLang.code) {
+                    configService.configuration.docLang = lang
+                }
+            });
             configService.saveConfig();
         }
 

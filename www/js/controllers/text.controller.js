@@ -18,14 +18,15 @@
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
         '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate',
-        '$ionicPlatform', '$ionicHistory','popupsService','$window'];
+        '$ionicPlatform', '$ionicHistory','popupsService','$window','pictoService','$filter'];
 
     function textController(textAnalyzer, configService,
                             $cordovaFile, araworddb,
                             $scope, $ionicPopup, IonicClosePopupService,
                             $cordovaSocialSharing, accessService, $cordovaImagePicker,
                             docsService, $timeout, $ionicScrollDelegate,
-                            $ionicPlatform, $ionicHistory, popupsService, $window) {
+                            $ionicPlatform, $ionicHistory, popupsService, $window,
+                            pictoService, $filter) {
 
 
         var vm = this;
@@ -79,7 +80,7 @@
                 $timeout(function() {
                     textAnalyzer.processEvent(word, vm.myText);
                 },7);
-            })
+            });
         });
 
         vm.newDocument = newDocument;
@@ -171,13 +172,10 @@
             function readPictHandler() {
                 var dirUrl = cordova.file.dataDirectory;
                 var dirName = 'pictos/';
-                console.log('READING',dirUrl+dirName+picto['picto']);
                 $cordovaFile.readAsDataURL(dirUrl+dirName, picto['picto'])
                     .then(function(success){
-                        console.log('SUCCESS');
                         picto['base64'] = success;
-                    },function(error){
-                        console.log('E',JSON.stringify(error));
+                    },function(){
                         picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
                     });
 
@@ -217,7 +215,7 @@
         function readWord(word) {
             TTS.speak({
                 text: word.value,
-                locale: 'es-ES',
+                locale: vm.conf.configuration.docLang.locale,
                 rate: 1.1
             }, function(success) { console.log(JSON.stringify(success)) },
                 function(error) { console.log(JSON.stringify(error)) })
@@ -272,6 +270,7 @@
          * Concatenates the full text and reads it.
          */
         function readText() {
+            console.log(JSON.stringify(vm.conf.configuration.docLang));
             var text = '';
             for(var i=0; i<vm.myText.length; i++){
                 text += vm.myText[i].value;
@@ -279,8 +278,8 @@
 
             TTS.speak({
                 text: text,
-                locale: 'es-ES',
-                rate: 0.75
+                locale: vm.conf.configuration.docLang.locale,
+                rate: 1.1
             }, function() {
                 TTS.speak('');
             }, function() {
@@ -335,48 +334,25 @@
         function pickImage() {
             $cordovaImagePicker.getPictures({'maximumImagesCount': 1})
                 .then(function(result){
+                    var picto = {};
                     var separator = result[0].lastIndexOf('/');
-                    var path = result[0].substr(0,separator);
-                    var file = result[0].substr(separator+1);
-                    var dirUrl = cordova.file.dataDirectory;
-                    var dirName = 'pictos/';
-                    var type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type || 3;
-                    var format = undefined;
+                    picto.oldPath = result[0].substr(0,separator);
+                    picto.fileName = result[0].substr(separator+1);
+                    picto.type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type || 3;
+                    picto.word = vm.selectedWord.value;
 
-                    if (file.substr(name.lastIndexOf('.')) == 'png') {
-                        format = ImageResizer.FORMAT_PNG;
-                    } else {
-                        format = ImageResizer.FORMAT_JPG;
-                    }
-
-                    var options = {
-                        'imageDataType': ImageResizer.IMAGE_DATA_TYPE_URL,
-                        'format': format,
-                        'directory': dirUrl+'/'+dirName,
-                        'filename': file,
-                        'storeImage': true,
-                        'resizeType': ImageResizer.RESIZE_TYPE_MAX_PIXEL
-
-                    };
-
-                    $window.imageResizer.resizeImage(
-                        function() {
-                            $cordovaFile.readAsDataURL(dirUrl+'/'+dirName,file)
+                    pictoService.addPicto(picto)
+                        .then(function(newPicto) {
+                            // It injects the image directly
+                            $cordovaFile.readAsDataURL(pictoService.pictoPath, newPicto.filename)
                                 .then(function(data) {
-                                    vm.selectedWord.pictos = [{'picto':file,'type':type,'base64':data}].concat(vm.selectedWord.pictos);
+                                    vm.selectedWord.pictos = [{
+                                        'picto':picto.fileName,
+                                        'type':picto.type,
+                                        'base64':data
+                                    }].concat(vm.selectedWord.pictos);
                                     vm.selectedWord.pictInd = 0;
                                 })
-                        },
-                        angular.noop,
-                        path + '/' + file,
-                        0, 512, options);
-
-                    araworddb.newPicto(vm.selectedWord.value,
-                        {
-                            'picto': file,
-                            'type': parseInt(type),
-                            'lang': configService.configuration.docLang,
-                            'pictoNN': file
                         });
 
                     vm.optionsPopup.close();

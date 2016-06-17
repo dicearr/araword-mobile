@@ -171,7 +171,8 @@
             word = word.replace(/[.,]/g,'');
             return $q(function(resolve,reject) {
                 var query = "INSERT INTO main(word, idL, idT, name, nameNN) VALUES(?,?,?,?,?)";
-                var params = [word.toLowerCase(), parseLang(picto.lang), picto.type, picto.picto, picto.pictoNN];
+                var params = [word.toLowerCase(), picto.lang, picto.type, picto.fileName, picto.fileName];
+                console.log(JSON.stringify(params));
 
                 document.addEventListener('deviceready', executeInsert);
 
@@ -291,10 +292,7 @@
             return types.indexOf(typeInText);
         }
 
-        function parseLang(lang) {
-            var langCode = ['es', 'en', 'fr', 'cat', 'it', 'ger', 'pt', 'br', 'gal', 'eus'];
-            return langCode.indexOf(lang);
-        }
+
 
     };
 

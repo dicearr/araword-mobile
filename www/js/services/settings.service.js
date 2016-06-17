@@ -24,8 +24,16 @@
             'grayScale': 0,
             'borders': true,
             'possition': true,
-            'docLang': 'es',
-            'supportedLangs': ['es'],
+            'docLang': {
+                'code': 'es',
+                'locale': 'es-ES',
+                'long': 'Castellano'
+            },
+            'supportedLangs': [{
+                'code': 'es',
+                'locale': 'es-ES',
+                'long': 'Castellano'
+            }],
             'typeColors': [{
                 'type': 'nombreComun',
                 'text': 'Nombre comun',
@@ -78,6 +86,7 @@
          */
         function restoreConfig() {
             service.configuration = JSON.parse($window.localStorage['configuration'] || JSON.stringify(configuration));
+            console.log('RETRIEVE',JSON.stringify(service.configuration.supportedLangs));
             if (angular.isUndefined(service.configuration['styles'])) {
                 setStyles();
             }

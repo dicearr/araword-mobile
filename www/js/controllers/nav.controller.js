@@ -13,12 +13,12 @@
     navController.$inject = ['$ionicPopover', '$scope', 'accessService',
         '$ionicPopup', '$window', '$cordovaImagePicker', 'araworddb',
         '$cordovaFile', 'textAnalyzer', '$location', 'docsService', '$q',
-        'popupsService', 'configService', 'pictUpdater'];
+        'popupsService', 'configService', 'pictoService','$ionicLoading'];
 
     function navController($ionicPopover, $scope, accessService, $ionicPopup,
                            $window, $cordovaImagePicker, araworddb, $cordovaFile,
                            textAnalyzer, $location, docsService, $q, popupsService,
-                           configService, pictUpdater) {
+                           configService, pictoService, $ionicLoading) {
 
         var vm = this;
         vm.showMenu = showMenu;
@@ -53,14 +53,21 @@
 
         vm.help = help;
         vm.searchUpdates = searchUpdates;
+        vm.bar = {
+            'code': '',
+            'value': 0,
+            'message': ''
+        };
 
         ///////////////
 
         function searchUpdates() {
-                pictUpdater.downloadPictos()
-                    .then(pictUpdater.unzip)
-                    .then(pictUpdater.updatePictos);
-
+            $ionicLoading.show({
+                'template': "<span translate='spl_{{nav.bar.code}}'>{{nav.bar.message}}</span>"
+                + "<progress value='{{nav.bar.value}}' max='100'></progress>",
+                scope: $scope
+            });
+            pictoService.updatePictos(vm.bar);
         }
 
         function help() {
@@ -150,40 +157,10 @@
         function newPicto() {
             var newPicto = popupsService.newPicto;
             newPicto.onSave = function (e) {
-                if (!vm.newPictWord || !vm.newPict.picto || !vm.newPict.origPath || !vm.newPict.destPath) {
+                if (!vm.newPict.word || !vm.newPict.fileName || !vm.newPict.oldPath ) {
                     e.preventDefault();
                 } else {
-                    var name = vm.newPict.picto, format = undefined;
-                    if (name.substr(name.lastIndexOf('.')) == 'png') {
-                        format = ImageResizer.FORMAT_PNG;
-                    } else {
-                        format = ImageResizer.FORMAT_JPG;
-                    }
-
-                    var options = {
-                        'imageDataType': ImageResizer.IMAGE_DATA_TYPE_URL,
-                        'format': format,
-                        'directory': vm.newPict.destPath,
-                        'filename': vm.newPict.picto,
-                        'storeImage': true,
-                        'resizeType': ImageResizer.RESIZE_TYPE_MAX_PIXEL
-
-                    };
-
-                    console.log(vm.newPict.origPath + '/' + vm.newPict.picto);
-                    $window.imageResizer.resizeImage(
-                        angular.noop,
-                        angular.noop,
-                        vm.newPict.origPath + '/' + vm.newPict.picto,
-                        0, 512, options);
-
-                    araworddb.newPicto(vm.newPictWord,
-                        {
-                            'picto': vm.newPict.picto,
-                            'type': parseInt(vm.newPict.type),
-                            'lang': configService.configuration.docLang,
-                            'pictoNN': vm.newPict.picto
-                        });
+                    pictoService.addPicto(vm.newPict);
                     $scope.menu.hide();
                 }
             };
@@ -198,13 +175,8 @@
                 .then(function (result) {
                     if (result[0]) {
                         var separator = result[0].lastIndexOf('/');
-                        var path = result[0].substr(0, separator);
-                        var file = result[0].substr(separator + 1);
-                        var dirUrl = cordova.file.dataDirectory;
-                        var dirName = 'pictos';
-                        vm.newPict.picto = file;
-                        vm.newPict.destPath = dirUrl + dirName;
-                        vm.newPict.origPath = path;
+                        vm.newPict.fileName = result[0].substr(separator + 1);
+                        vm.newPict.oldPath = result[0].substr(0, separator);
                     }
                 });
         }
