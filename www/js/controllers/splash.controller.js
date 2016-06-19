@@ -12,11 +12,24 @@
         .module('AraWord')
         .controller('splashController',splashController);
 
-    splashController.$inject = ['$ionicLoading', '$location',
-            '$ionicPopup', '$window', '$scope', '$q', 'araworddb', 'configService', 'popupsService', 'pictoService'];
+    splashController.$inject = ['$ionicLoading', '$location', '$ionicPopup', '$window', '$scope', '$q',
+        'araworddb', 'configService', 'popupsService', 'pictoService'];
 
-    function splashController( $ionicLoading, $location,
-                              $ionicPopup, $window, $scope, $q, araworddb,
+    /**
+     * Controller
+     * @param $ionicLoading - Required to show loading popup while downloading pictographs
+     * @param $location - Required to be redirected
+     * @param $ionicPopup - Required to show popups
+     * @param $window - Required to access localStorage
+     * @param $scope - Required to access to the controller from the popups
+     * @param $q - Required to work with promises
+     * @param araworddb - Required to create the DB
+     * @param configService - Required to save language configuration
+     * @param popupsService - Required to show popups
+     * @param pictoService - Required to update pictographs
+     * @param pictoService - Required to update pictographs
+     */
+    function splashController( $ionicLoading, $location, $ionicPopup, $window, $scope, $q, araworddb,
                               configService, popupsService, pictoService) {
 
 
@@ -39,7 +52,6 @@
         };
 
         if (firstTime()) {
-
             getLangs()
                 .then(createDB, errorCallback)
                 .then(showPopup, errorCallback);
@@ -50,6 +62,10 @@
 
         /////////////////////////////
 
+        /**
+         * Shows the installation popup when the language and admin password
+         * are selected.
+         */
         function showPopup() {
             initialPopup = {
                 templateUrl: 'templates/popups/install.html',

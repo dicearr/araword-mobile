@@ -1,7 +1,8 @@
 /**
  * Created by Diego on 28/03/16.
  *
- * Manages the popovers shown when menu options are tapped.
+ * Manages all the operations required by popups/popover's buttons.
+ * Ops; login, pickImage, newPicto, searchUpdates
  */
 (function () {
     'use strict';
@@ -10,15 +11,25 @@
         .module('AraWord')
         .controller('navController', navController);
 
-    navController.$inject = ['$ionicPopover', '$scope', 'accessService',
-        '$ionicPopup', '$window', '$cordovaImagePicker', 'araworddb',
-        '$cordovaFile', 'textAnalyzer', '$location', 'docsService', '$q',
-        'popupsService', 'configService', 'pictoService','$ionicLoading'];
+    navController.$inject = ['$ionicPopover', '$scope', 'accessService', '$ionicPopup', '$window', '$cordovaImagePicker',
+        'textAnalyzer', 'docsService', 'popupsService', 'pictoService','$ionicLoading'];
 
-    function navController($ionicPopover, $scope, accessService, $ionicPopup,
-                           $window, $cordovaImagePicker, araworddb, $cordovaFile,
-                           textAnalyzer, $location, docsService, $q, popupsService,
-                           configService, pictoService, $ionicLoading) {
+    /**
+     * Controller
+     * @param $ionicPopover - Required to show the popovers
+     * @param $scope - Required to access to the controller from the popovers/popups
+     * @param accessService - Required to know which functionalities are available
+     * @param $ionicPopup - Required to show the popups TODO: pictoService
+     * @param $window - Required to access localStorage
+     * @param $cordovaImagePicker - Required to select images (to add pictos)
+     * @param textAnalyzer - Required to access the current text
+     * @param docsService - Required to save/load documents
+     * @param popupsService - Required to show the popups
+     * @param pictoService - Required to upload pictographs
+     * @param $ionicLoading - Required to show loading popup
+     */
+    function navController($ionicPopover, $scope, accessService, $ionicPopup, $window, $cordovaImagePicker,
+                           textAnalyzer, docsService,  popupsService, pictoService, $ionicLoading) {
 
         var vm = this;
         vm.showMenu = showMenu;
@@ -35,7 +46,7 @@
             $scope.menu = popover;
         });
 
-        // Configuration sub-popover [Profile, Access control]
+        // Configuration sub-popover [Profile, Access control, Update]
         $ionicPopover.fromTemplateUrl('templates/popovers/securityOptions.html', {
             scope: $scope
         }).then(function (popover) {
@@ -61,6 +72,9 @@
 
         ///////////////
 
+        /**
+         * Searches for updates and download new pictographs if available
+         */
         function searchUpdates() {
             $ionicLoading.show({
                 'template': "<span translate='spl_{{nav.bar.code}}'>{{nav.bar.message}}</span>"
@@ -70,6 +84,9 @@
             pictoService.updatePictos(vm.bar);
         }
 
+        /**
+         * Shows an information popup
+         */
         function help() {
             $ionicPopup.alert({
                 title: 'Acerca de Araword',
@@ -84,7 +101,7 @@
 
         /**
          * Displays the options popover.
-         * @param event {{ Object that determines the popover position }}
+         * @param event - Object that determines the popover position
          */
         function showMenu(event) {
             $scope.menu.show(event);
@@ -114,7 +131,7 @@
 
         /**
          * Shows the login popup and executes callback if login is correct.
-         * @param {function} callback Function to be executed on successful login
+         * @param {function} callback - Function to be executed on successful login
          */
         function login(callback) {
             // Password written model

@@ -57,6 +57,8 @@
             addLanguagesBulk: addLanguagesBulk
         };
 
+        if (!ready()) startService();
+
         return service;
 
         ///////////////////////////////////////////////////////////////////

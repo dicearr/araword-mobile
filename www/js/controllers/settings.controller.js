@@ -15,6 +15,17 @@
     settingsController.$inject = ['configService','$ionicPopover','$scope','verbsdb',
         'araworddb', '$rootScope', '$timeout','textAnalyzer'];
 
+    /**
+     * Controller
+     * @param configService - Required to save the configuration
+     * @param $ionicPopover - Required to show popovers
+     * @param $scope - Required to access to the controller from the popovers
+     * @param verbsdb - Required to change the formed verbs database
+     * @param araworddb - Required to change the database language
+     * @param $rootScope - Required to broadcast 'reload' event when language changes
+     * @param $timeout - Required to broadcast through rootScope
+     * @param textAnalyzer - Required to access to the current text
+     */
     function settingsController(configService, $ionicPopover, $scope, verbsdb,
                                 araworddb, $rootScope, $timeout,textAnalyzer) {
 
@@ -65,7 +76,7 @@
 
         /**
          * Chooses a color from the popover.
-         * @param color {{ choosen color }}
+         * @param {String} color - The color to be chosen
          */
         function selectColor(color) {
             if (!angular.isUndefined(typeSelected)) {

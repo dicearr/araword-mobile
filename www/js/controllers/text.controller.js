@@ -12,24 +12,55 @@
         .module('AraWord')
         .controller('textController', textController);
 
-    // Using $scope is not recomended, but I need $scope.$apply() in nextPicto()
     textController.$inject = ['textAnalyzer','configService',
         '$cordovaFile','araworddb','$scope',
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
         '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate',
-        '$ionicPlatform', '$ionicHistory','popupsService','$window','pictoService','$filter'];
+        '$ionicPlatform', '$ionicHistory','popupsService','pictoService'];
 
-    function textController(textAnalyzer, configService,
-                            $cordovaFile, araworddb,
-                            $scope, $ionicPopup, IonicClosePopupService,
-                            $cordovaSocialSharing, accessService, $cordovaImagePicker,
-                            docsService, $timeout, $ionicScrollDelegate,
-                            $ionicPlatform, $ionicHistory, popupsService, $window,
-                            pictoService, $filter) {
-
+    /**
+     * Controller
+     * @param textAnalyzer - Required to process text changes
+     * @param configService - Required to access configuration parameters as language
+     * @param $cordovaFile - Required to read pictographs from files
+     * @param $scope - Required to access to the controller from the popups
+     * @param $ionicPopup - Required to show the popups TODO: Use poupService
+     * @param IonicClosePopupService - Required to automatically close popups when user taps outside
+     * @param $cordovaSocialSharing - Required to share awz documents through social media
+     * @param accessService - Required to know which functionalities are available
+     * @param $cordovaImagePicker - Required to select an image from device
+     * @param docsService - Required to save/load documents
+     * @param $timeout - Required to delay some functions html2canvas for example
+     * @param $ionicScrollDelegate - Required to move scroll to top when html2canvas
+     * @param $ionicPlatform - Required to close the app
+     * @param $ionicHistory - Required to know in which state we are
+     * @param popupsService - Required to show the popups
+     * @param pictoService - Required to update pictographs
+     */
+    function textController(textAnalyzer, configService, $cordovaFile, $scope, $ionicPopup, IonicClosePopupService,
+                            $cordovaSocialSharing, accessService, $cordovaImagePicker, docsService, $timeout,
+                            $ionicScrollDelegate, $ionicPlatform, $ionicHistory, popupsService, pictoService) {
 
         var vm = this;
+
+        /**
+         * All the information needed from pictographs
+         * @typedef {Object} picto - The pictograph we've to read.
+         * @property {String} picto.base64 -  The pictograph read as data url
+         * @property {String} picto.type - The pictograph's type
+         * @property {String} picto.picto - The pictograph's file name
+         */
+
+        /**
+         * All the information needed from words
+         * @typedef {Object} word - word in which change has happened
+         * @property {String} word.value - The word itself
+         * @property {Array} word.pictos - All the pictos related to the word
+         * @property {Number} word.words - The length of the word in words (To do = 2)
+         * @property {Number} word.pictInd - The current pictograph index from word.pictos
+         * @property {Boolean} word.autofocus - True if the caret is currently set on the word
+         */
         vm.myText = [{
             'value': 'AraWord',
             'pictos': [{'picto':'25748.png', 'type':4}],
@@ -71,12 +102,9 @@
 
         vm.sendDocument = sendDocument;
 
-        if(! araworddb.ready()) {
-            araworddb.startService();
-        }
-
-        $scope.$on('reloadText', function(event, value) {
-            vm.myText.forEach(function(word,ind) {
+        // TODO: reload event is different from onChange
+        $scope.$on('reloadText', function() {
+            vm.myText.forEach(function(word) {
                 $timeout(function() {
                     textAnalyzer.processEvent(word, vm.myText);
                 },7);
@@ -88,6 +116,10 @@
 
         //////////////
 
+        /**
+         * Shows a popup to save the current document and creates a new blank
+         * Araword document.
+         */
         function newDocument() {
             $scope.data = {
                 docName: textAnalyzer.docName
@@ -113,6 +145,9 @@
             })
         }
 
+        /**
+         * Sends the Araword document as an image through social media
+         */
         function shareText() {
             $timeout(function() {
                 $ionicScrollDelegate.$getByHandle('content').scrollTop();
@@ -136,7 +171,8 @@
         }
 
         /**
-         * @param word = word in which change has happened
+         * Executed when any change occurs
+         * @param {word} word - The word in which change has occurred
          */
         function onChange(word) {
             if(angular.isUndefined(word.unbind) || !word.unbind) {
@@ -158,7 +194,7 @@
 
         /**
          * Reads the image from the file system.
-         * @param picto = The picto we've to read.
+         * @param {picto} picto - The pictograph to be read
          */
         function readPicto(picto) {
 
@@ -186,7 +222,7 @@
 
         /**
          * $scope.$apply() used to troubleshoot singleActionClick()
-         * @param word = The word whose picto must change.
+         * @param {word} word - The word whose pictograph must change.
          */
         function nextPicto(word) {
             word.pictInd = (word.pictInd+1)%word.pictos.length;
@@ -195,7 +231,7 @@
 
         /**
          * If the word is empty, it will be deleted
-         * @param word = The word that must be checked.
+         * @param {word} word - The word that must be checked.
          */
         function onKeyUp(event, word) {
             if (event.target.value.length==0) {
@@ -209,8 +245,8 @@
         }
 
         /**
-         * Reads a word
-         * @param word = The word to be read.
+         * Reads a word by using text to speech
+         * @param {word} word - The word to be read.
          */
         function readWord(word) {
             TTS.speak({
@@ -228,7 +264,7 @@
         /**
          * Manages single/double click changin the image or reading the text
          * depending on the event.
-         * @param word = The word which has been clicked.
+         * @param {word} word - The word which has been clicked.
          * @returns {*} void
          */
         function singleClickAction(word) {
@@ -250,8 +286,8 @@
 
         /**
          * SingleClick callback
-         * @param word = the word which has been clicked
-         * @param executingDoubleClick = true if doble click occurs during the timeout
+         * @param {word} word - the word which has been clicked
+         * @param {Boolean} executingDoubleClick - True if doble click occurs during the timeout
          */
         function singleClickOnlyAction(word, executingDoubleClick) {
             if (executingDoubleClick) return;
@@ -260,17 +296,17 @@
 
         /**
          * DoubleClick callback
-         * @param word  = the word which has been double clicked
+         * @param {word} word - The word which has been double clicked
          */
         function doubleClickAction(word) {
             readWord(word);
         }
 
         /**
-         * Concatenates the full text and reads it.
+         * Concatenates the full text and reads it by using the text to speech.
          */
         function readText() {
-            console.log(JSON.stringify(vm.conf.configuration.docLang));
+
             var text = '';
             for(var i=0; i<vm.myText.length; i++){
                 text += vm.myText[i].value;
@@ -289,7 +325,7 @@
 
         /**
          * Displays the options popup for a word.
-         * @param word
+         * @param {word} word - The selected word
          */
         function showOptions(word) {
            vm.selectedWord = word;
@@ -302,6 +338,10 @@
             IonicClosePopupService.register($scope.myPopup);
         }
 
+        /**
+         * Sends a document in its original .AWZ form to be able to open it
+         * from any other Araword app.
+         */
         function sendDocument() {
             docsService.saveDoc(vm.myText,null,textAnalyzer.docName?textAnalyzer.docName:'document')
                 .then(function(data) {
