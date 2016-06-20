@@ -72,7 +72,9 @@
                 adm_title: '¡CUIDADO!',
                 adm_message: 'Araword se encuentra en modo administrador, recuerde salir de la aplicación para volver a modo usuario.',
                 error_message: 'Error durante la instalción. Es posible que el dispositivo no tenga acceso a internet o capacidad suficiente.'
-                + 'Si el problema persiste intente reinstalar la aplicación.'
+                + 'Si el problema persiste intente reinstalar la aplicación.',
+                send_awd: 'Enviado desde Araword móvil',
+                send_awd_c: 'Documento Araword.'
             },
             'en': {
                 com_cancel: 'Cancel',
@@ -126,7 +128,9 @@
                 adm_title: 'WARNING!',
                 adm_message: 'Now you are in admin mode, rememeber to restart the app so as to come back user mode.',
                 error_message: 'An unexpected error ocurred. Your device may not be connected to the internet or may not have enough storage space.'
-                + 'If the problem persists try to reinstall the application.'
+                + 'If the problem persists try to reinstall the application.',
+                send_awd: 'Sent from Araword mobile',
+                send_awd_c: 'Araword document.'
             }
         };
 

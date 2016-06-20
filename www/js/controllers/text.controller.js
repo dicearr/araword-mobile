@@ -17,7 +17,7 @@
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
         '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate',
-        '$ionicPlatform', '$ionicHistory','popupsService','pictoService'];
+        '$ionicPlatform', '$ionicHistory','popupsService','pictoService','$filter'];
 
     /**
      * Controller
@@ -37,10 +37,12 @@
      * @param $ionicHistory - Required to know in which state we are
      * @param popupsService - Required to show the popups
      * @param pictoService - Required to update pictographs
+     * @param $filter - Required to translate some text
      */
     function textController(textAnalyzer, configService, $cordovaFile, $scope, $ionicPopup, IonicClosePopupService,
                             $cordovaSocialSharing, accessService, $cordovaImagePicker, docsService, $timeout,
-                            $ionicScrollDelegate, $ionicPlatform, $ionicHistory, popupsService, pictoService) {
+                            $ionicScrollDelegate, $ionicPlatform, $ionicHistory, popupsService, pictoService,
+                            $filter) {
 
         var vm = this;
 
@@ -48,8 +50,8 @@
          * All the information needed from pictographs
          * @typedef {Object} picto - The pictograph we've to read.
          * @property {String} picto.base64 -  The pictograph read as data url
-         * @property {String} picto.type - The pictograph's type
-         * @property {String} picto.picto - The pictograph's file name
+         * @property {String} picto.type - The pictographs type
+         * @property {String} picto.picto - The pictographs file name
          */
 
         /**
@@ -348,9 +350,11 @@
                     if (!data.target.error) {
                         resolveLocalFileSystemURL(data.target.localURL, function(entry) {
                             var nativePath = entry.toURL();
+                            var title = $filter('translate')('send_awd');
+                            var body = $filter('translate')('send_awd_c');
                             window.plugins.socialsharing.shareViaEmail(
-                                'Enviado desde Araword móvil.', // can contain HTML tags, but support on Android is rather limited:  http://stackoverflow.com/questions/15136480/how-to-send-html-content-with-image-through-android-default-email-client
-                                'Documento Araword',
+                                title, // can contain HTML tags, but support on Android is rather limited:  http://stackoverflow.com/questions/15136480/how-to-send-html-content-with-image-through-android-default-email-client
+                                body,
                                 null, // TO: must be null or an array
                                 null, // CC: must be null or an array
                                 null, // BCC: must be null or an array
