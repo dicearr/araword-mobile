@@ -45,8 +45,9 @@
          * it detects new compound words.
          * @param w = The word that has been changed
          * @param text = The whole text
+         * @param {Boolean} noPrevious - True means algorithm will not analyze previous words to look for compounds.
          */
-        function processEvent(w, text) {
+        function processEvent(w, text, noPrevious) {
             var deferred = $q.defer();
             var wordPosition = text.indexOf(w);
             var textContext = [];
@@ -178,7 +179,8 @@
                 if (pushed) {
                     setCaret(text, text.length-1);
                 }
-            });
+                deferred.resolve();
+            }, deferred.reject );
 
             /**
              * Returns the range of words from the text that must be re-analyzed.
@@ -190,7 +192,13 @@
                 var minIndex = 0;
                 var maxIndex = text.length-1;
 
-                if (pos-rad>0) { minIndex = pos-rad; }
+                if (pos-rad>0) {
+                    if (noPrevious) {
+                        minIndex = pos;
+                    } else {
+                        minIndex = pos-rad;
+                    }
+                }
                 if (pos+rad<maxIndex) { maxIndex = pos+rad; }
 
                 var words = [];

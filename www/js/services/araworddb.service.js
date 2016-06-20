@@ -91,6 +91,7 @@
         function setLang(lang) {
             var langs = ['es','en','fr','cat','it','ger','pt','br','gal','eus'];
             var idL = langs.indexOf(lang);
+            console.log('lang',lang,idL);
 
             var query1 = "DROP VIEW IF EXISTS ArawordView";
             var query2 = "CREATE VIEW ArawordView AS SELECT M.word word, T.name type, M.name name FROM main M, type T WHERE M.idT = T.id AND M.idL = \'" + idL + "\' ORDER BY word";

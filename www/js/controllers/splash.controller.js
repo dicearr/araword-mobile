@@ -131,6 +131,7 @@
          */
         function hidePopup() {
             setLang(vm.langSelect.selected);
+            configService.saveConfig();
             $window.localStorage["installed"] = true;
             $ionicLoading.hide();
             $location.path('/text');

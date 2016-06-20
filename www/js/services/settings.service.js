@@ -86,7 +86,6 @@
          */
         function restoreConfig() {
             service.configuration = JSON.parse($window.localStorage['configuration'] || JSON.stringify(configuration));
-            console.log('RETRIEVE',JSON.stringify(service.configuration.supportedLangs));
             if (angular.isUndefined(service.configuration['styles'])) {
                 setStyles();
             }

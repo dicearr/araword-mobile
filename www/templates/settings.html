@@ -17,7 +17,7 @@
             <div class="input-label" translate="sett_langConf">
                 Language
             </div>
-            <select ng-model="sett.modifiedConfig['docLang'].code" ng-disabled="sett.canChangeLang">
+            <select ng-model="sett.modifiedConfig['docLang'].code">
                 <option ng-repeat="lang in sett.supported">{{lang.code}}</option>
             </select>
         </label>

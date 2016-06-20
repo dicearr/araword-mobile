@@ -107,16 +107,11 @@
         // TODO: reload event is different from onChange
         $scope.$on('reloadText', function() {
             vm.myText.forEach(function(word) {
-                $timeout(function() {
-                    textAnalyzer.processEvent(word, vm.myText);
-                },7);
+                textAnalyzer.processEvent(word, vm.myText, true);
             });
         });
 
-        configService.saveConfig();
-
         vm.newDocument = newDocument;
-
 
         //////////////
 

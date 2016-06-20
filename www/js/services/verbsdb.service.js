@@ -11,9 +11,9 @@
         .module('AraWord')
         .factory('verbsdb',verbsdb);
 
-    verbsdb.$inject = ['$q','configService'];
+    verbsdb.$inject = ['$q'];
 
-    function verbsdb($q, configService) {
+    function verbsdb($q) {
 
         var db = undefined;
         var dbname = undefined;
@@ -58,7 +58,6 @@
                         }
                         resolve(result);
                     }, function (err) {
-                        console.log(JSON.stringify(err));
                         reject(err);
                     });
                 }
@@ -78,7 +77,6 @@
                     name: dbname, createFromLocation: 1,
                     location: 'default'
                 }, function(tx) {}, function(err) {
-                    console.log(JSON.stringify(err));
                 });
             }
         }

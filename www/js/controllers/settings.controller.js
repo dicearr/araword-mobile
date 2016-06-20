@@ -13,7 +13,7 @@
         .controller('settingsController', settingsController);
 
     settingsController.$inject = ['configService','$ionicPopover','$scope','verbsdb',
-        'araworddb', '$rootScope', '$timeout','textAnalyzer'];
+        'araworddb', '$rootScope', '$timeout'];
 
     /**
      * Controller
@@ -27,7 +27,7 @@
      * @param textAnalyzer - Required to access to the current text
      */
     function settingsController(configService, $ionicPopover, $scope, verbsdb,
-                                araworddb, $rootScope, $timeout,textAnalyzer) {
+                                araworddb, $rootScope, $timeout) {
 
         var vm = this;
 
@@ -46,7 +46,6 @@
         vm.saveConfig = saveConfig;
         vm.updateStyles = updateStyles;
         vm.supported = vm.modifiedConfig.supportedLangs;
-        vm.canChangeLang = textAnalyzer.text.length>1;
         var typeSelected = undefined;
 
         //////////////////////
@@ -91,6 +90,7 @@
          * Saves the whole configuration
          */
         function saveConfig() {
+            var origSupp = configService.configuration.supportedLangs;
             if (vm.modifiedConfig.docLang.code != configService.configuration.docLang.code) {
                 $timeout(function () {
                     $rootScope.$broadcast('reloadText', 'newLang');
@@ -98,12 +98,13 @@
             }
             verbsdb.setLang(vm.modifiedConfig.docLang.code);
             araworddb.setLang(vm.modifiedConfig.docLang.code);
-            configService.configuration = angular.copy(vm.modifiedConfig);
-            configService.configuration.supportedLangs.forEach(function(lang) {
-                if (lang.code == configService.configuration.docLang.code) {
-                    configService.configuration.docLang = lang
+            origSupp.forEach(function(lang, ind) {
+                if (lang.code == vm.modifiedConfig.docLang.code) {
+                    vm.modifiedConfig.docLang.code = origSupp[ind].code;
+                    vm.modifiedConfig.docLang = lang;
                 }
             });
+            configService.configuration = angular.copy(vm.modifiedConfig);
             configService.saveConfig();
         }
 
