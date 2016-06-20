@@ -103,6 +103,7 @@
                     addWord(word, picto);
                 })
             } else {
+                picto.type = parseType('miscelanea');
                 araworddb.addPictoBulk(lang.word, picto);
             }
         }

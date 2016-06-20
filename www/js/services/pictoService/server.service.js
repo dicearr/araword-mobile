@@ -16,7 +16,7 @@
 
     function serverService($q, $http) {
 
-        var HOST = '192.168.0.129', PORT = 3000;
+        var HOST = '192.168.0.132', PORT = 3000;
 
         var service = {
             'server': {

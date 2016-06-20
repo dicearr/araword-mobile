@@ -206,7 +206,7 @@
                     });
                     vm.verbsSelect.selected = vm.verbsSelect.langs;
                     deferred.resolve();
-                });
+                }, deferred.reject);
             return deferred.promise;
         }
 

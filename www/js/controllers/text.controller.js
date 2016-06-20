@@ -13,7 +13,7 @@
         .controller('textController', textController);
 
     textController.$inject = ['textAnalyzer','configService',
-        '$cordovaFile','araworddb','$scope',
+        '$cordovaFile','$scope',
         '$ionicPopup', 'IonicClosePopupService',
         '$cordovaSocialSharing','accessService',
         '$cordovaImagePicker','docsService','$timeout','$ionicScrollDelegate',
@@ -112,6 +112,8 @@
                 },7);
             });
         });
+
+        configService.saveConfig();
 
         vm.newDocument = newDocument;
 

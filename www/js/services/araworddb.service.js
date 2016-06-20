@@ -174,7 +174,6 @@
             return $q(function(resolve,reject) {
                 var query = "INSERT INTO main(word, idL, idT, name, nameNN) VALUES(?,?,?,?,?)";
                 var params = [word.toLowerCase(), picto.lang, picto.type, picto.fileName, picto.fileName];
-                console.log(JSON.stringify(params));
 
                 document.addEventListener('deviceready', executeInsert);
 
@@ -261,7 +260,6 @@
                 }
                 resolve(compounds);
             }, function (err) {
-                console.log('QUERY',JSON.stringify(err));
                 reject(err);
             });
         }

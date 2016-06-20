@@ -61,7 +61,9 @@
          * @returns {Promise} - A promise that will be resolved if the picto is correctly added or rejected in any other case.
          */
         function addPicto(picto) {
-
+            if (picto.word=='campo de golf') {
+                console.log(JSON.stringify(picto));
+            }
             var deferred = $q.defer();
 
             // If no language has been selected then document language is used.
