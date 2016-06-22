@@ -99,8 +99,7 @@
                     'width': service.configuration['pictoSize'] + 'px'
                 },
                 'fontStyle': {
-                    'fontSize': service.configuration['fontSize'] + 'px',
-                    'overflow-y': 'visible'
+                    'fontSize': service.configuration['fontSize'] + 'px'
                 },
                 'inputStyle': {
                     'height':  inputSize + 'px',

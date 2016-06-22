@@ -12,7 +12,7 @@
         .controller('navController', navController);
 
     navController.$inject = ['$ionicPopover', '$scope', 'accessService', '$ionicPopup', '$window', '$cordovaImagePicker',
-        'textAnalyzer', 'docsService', 'popupsService', 'pictoService','$ionicLoading'];
+        'textAnalyzer', 'docsService', 'popupsService', 'pictoService','$ionicLoading', 'configService'];
 
     /**
      * Controller
@@ -27,9 +27,10 @@
      * @param popupsService - Required to show the popups
      * @param pictoService - Required to upload pictographs
      * @param $ionicLoading - Required to show loading popup
+     * @param configService - Required to know if new verbs db is available when updating
      */
     function navController($ionicPopover, $scope, accessService, $ionicPopup, $window, $cordovaImagePicker,
-                           textAnalyzer, docsService,  popupsService, pictoService, $ionicLoading) {
+                           textAnalyzer, docsService,  popupsService, pictoService, $ionicLoading, configService) {
 
         var vm = this;
         vm.showMenu = showMenu;
@@ -69,6 +70,10 @@
             'value': 0,
             'message': ''
         };
+        vm.verbsSelect = {
+            'selected':[],
+            'langs': []
+        };
 
         ///////////////
 
@@ -76,12 +81,66 @@
          * Searches for updates and download new pictographs if available
          */
         function searchUpdates() {
-            $ionicLoading.show({
-                'template': "<span translate='spl_{{nav.bar.code}}'>{{nav.bar.message}}</span>"
-                + "<progress value='{{nav.bar.value}}' max='100'></progress>",
-                scope: $scope
-            });
-            pictoService.updatePictos(vm.bar);
+            pictoService.getSupportedLangs()
+                .then(function(data) {
+                    var currentLangs = configService.configuration.supportedLangs;
+                    data['mainLangs'].forEach(function(lang,ind) {
+                        if (lang.haveVerbs && !currentLangs[ind].haveVerbs) {
+                            vm.verbsSelect.langs.push({
+                                'id': lang.id,
+                                'name': lang.code,
+                                'code': lang.code
+                            });
+                        }
+                        vm.verbsSelect.selected = vm.verbsSelect.langs;
+                    });
+                    configService.configuration.supportedLangs = data['mainLangs'];
+                    var langPopup = {
+                        templateUrl: 'templates/popups/update.html',
+                        title: '<span translate="upd_title">Update langs</span>',
+                        scope: $scope,
+                        buttons: [
+                            {
+                                text: '<b><span translate="spl_cont">Continue</span></b>',
+                                type: 'button-dark',
+                                onTap: function(e) {
+
+                                    $ionicLoading.show({
+                                        'template': "<span translate='spl_{{nav.bar.code}}'>{{nav.bar.message}}</span>"
+                                        + "<progress value='{{nav.bar.value}}' max='100'></progress>",
+                                        scope: $scope
+                                    });
+
+                                        pictoService.downloadVerbsDB(vm.verbsSelect.selected,vm.bar)
+                                            .then(function() {
+                                                vm.verbsSelect.langs = [];
+                                                configService.saveConfig();
+                                                return pictoService.updatePictos(vm.bar);
+                                            })
+                                            .then(function() {
+                                                $ionicLoading.hide();
+                                            })
+                                }
+                            }
+                        ]
+                    };
+                    if (vm.verbsSelect.langs.length>0) {
+                        console.log('NEW LANGS', JSON.stringify(vm.verbsSelect));
+                        $ionicPopup.show(langPopup);
+                    } else {
+                        $ionicLoading.show({
+                            'template': "<span translate='spl_{{nav.bar.code}}'>{{nav.bar.message}}</span>"
+                            + "<progress value='{{nav.bar.value}}' max='100'></progress>",
+                            scope: $scope
+                        });
+                        pictoService.updatePictos(vm.bar)
+                            .then(function() {
+                                $ionicLoading.hide();
+                             })
+                    }
+                }, function(err) {
+
+                });
         }
 
         /**
@@ -203,7 +262,7 @@
          */
         function saveDocument() {
             $scope.data = {
-                'docName': textAnalyzer.docName
+                'docName': textAnalyzer.docName.substr(0,textAnalyzer.docName.lastIndexOf('.'))
             };
             var saveDocument = popupsService.saveDocument;
             saveDocument.onSave = function (e) {

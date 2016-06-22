@@ -10,7 +10,10 @@
 
     popupsService.$injec = ['$ionicPopup','$filter'];
 
+
     function popupsService($ionicPopup, $filter) {
+
+        var popupCount = 0;
 
         // translate directive doesn't work in buttons/titles
         var translate = {

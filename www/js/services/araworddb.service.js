@@ -190,7 +190,7 @@
 
         function addPictoBulk(word,picto) {
             json2sqlite.data.inserts.main.push({
-                'word': word,
+                'word': word.toLowerCase(),
                 'idL': picto.lang,
                 'idT': picto.type,
                 'name': picto.picto,

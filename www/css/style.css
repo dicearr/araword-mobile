@@ -35,3 +35,7 @@
 .has-header {
     top: 55px !important;
 }
+
+.visible {
+    overflow: visible !important;
+}

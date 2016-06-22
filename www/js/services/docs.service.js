@@ -95,8 +95,7 @@
                         var baseaw = x2js.xml_str2json(success);
                         var words = baseaw.document.content.AWElement;
 
-                        configService.configuration.docLang =
-                            getLang(baseaw.document.preferences.documentLanguage);
+                        setLang(baseaw.document.preferences.documentLanguage);
                         verbsdb.setLang(configService.configuration.docLang.code);
                         araworddb.setLang(configService.configuration.docLang.code);
 
@@ -260,7 +259,7 @@
                     "database": {
                         "languages": {
                             "language": {
-                                "__text": "Castellano"
+                                "__text": parseLang(configService.configuration.docLang.code)
                             }
                         },
                         "image": []
@@ -271,7 +270,7 @@
                     var picto = word.pictos[word.pictInd];
                     result.database.image.push({
                         "language": {
-                            "_id": "Castellano",
+                            "_id": parseLang(configService.configuration.docLang.code),
                             "word": {
                                 "_type": deparseType(picto.type),
                                 "__text": word.value
@@ -291,6 +290,7 @@
              * @returns {String} base.awd XML string with the documents information
              */
             function getBaseXml() {
+                console.log(JSON.stringify(configService.configuration.docLang));
                 var result = {
                     "document": {
                         "preferences": {
@@ -359,36 +359,34 @@
                 );
             });
         }
-    }
 
-    /**
-     * @param typeInText = { nombreComun, descriptivo, verbo, miscelanea, nombrePropio, contenidoSocial }
-     * @returns {number} = Returns a unique identifier for each type of word.
-     */
-    function parseType(typeInText) {
-        var types = ['nombreComun', 'descriptivo', 'verbo', 'miscelanea', 'nombrePropio', 'contenidoSocial'];
-        var ind = types.indexOf(typeInText);
-        return ind >= 0 ? ind : 3;
-    }
+        /**
+         * @param typeInText = { nombreComun, descriptivo, verbo, miscelanea, nombrePropio, contenidoSocial }
+         * @returns {number} = Returns a unique identifier for each type of word.
+         */
+        function parseType(typeInText) {
+            var types = ['nombreComun', 'descriptivo', 'verbo', 'miscelanea', 'nombrePropio', 'contenidoSocial'];
+            var ind = types.indexOf(typeInText);
+            return ind >= 0 ? ind : 3;
+        }
 
-    function deparseType(typeN) {
-        var types = ['nombreComun', 'descriptivo', 'verbo', 'miscelanea', 'nombrePropio', 'contenidoSocial'];
-        return typeN >= types.length ? types[3] : types[typeN];
-    }
+        function deparseType(typeN) {
+            var types = ['nombreComun', 'descriptivo', 'verbo', 'miscelanea', 'nombrePropio', 'contenidoSocial'];
+            return typeN >= types.length ? types[3] : types[typeN];
+        }
 
-    function getLang(longLang) {
-        configService.configuration.supportedLangs.forEach(function(lang) {
-            if (lang.long == longLang) {
-                configService.docLang = lang;
-            }
-        })
-    }
+        function setLang(longLang) {
+            configService.configuration.supportedLangs.forEach(function(lang) {
+                if (lang.long == longLang) {
+                    configService.configuration.docLang = lang;
+                }
+            })
+        }
 
-    function parseLang(lang) {
-        var langs = ['Castellano', 'Ingles', 'Frances', 'Catalan', 'Italiano', 'Aleman', 'Portugues', 'Portugues Brasil', 'Gallego', 'Euskera'];
-        var langCode = ['es', 'en', 'fr', 'cat', 'it', 'ger', 'pt', 'br', 'gal', 'eus'];
-        return langs[langCode.indexOf(lang)];
+        function parseLang(lang) {
+            var langs = ['Castellano', 'Ingles', 'Frances', 'Catalan', 'Italiano', 'Aleman', 'Portugues', 'Portugues Brasil', 'Gallego', 'Euskera'];
+            var langCode = ['es', 'en', 'fr', 'cat', 'it', 'ger', 'pt', 'br', 'gal', 'eus'];
+            return langs[langCode.indexOf(lang)];
+        }
     }
-
-})
-();
+})();

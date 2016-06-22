@@ -61,9 +61,6 @@
          * @returns {Promise} - A promise that will be resolved if the picto is correctly added or rejected in any other case.
          */
         function addPicto(picto) {
-            if (picto.word=='campo de golf') {
-                console.log(JSON.stringify(picto));
-            }
             var deferred = $q.defer();
 
             // If no language has been selected then document language is used.
@@ -234,7 +231,9 @@
              * Updates last pictographs version
              */
             function updateDate() {
-                $window.localStorage.setItem('lastUpdate',new Date());
+                var date = new Date();
+                                                                // Date to GTM+0
+                $window.localStorage.setItem('lastUpdate',new Date(date.valueOf() + date.getTimezoneOffset() * 60000));
             }
         }
 
@@ -368,7 +367,8 @@
                             'id': ind,
                             'locale': lang.locale,
                             'long': lang.long,
-                            'code': lang.code
+                            'code': lang.code,
+                            'haveVerbs': lang.haveVerbs
                         };
                         mainLangs.push(newLang);
                         if (lang.haveVerbs) {

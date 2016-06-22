@@ -193,7 +193,7 @@
                     data['mainLangs'].forEach(function(lang) {
                         vm.langSelect.langs.push({
                             'id': lang.id,
-                            'name': lang.locale?lang.locale:lang.code,
+                            'name': lang.code,
                             'code': lang.code
                         })
                     });
@@ -201,7 +201,7 @@
                     data['verbLangs'].forEach(function(lang) {
                         vm.verbsSelect.langs.push({
                             'id': lang.id,
-                            'name': lang.locale?lang.locale:lang.code,
+                            'name': lang.code,
                             'code': lang.code
                         })
                     });

@@ -12,9 +12,9 @@
         .module('AraWord')
         .factory('parserService', parserService);
 
-    parserService.$inject = ['$q','araworddb'];
+    parserService.$inject = ['$q','araworddb','configService'];
 
-    function parserService($q,araworddb) {
+    function parserService($q,araworddb,configService) {
 
         var service = {
             'xml2db': xml2db
@@ -103,8 +103,7 @@
                     addWord(word, picto);
                 })
             } else {
-                picto.type = parseType('miscelanea');
-                araworddb.addPictoBulk(lang.word, picto);
+                addWord(lang.word,picto);
             }
         }
 
@@ -123,8 +122,13 @@
         }
 
         function deparseLang(lang) {
-            var langs = ['Castellano', 'Ingles', 'Frances', 'Catalan', 'Italiano', 'Aleman', 'Portugues', 'Portugues Brasil', 'Gallego', 'Euskera'];
-            return langs.indexOf(lang);
+            var langs = configService.configuration.supportedLangs;
+            for (var i=0; i<langs.length; i++) {
+                if (langs[i].long==lang) {
+                    return i;
+                }
+            }
+            return 3;
         }
 
         function parseType(typeInText) {
