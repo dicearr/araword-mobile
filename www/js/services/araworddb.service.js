@@ -19,26 +19,11 @@
         var json2sqlite = {
             "data": {
                 "inserts":{
-                    "type":[{
-                        'id': 0,
-                        'name': 'nombreComun'
-                    },{
-                        'id': 1,
-                        'name': 'descriptivo'
-                    },{
-                        'id': 2,
-                        'name': 'verbo'
-                    },{
-                        'id': 3,
-                        'name': 'miscelanea'
-                    },{
-                        'id': 4,
-                        'name': 'nombrePropio'
-                    },{
-                        'id': 5,
-                        'name': 'contenidoSocial'
-                    }],
+                    "type":[],
                     "language": [],
+                    "main": []
+                },
+                "deletes": {
                     "main": []
                 }
             }
@@ -54,7 +39,8 @@
             createDB: createDB,
             addPictoBulk: addPictoBulk,
             executeBulk: executeBulk,
-            addLanguagesBulk: addLanguagesBulk
+            addLanguagesBulk: addLanguagesBulk,
+            delPictoBulk: delPictoBulk
         };
 
         if (!ready()) startService();
@@ -188,6 +174,12 @@
             })
         }
 
+        function delPictoBulk(picto) {
+            json2sqlite.data.deletes.main.push({
+                'name': picto
+            })
+        }
+
         function addPictoBulk(word,picto) {
             json2sqlite.data.inserts.main.push({
                 'word': word.toLowerCase(),
@@ -198,9 +190,35 @@
             })
         }
 
-        function executeBulk(rootDeferred) {
+        function executeBulk(rootDeferred, first_time) {
+            console.log(JSON.stringify(json2sqlite));
             var def = $q.defer();
+            if (first_time) {
+                json2sqlite.data.inserts.type = [{
+                    'id': 0,
+                    'name': 'nombreComun'
+                },{
+                    'id': 1,
+                    'name': 'descriptivo'
+                },{
+                    'id': 2,
+                    'name': 'verbo'
+                },{
+                    'id': 3,
+                    'name': 'miscelanea'
+                },{
+                    'id': 4,
+                    'name': 'nombrePropio'
+                },{
+                    'id': 5,
+                    'name': 'contenidoSocial'
+                }]
+            }
             var successFn = function(){
+                json2sqlite.data.deletes = [];
+                json2sqlite.data.inserts.language = [];
+                json2sqlite.data.inserts.type = [];
+                json2sqlite.data.inserts.main = [];
                 def.resolve();
             };
             var errorFn = function(error){

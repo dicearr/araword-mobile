@@ -13,7 +13,7 @@
         .module('AraWord')
         .factory('pictoService', pictoService);
 
-    pictoService.$inject = ['$window', '$q', '$cordovaFile', 'configService', 'serverService', 'parserService'];
+    pictoService.$inject = ['$window', '$q', '$cordovaFile', 'configService', 'serverService', 'parserService','araworddb'];
 
     /**
      * Pictograph Factory
@@ -23,12 +23,14 @@
      * @param configService - Required to know document language (add new pictographs)
      * @param serverService - Required to connect with the server
      * @param parserService - Required to parse XML files delivered by the server
+     * @param araworddb - Required to add new pictographs
      * @returns {Object} - All the operations required to use the service
      */
-    function pictoService($window, $q, $cordovaFile, configService, serverService, parserService) {
+    function pictoService($window, $q, $cordovaFile, configService, serverService, parserService, araworddb) {
 
         var loadingBar = null;
         var verbsProgress = {};
+        var is_first_time = false;
 
         var service = {
             'pictoPath': null,
@@ -64,8 +66,7 @@
             var deferred = $q.defer();
 
             // If no language has been selected then document language is used.
-            if (!picto.lang) picto.lang = configService.configuration.docLang;
-            picto.lang = getLangId(picto.lang);
+            if (!picto.lang) picto.lang = configService.configuration.docLang.id;
             if (!picto.fileName) deferred.reject('NO_FILENAME');
             // If no type has been selected then Miscelanea is used
             if (!picto.type) picto.type = 3;
@@ -111,8 +112,9 @@
          * @param bar - Refers to the model associated with a $ionicLoading popup. Used to show progress and block user interaction.
          * @returns {Promise} - Resolved if update goes well, otherwise rejected.
          */
-        function updatePictos(bar) {
+        function updatePictos(bar, first_time) {
             loadingBar = bar;
+            is_first_time = first_time;
             var deferred = $q.defer();
 
             // If an error is catched in any point, execution  goes through errorCallback until the last deferred.reject
@@ -277,7 +279,7 @@
             var deferred = $q.defer();
             $cordovaFile.readAsText(service.pictoPath, 'images.xml')
                 .then(function (xml) {
-                    parserService.xml2db(xml,deferred)
+                    parserService.xml2db(xml,deferred, is_first_time)
                         .then(function() {
                             deferred.resolve()
                         }, function(err) {
@@ -293,15 +295,6 @@
             return deferred.promise;
         }
 
-        /**
-         * Return the correct idL from the given language code
-         * @param {String} lang - The language code
-         * @returns {number} The language id
-         */
-        function getLangId(lang) {
-            var langCode = ['es', 'en', 'fr', 'cat', 'it', 'ger', 'pt', 'br', 'gal', 'eus'];
-            return langCode.indexOf(lang);
-        }
 
         /**
          * Downloads all the databases of formed verbs which are in langs.
@@ -317,14 +310,14 @@
 
             langs.forEach(function (lang) {
                 verbsProgress[lang.code] = {};
-                promises.push(serverService.download(
+                var def = $q.defer();
+                promises.push(def.promise);
+                serverService.download(
                     '/verbs/'+lang.code,
-                    service.databasePath + lang.code + '_database.db',
-                    null,
-                    function(progress) {
-                        notify(progress, lang.code)
-                    })
-                );
+                    service.databasePath + lang.code + '_database.db', null, null)
+                        .then(def.resolve, def.reject, function(progress) {
+                            notify(progress, lang.code)
+                        })
             });
 
             $q.all(promises).then(function () {

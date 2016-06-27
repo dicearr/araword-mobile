@@ -103,7 +103,7 @@
                                     var isVerbAndInfMatches = (!angular.isUndefined(inf)
                                         && inftext.indexOf(comp.word)==0);
                                     if ((text.indexOf(comp.word)==0 || isVerbAndInfMatches )
-                                            && ((!angular.isUndefined(inf) && inftext.charAt(len)==' ')
+                                            && ((!angular.isUndefined(inf) && (inftext.charAt(len)==' ' || inftext.charAt(len)==''))
                                                 || text.charAt(len)==' ' || (text.length <= len))) {
                                         var newLength = comp.word.split(' ').length;
                                         // If matches and it's longest we replace match with the new compound word
@@ -159,7 +159,7 @@
                         }
                         // If not we simply modify simple word values
                         else {
-                            text[pos].value = results[i].value;
+                          //  text[pos].value = results[i].value;
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;
                             text[pos].words = 1;

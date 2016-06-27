@@ -16,6 +16,9 @@
 
     function parserService($q,araworddb,configService) {
 
+        var is_first_time = false;
+        var paths = [];
+
         var service = {
             'xml2db': xml2db
         };
@@ -32,7 +35,8 @@
          * @param rootDeferred - promise where notify the progress
          * @returns {Promise} - Resolved if the xml has been correctly imported, otherwise rejected.
          */
-        function xml2db(xml, rootDeferred) {
+        function xml2db(xml, rootDeferred, first_time) {
+            is_first_time = first_time;
             var deferred = $q.defer();
             var db = new X2JS().xml_str2json(xml).database;
             var images = db.image;
@@ -46,7 +50,8 @@
                 images.forEach(function(image) {
                     addImage(image);
                 });
-                araworddb.executeBulk(rootDeferred)
+                paths = [];
+                araworddb.executeBulk(rootDeferred, first_time)
                     .then(deferred.resolve, function(error) {
                         deferred.reject({
                             'code': 'BULK_FAILED',
@@ -58,7 +63,8 @@
                 if (!images) { deferred.resolve(); }
                 else {
                     addImage(images);
-                    araworddb.executeBulk(rootDeferred)
+                    paths = [];
+                    araworddb.executeBulk(rootDeferred, first_time)
                         .then(deferred.resolve, function(error) {
                             deferred.reject({
                                 'code': 'BULK_FAILED',
@@ -114,6 +120,10 @@
          */
         function addWord(word, picto) {
             picto.type = parseType(word._type);
+            if (!is_first_time && paths.indexOf(picto.picto)==-1) {
+                araworddb.delPictoBulk(picto.picto);
+                paths.push(picto.picto);
+            }
             if (word.__text) {
                 araworddb.addPictoBulk(word.__text,picto);
             } else {

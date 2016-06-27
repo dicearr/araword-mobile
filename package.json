@@ -27,9 +27,9 @@
       "id": "cordova-plugin-x-socialsharing"
     },
     "cordova-plugin-file-transfer",
-    "uk.co.workingedge.cordova.plugin.sqliteporter",
     "cordova-plugin-image-resizer",
-    "cordova-plugin-network-information"
+    "cordova-plugin-network-information",
+    "sqliteporter"
   ],
   "cordovaPlatforms": [
     "android"

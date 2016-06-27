@@ -376,26 +376,29 @@
             $cordovaImagePicker.getPictures({'maximumImagesCount': 1})
                 .then(function(result){
                     var picto = {};
-                    var separator = result[0].lastIndexOf('/');
-                    picto.oldPath = result[0].substr(0,separator);
-                    picto.fileName = result[0].substr(separator+1);
-                    picto.type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type || 3;
-                    picto.word = vm.selectedWord.value;
 
-                    pictoService.addPicto(picto)
-                        .then(function(newPicto) {
-                            // It injects the image directly
-                            $cordovaFile.readAsDataURL(pictoService.pictoPath, newPicto.filename)
-                                .then(function(data) {
-                                    vm.selectedWord.pictos = [{
-                                        'picto':picto.fileName,
-                                        'type':picto.type,
-                                        'base64':data
-                                    }].concat(vm.selectedWord.pictos);
-                                    vm.selectedWord.pictInd = 0;
-                                })
-                        });
+                    if(result[0]) {
+                        var separator = result[0].lastIndexOf('/');
+                        picto.oldPath = result[0].substr(0,separator);
+                        picto.fileName = result[0].substr(separator+1);
+                        picto.type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type || 3;
+                        picto.word = vm.selectedWord.value;
 
+                        pictoService.addPicto(picto)
+                            .then(function(newPicto) {
+                                // It injects the image directly
+                                $cordovaFile.readAsDataURL(pictoService.pictoPath, newPicto.filename)
+                                    .then(function(data) {
+                                        vm.selectedWord.pictos = [{
+                                            'picto':picto.fileName,
+                                            'type':picto.type,
+                                            'base64':data
+                                        }].concat(vm.selectedWord.pictos);
+                                        vm.selectedWord.pictInd = 0;
+                                    })
+                            });
+
+                    }
                     vm.optionsPopup.close();
                 });
         }

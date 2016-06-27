@@ -60,7 +60,7 @@
 
         // Required to add new picto
         vm.newPicto = newPicto; // function
-        vm.newPict = {'type': 0}; // new picto info (model)
+        vm.newPict = {'type': 3}; // new picto info (model)
         vm.newPictWord = ''; // new picto word (model)
 
         vm.help = help;

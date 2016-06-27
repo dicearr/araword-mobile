@@ -111,7 +111,7 @@
          * @returns {*|Promise}
          */
         function downloadPictos() {
-            return pictoService.updatePictos(vm.bar);
+            return pictoService.updatePictos(vm.bar,true);
         }
 
         /**
