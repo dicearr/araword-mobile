@@ -159,7 +159,7 @@
                         }
                         // If not we simply modify simple word values
                         else {
-                          //  text[pos].value = results[i].value;
+                            text[pos].value = results[i].value;
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;
                             text[pos].words = 1;
@@ -243,6 +243,8 @@
                     return true;
                 }
             }
+
+            return deferred.promise;
         }
 
 

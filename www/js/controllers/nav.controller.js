@@ -12,7 +12,7 @@
         .controller('navController', navController);
 
     navController.$inject = ['$ionicPopover', '$scope', 'accessService', '$ionicPopup', '$window', '$cordovaImagePicker',
-        'textAnalyzer', 'docsService', 'popupsService', 'pictoService','$ionicLoading', 'configService'];
+        'textAnalyzer', 'docsService', 'popupsService', 'pictoService','$ionicLoading', 'configService','$filter'];
 
     /**
      * Controller
@@ -28,9 +28,11 @@
      * @param pictoService - Required to upload pictographs
      * @param $ionicLoading - Required to show loading popup
      * @param configService - Required to know if new verbs db is available when updating
+     * @param $filter
+     * @param araworddb
      */
     function navController($ionicPopover, $scope, accessService, $ionicPopup, $window, $cordovaImagePicker,
-                           textAnalyzer, docsService,  popupsService, pictoService, $ionicLoading, configService) {
+                           textAnalyzer, docsService,  popupsService, pictoService, $ionicLoading, configService, $filter, araworddb) {
 
         var vm = this;
         vm.showMenu = showMenu;
@@ -85,6 +87,7 @@
                 .then(function(data) {
                     var currentLangs = configService.configuration.supportedLangs;
                     data['mainLangs'].forEach(function(lang,ind) {
+                        araworddb.addLanguagesBulk(lang.long);
                         if (lang.haveVerbs && !currentLangs[ind].haveVerbs) {
                             vm.verbsSelect.langs.push({
                                 'id': lang.id,
@@ -136,6 +139,7 @@
                         pictoService.updatePictos(vm.bar)
                             .then(function() {
                                 $ionicLoading.hide();
+                                closeMenus();
                              })
                     }
                 }, function(err) {
@@ -149,12 +153,14 @@
         function help() {
             $ionicPopup.alert({
                 title: 'Acerca de Araword',
-                template: '<p style="text-align: center">**Desarrollador**<br>Diego Ceresuela Arrazola (EINA)<br>' +
-                '**Director**<br>Dr. Joaquín Ezpeleta (EINA)<br>' +
-                '**Colaborador**<br>José Manuel Marcos (CPEE Alborada)<br>' +
+                template: '<p style="text-align: center">**Desarrollador**<br>Diego Ceresuela Arrazola (UZ)<br>' +
+                '**Director**<br>Dr. Joaquín Ezpeleta (UZ)<br>' +
+                '**Colaboradores**<br>José Manuel Marcos (CPEE Alborada)<br>' +
+                'David Romero (ARASAAC)<br>' +
                 '**Entidades**<br>Universidad de Zaragoza (UZ)<br>' +
                 'Colegio público de educación especial Alborada (CPEE Alborada)<br>' +
-                '** Pictogramas ARASAAC http://arasaac.org **</p>'
+                '** Pictogramas ARASAAC http://arasaac.org **<br>' +
+                'Propiedad del Gobierno de Aragón</p>'
             });
         }
 
@@ -231,6 +237,7 @@
          * Shows a popup that allows user to add new pictograph.
          */
         function newPicto() {
+            vm.placeholder = $filter('translate')('com_word');
             var newPicto = popupsService.newPicto;
             newPicto.onSave = function (e) {
                 if (!vm.newPict.word || !vm.newPict.fileName || !vm.newPict.oldPath ) {

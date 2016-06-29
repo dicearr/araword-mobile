@@ -27,7 +27,7 @@
             <div class="col">
                 <!-- Picto preview -->
                 <div class="card" style="float: left; height: 100%">
-                    <div class="item item-divider" style="text-align: center">
+                    <div class="item item-divider" style="text-align: center" translate="sett_prev">
                         Pictograph preview
                     </div>
                     <div style="float: left; margin: 50px; text-align: center;" class="item padding"
@@ -122,6 +122,22 @@
                         <div class="handle"></div>
                     </div>
                 </label>
+            </div>
+
+            <!-- TTS speed configuration -->
+            <div class="card">
+                <div class="item item-divider" style="text-align: center" translate="sett_tts">
+                    Velocidad de lectura
+                </div>
+                <div class="item range">
+                    <input type="range"
+                           name="grayScale"
+                           min="5"
+                           max="15"
+                           ng-model="sett.modifiedConfig['tts']"
+                           style=" margin:auto;"/>
+                </div>
+
             </div>
 
             <div class="card">

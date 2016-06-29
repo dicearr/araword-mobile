@@ -13,7 +13,7 @@
         .controller('splashController',splashController);
 
     splashController.$inject = ['$ionicLoading', '$location', '$ionicPopup', '$window', '$scope', '$q',
-        'araworddb', 'configService', 'popupsService', 'pictoService'];
+        'araworddb', 'configService', 'popupsService', 'pictoService', '$filter'];
 
     /**
      * Controller
@@ -28,12 +28,15 @@
      * @param popupsService - Required to show popups
      * @param pictoService - Required to update pictographs
      * @param pictoService - Required to update pictographs
+     * @param $filter - Required to translate popups titles
      */
     function splashController( $ionicLoading, $location, $ionicPopup, $window, $scope, $q, araworddb,
-                              configService, popupsService, pictoService) {
+                              configService, popupsService, pictoService, $filter) {
 
 
         var vm = this;
+        vm.placeholder = $filter('translate')('com_pass');
+
         var initialPopup = undefined;
         vm.bar = {
             'code': 'download',
@@ -67,13 +70,15 @@
          * are selected.
          */
         function showPopup() {
+            var initialTitle = $filter('translate')('spl_title');
+            var cont = $filter('translate')('spl_cont');
             initialPopup = {
                 templateUrl: 'templates/popups/install.html',
-                title: '<span translate="spl_title">Inital configuration</span>',
+                title: '<span>'+initialTitle+'</span>',
                 scope: $scope,
                 buttons: [
                     {
-                        text: '<b><span translate="spl_cont">Continue</span></b>',
+                        text: '<b><span>'+cont+'</span></b>',
                         type: 'button-dark',
                         onTap: function(e) {
                             if (!vm.pass) {
@@ -189,8 +194,9 @@
             var deferred = $q.defer();
             pictoService.getSupportedLangs()
                 .then(function(data) {
-                    configService.configuration.supportedLangs = data['mainLangs'];
                     data['mainLangs'].forEach(function(lang) {
+                        araworddb.addLanguagesBulk([lang.long]);
+                        configService.configuration.supportedLangs.push(lang);
                         vm.langSelect.langs.push({
                             'id': lang.id,
                             'name': lang.code,

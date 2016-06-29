@@ -234,7 +234,11 @@
          */
         function onKeyUp(event, word) {
             if (event.target.value.length==0) {
-                textAnalyzer.deleteWord(word,vm.myText);
+                if (word.unbind && word.blocked) {
+                    word.blocked = false;
+                } else {
+                    textAnalyzer.deleteWord(word,vm.myText);
+                }
             } else if (
                 ( event.target.value === word.value+" "
                 || word.value == ""
@@ -251,7 +255,7 @@
             TTS.speak({
                 text: word.value,
                 locale: vm.conf.configuration.docLang.locale,
-                rate: 1.1
+                rate: vm.conf.configuration.tts/10
             }, function(success) { console.log(JSON.stringify(success)) },
                 function(error) { console.log(JSON.stringify(error)) })
         }
@@ -314,7 +318,7 @@
             TTS.speak({
                 text: text,
                 locale: vm.conf.configuration.docLang.locale,
-                rate: 1.1
+                rate: vm.conf.configuration.tts/10
             }, function() {
                 TTS.speak('');
             }, function() {
@@ -408,6 +412,7 @@
          */
         function modifyText() {
             vm.selectedWord['unbind'] = true;
+            vm.selectedWord['blocked'] = true;
             vm.optionsPopup.close();
             textAnalyzer.setCaret(vm.myText,vm.myText.indexOf(vm.selectedWord));
         }

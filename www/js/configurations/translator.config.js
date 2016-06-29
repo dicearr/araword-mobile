@@ -63,7 +63,7 @@
                 pu_choosepict: 'Elegir picto',
                 pu_addpict: 'Añadir picto',
                 pu_changetext: 'Cambiar texto',
-                pu_pass: 'Configura la contraseña',
+                pu_pass: 'Introduce la clave',
                 pu_saveDocTitle: 'Elige nombre del documento',
                 pu_openDocTitle: 'Elige un archivo',
                 pu_saveDocQuest: '¿Guardar cambios?',
@@ -75,7 +75,12 @@
                 + 'Si el problema persiste intente reinstalar la aplicación.',
                 send_awd: 'Enviado desde Araword.',
                 send_awd_c: 'Documento Araword.',
-                upd_title: 'Actualizar conjugaciones'
+                upd_title: 'Actualizar conjugaciones',
+                sett_prev: 'Previsualización',
+                com_pass: 'Clave',
+                com_type: 'Tipo',
+                com_word: 'Palabra',
+                sett_tts: 'Velocidad de lectura'
             },
             'en': {
                 com_cancel: 'Cancel',
@@ -132,7 +137,12 @@
                 + 'If the problem persists try to reinstall the application.',
                 send_awd: 'Sent from Araword.',
                 send_awd_c: 'Araword document.',
-                upd_title: 'Update formed verbs'
+                upd_title: 'Update formed verbs',
+                sett_prev: 'Pictograph preview',
+                com_pass: 'Password',
+                com_type: 'Type',
+                com_word: 'Word',
+                sett_tts: 'Voice rate'
             }
         };
 

@@ -24,16 +24,13 @@
             'grayScale': 0,
             'borders': true,
             'possition': true,
+            'tts': 10,
             'docLang': {
                 'code': 'es',
                 'locale': 'es-ES',
                 'long': 'Castellano'
             },
-            'supportedLangs': [{
-                'code': 'es',
-                'locale': 'es-ES',
-                'long': 'Castellano'
-            }],
+            'supportedLangs': [],
             'typeColors': [{
                 'type': 'nombreComun',
                 'text': 'Nombre comun',

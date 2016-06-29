@@ -40,12 +40,7 @@
             var deferred = $q.defer();
             var db = new X2JS().xml_str2json(xml).database;
             var images = db.image;
-            var langs = db.languages;
-            if (angular.isArray(langs.language)) {
-                araworddb.addLanguagesBulk(langs.language);
-            } else {
-                araworddb.addLanguagesBulk([langs.language]);
-            }
+
             if (angular.isArray(images)) {
                 images.forEach(function(image) {
                     addImage(image);

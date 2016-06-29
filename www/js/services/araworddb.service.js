@@ -10,9 +10,9 @@
         .module('AraWord')
         .factory('araworddb', araworddb);
 
-    araworddb.$inject = ['$q'];
+    araworddb.$inject = ['$q','configService'];
 
-    function araworddb($q) {
+    function araworddb($q,configService) {
 
         var db = undefined;
         var dbname = 'AraSuite.db'; // Pre filled db
@@ -75,12 +75,17 @@
         }
 
         function setLang(lang) {
-            var langs = ['es','en','fr','cat','it','ger','pt','br','gal','eus'];
-            var idL = langs.indexOf(lang);
-            console.log('lang',lang,idL);
+            var supp = configService.configuration.supportedLangs;
+            var i=0;
+            console.log(lang);
+            console.log(JSON.stringify(supp));
+            while(i<supp.length && supp[i].code!=lang) i++;
+            var long = supp[i].long;
+            console.log(long);
 
             var query1 = "DROP VIEW IF EXISTS ArawordView";
-            var query2 = "CREATE VIEW ArawordView AS SELECT M.word word, T.name type, M.name name FROM main M, type T WHERE M.idT = T.id AND M.idL = \'" + idL + "\' ORDER BY word";
+            var query2 = "CREATE VIEW ArawordView AS SELECT M.word word, T.name type, M.name name FROM main M, type T, language L WHERE M.idT = T.id AND M.idL = L.id " +
+                "AND L.name=\'"+long+"\' ORDER BY word";
 
 
             document.addEventListener('deviceready', function() {
@@ -117,11 +122,17 @@
         }
 
         function addLanguagesBulk(langs) {
+
             langs.forEach(function(lang, ind) {
-                json2sqlite.data.inserts.language.push({
-                    "id": ind,
-                    "name": lang
-                })
+                var i = 0, supp = configService.configuration.supportedLangs;
+                while(i<supp.length && supp[i].long!=lang) i++;
+                if (i>=supp.length) {
+                    console.log('INSERT',lang);
+                    json2sqlite.data.inserts.language.push({
+                        "id": i,
+                        "name": lang
+                    })
+                }
             });
         }
 
@@ -191,7 +202,6 @@
         }
 
         function executeBulk(rootDeferred, first_time) {
-            console.log(JSON.stringify(json2sqlite));
             var def = $q.defer();
             if (first_time) {
                 json2sqlite.data.inserts.type = [{
@@ -215,7 +225,7 @@
                 }]
             }
             var successFn = function(){
-                json2sqlite.data.deletes = [];
+                json2sqlite.data.deletes.main = [];
                 json2sqlite.data.inserts.language = [];
                 json2sqlite.data.inserts.type = [];
                 json2sqlite.data.inserts.main = [];
