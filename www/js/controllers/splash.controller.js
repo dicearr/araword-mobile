@@ -36,6 +36,9 @@
 
         var vm = this;
         vm.placeholder = $filter('translate')('com_pass');
+        vm.replaceholder = $filter('translate')('com_repass');
+        vm.pass = null;
+        vm.repass = null;
 
         var initialPopup = undefined;
         vm.bar = {
@@ -81,7 +84,11 @@
                         text: '<b><span>'+cont+'</span></b>',
                         type: 'button-dark',
                         onTap: function(e) {
-                            if (!vm.pass) {
+                            if (!vm.pass || !vm.repass || vm.pass!=vm.repass) {
+                                if (vm.pass!=vm.repass) {
+                                    vm.repass = ''; vm.pass='';
+                                    vm.placeholder = $filter('translate')('com_paserr');
+                                }
                                 e.preventDefault();
                             } else {
 

@@ -174,6 +174,7 @@
          * @param {word} word - The word in which change has occurred
          */
         function onChange(word) {
+            var t1 = new Date().getTime();
             if(angular.isUndefined(word.unbind) || !word.unbind) {
                 // Common case
                 var canAnalyze = true;
@@ -186,6 +187,8 @@
                 if (word.value.length==0) {
                     textAnalyzer.deleteWord(word,vm.myText);
                 } else if (canAnalyze){
+                    var t2 = new Date().getTime();
+                    console.log('PRE_TIME',t2-t1);
                     textAnalyzer.processEvent(word, vm.myText);
                 }
             }

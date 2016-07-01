@@ -15,6 +15,8 @@
     function araworddb($q,configService) {
 
         var db = undefined;
+        var t1,t2;
+
         var dbname = 'AraSuite.db'; // Pre filled db
         var json2sqlite = {
             "data": {
@@ -55,7 +57,7 @@
             var createMain = "CREATE TABLE IF NOT EXISTS main (word VARCHAR(50), idL INTEGER, idT INTEGER, name VARCHAR(50), nameNN VARCHAR(50));";
             var createType = "CREATE TABLE IF NOT EXISTS type (id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
             var createLang = "CREATE TABLE IF NOT EXISTS language(id INTEGER PRIMARY KEY,name VARCHAR(45) NOT NULL);";
-            var createIndex = "CREATE UNIQUE INDEX IF NOT EXISTS main_index ON main (word, idL, idT, name, nameNN);";
+            var createIndex = "CREATE UNIQUE INDEX IF NOT EXISTS main_index ON main (word, idL, idT, name);";
 
             document.addEventListener('deviceready', function() {
                 db.transaction(function (tx) {
@@ -77,11 +79,8 @@
         function setLang(lang) {
             var supp = configService.configuration.supportedLangs;
             var i=0;
-            console.log(lang);
-            console.log(JSON.stringify(supp));
             while(i<supp.length && supp[i].code!=lang) i++;
             var long = supp[i].long;
-            console.log(long);
 
             var query1 = "DROP VIEW IF EXISTS ArawordView";
             var query2 = "CREATE VIEW ArawordView AS SELECT M.word word, T.name type, M.name name FROM main M, type T, language L WHERE M.idT = T.id AND M.idL = L.id " +
@@ -115,6 +114,7 @@
                 var words = [];
 
                 document.addEventListener('deviceready', function() {
+                    t1 = (new Date().getTime());
                     executeQuery(compounds, words, query, resolve, reject);
                 }, false);
 
@@ -127,7 +127,6 @@
                 var i = 0, supp = configService.configuration.supportedLangs;
                 while(i<supp.length && supp[i].long!=lang) i++;
                 if (i>=supp.length) {
-                    console.log('INSERT',lang);
                     json2sqlite.data.inserts.language.push({
                         "id": i,
                         "name": lang
@@ -155,6 +154,7 @@
                 var words = [];
 
                 document.addEventListener('deviceready', function() {
+                    t1 = (new Date().getTime());
                     executeQuery(compounds, words, query, resolve, reject);
                 }, false);
 
@@ -259,6 +259,8 @@
          */
         function executeQuery(compounds, words, query, resolve, reject) {
             db.executeSql(query,[],function(res) {
+                console.log('DB_TIME',(new Date().getTime())-t1);
+                t1 = (new Date().getTime());
                 for(var i = 0; i < res.rows.length; i++) {
                     var word = res.rows.item(i).word;
                     var pictoName = res.rows.item(i).name;
@@ -287,6 +289,7 @@
                 if (compounds.length==0) {
                     reject('NO_COMPOUNDS');
                 }
+                console.log('RES_TIME',(new Date().getTime())-t1);
                 resolve(compounds);
             }, function (err) {
                 reject(err);

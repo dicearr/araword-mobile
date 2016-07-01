@@ -80,7 +80,9 @@
                 com_pass: 'Clave',
                 com_type: 'Tipo',
                 com_word: 'Palabra',
-                sett_tts: 'Velocidad de lectura'
+                sett_tts: 'Velocidad de lectura',
+                com_repass: 'Repite la clave',
+                com_paserr: 'Clave incorrecta'
             },
             'en': {
                 com_cancel: 'Cancel',
@@ -142,7 +144,9 @@
                 com_pass: 'Password',
                 com_type: 'Type',
                 com_word: 'Word',
-                sett_tts: 'Voice rate'
+                sett_tts: 'Voice rate',
+                com_repass: 'Retype password',
+                com_paserr: 'Wrong password'
             }
         };
 

@@ -48,6 +48,8 @@
          * @param {Boolean} noPrevious - True means algorithm will not analyze previous words to look for compounds.
          */
         function processEvent(w, text, noPrevious) {
+            var t1 = new Date().getTime();
+            var t2;
             var deferred = $q.defer();
             var wordPosition = text.indexOf(w);
             var textContext = [];
@@ -74,13 +76,21 @@
                         var promise = verbsdb.getInfinitive(simpleWord.value.replace(/[.,]/g,''))
                             .then(function(infinitive){
                                 inf = infinitive;
+                                t2 = new Date().getTime();
+                                console.log('TIME_INF['+simpleWord.value+']',t2-t1);
+                                t1 = new Date().getTime();
                                 return araworddb.getVerbsStartingWith(simpleWord.value, inf);
                             }, function() {
+                                t2 = new Date().getTime();
+                                console.log('TIME_INF['+simpleWord.value+']',t2-t1);
+                                t1 = new Date().getTime();
                                 return araworddb.getWordsStartingWith(simpleWord.value);
                             });
 
                         promise
                             .then(function(compounds) {
+                                console.log('TIME_AS['+simpleWord.value+']',(new Date().getTime())-t2);
+                                t2 = (new Date().getTime());
                                 // We concatenate all the words in a simple String so as to can compare database
                                 // results and know if our text contains any compound word.
                                 var nextWordsValues = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length);
@@ -125,6 +135,7 @@
                                         }
                                     }
                                 }
+                                console.log('TIME_RES['+simpleWord.value+']',(new Date().getTime())-t2);
                                 results[simpleWord.position] = match;
                                 resolve();
                             }, function () {
@@ -142,6 +153,7 @@
                     );
                 });
 
+            t2 = (new Date().getTime());
             // Resutls looks like
             // [ {'value': 'de color', 'words': 2, 'pictos': [*]}, {'value': 'color', 'words': 1, 'pictos': [*]} ]
             $q.all(promises).then(function() {
@@ -159,7 +171,7 @@
                         }
                         // If not we simply modify simple word values
                         else {
-                            text[pos].value = results[i].value;
+                            if(text[pos].words!=results[i].words) text[pos].value = results[i].value;
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;
                             text[pos].words = 1;
@@ -179,6 +191,7 @@
                 if (pushed) {
                     setCaret(text, text.length-1);
                 }
+                console.log('TIME_RES',(new Date().getTime())-t2);
                 deferred.resolve();
             }, deferred.reject );
 
@@ -205,7 +218,7 @@
                 var j = 0;
 
                 for(var i=minIndex; i<maxIndex+1; i++) {
-                    if (i==pos || (text[i].words == 1 && text[i].value.length>0)) { // Compound word is made only by simple words
+                    if (i==pos || (text[i].words == 1 && text[i].value.length>0 && !text[i].unbind)) { // Compound word is made only by simple words
                         text[i].value.split(' ').forEach(function(simpleWord) { // But changed word could be compound
                             words.push({
                                 'value': simpleWord,
