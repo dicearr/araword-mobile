@@ -12,7 +12,7 @@
         .controller('navController', navController);
 
     navController.$inject = ['$ionicPopover', '$scope', 'accessService', '$ionicPopup', '$window', '$cordovaImagePicker',
-        'textAnalyzer', 'docsService', 'popupsService', 'pictoService','$ionicLoading', 'configService','$filter'];
+        'textAnalyzer', 'docsService', 'popupsService', 'pictoService','$ionicLoading', 'configService','$filter','araworddb'];
 
     /**
      * Controller
@@ -87,7 +87,7 @@
                 .then(function(data) {
                     var currentLangs = configService.configuration.supportedLangs;
                     data['mainLangs'].forEach(function(lang,ind) {
-                        araworddb.addLanguagesBulk(lang.long);
+                        araworddb.addLanguagesBulk([lang.long]);
                         if (lang.haveVerbs && !currentLangs[ind].haveVerbs) {
                             vm.verbsSelect.langs.push({
                                 'id': lang.id,
