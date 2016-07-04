@@ -82,7 +82,9 @@
                 com_word: 'Palabra',
                 sett_tts: 'Velocidad de lectura',
                 com_repass: 'Repite la clave',
-                com_paserr: 'Clave incorrecta'
+                com_paserr: 'Clave incorrecta',
+                spl_passMsg: 'Configura una clave para continuar',
+                nav_docName: 'Introduzca un nombre para continuar'
             },
             'en': {
                 com_cancel: 'Cancel',
@@ -146,7 +148,9 @@
                 com_word: 'Word',
                 sett_tts: 'Voice rate',
                 com_repass: 'Retype password',
-                com_paserr: 'Wrong password'
+                com_paserr: 'Wrong password',
+                spl_passMsg: 'Configure a password to continue',
+                nav_docName: 'Introduce any name to continue'
             }
         };
 

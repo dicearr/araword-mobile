@@ -308,6 +308,7 @@
                         if (!$scope.data.fileToOpen) {
                             e.preventDefault();
                         } else {
+                            console.log($scope.data.fileToOpen);
                             docsService.openDoc(null, $scope.data.fileToOpen);
                             closeMenus();
                         }

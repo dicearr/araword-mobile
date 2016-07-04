@@ -15,5 +15,7 @@
            ng-model="splash.pass"/>
     <input class="item item-input" style="margin-top: 4px" placeholder="{{splash.replaceholder}}" type="password"
            ng-model="splash.repass"/>
+    <p ng-if="!splash.pass" translate="spl_passMsg"
+       style="color:tomato; text-align: center; margin-top: 4px">Configure a password to continue.</p>
 </div>
 

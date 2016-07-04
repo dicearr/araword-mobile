@@ -1,12 +1,14 @@
 <!-- CONTROLLER AS access -->
 <ion-view>
     <ion-nav-buttons side="right">
-        <button class="button button-icon ion-volume-high" ng-disabled="true"></button>
-        <button class="button button-icon ion-android-share-alt posit" ng-disabled="true"></button>
+        <button class="button button-icon"
+                ng-disabled="true"><i class="icon ion-paper-airplane"></i></button>
+        <button class="button button-icon" ng-disabled="true"><i class="icon ion-volume-high"></i></button>
+        <button class="button button-icon posit" ng-disabled="true"><i class="icon ion-android-share-alt"></i></button>
         <button ng-controller='navController as nav'
-                class="button button-icon ion-navicon"
+                class="button button-icon"
                 style="padding-left: 17px; padding-right: 10px"
-                ng-click="nav.showMenu($event)"></button>
+                ng-click="nav.showMenu($event)"><i class="icon ion-navicon"></i></button>
     </ion-nav-buttons>
 
     <ion-content class="has-header" overflow-scroll="false" style="display: block">

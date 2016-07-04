@@ -290,7 +290,6 @@
              * @returns {String} base.awd XML string with the documents information
              */
             function getBaseXml() {
-                console.log(JSON.stringify(configService.configuration.docLang));
                 var result = {
                     "document": {
                         "preferences": {

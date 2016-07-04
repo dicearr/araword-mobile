@@ -57,7 +57,8 @@
         };
 
         var saveDocument = {
-            template: '<input type="text" ng-model="data.docName"/>',
+            template: '<input type="text" ng-model="data.docName"/>' +
+            '<span ng-if="!data.docName" translate="nav_docName" style="color:tomato; text-align: center">Introduce any name to continue</span>',
             title: '<span>'+translate['pu_saveDocTitle']+'</span>',
             scope: undefined,
             buttons: [

@@ -171,7 +171,7 @@
                         }
                         // If not we simply modify simple word values
                         else {
-                            if(text[pos].words!=results[i].words) text[pos].value = results[i].value;
+                            text[pos].value = results[i].value;
                             text[pos].pictos = results[i].pictos;
                             text[pos].autofocus = false;
                             text[pos].words = 1;
@@ -248,10 +248,11 @@
              */
             function equals(pic1, pic2) {
                 if (pic1.value != pic2.value) return false;
-                if (pic1.pictos.length != pic2.pictos.length) return false;
+                if (pic1.pictos.length > pic2.pictos.length) return false;
                 else {
-                    for (var i=0; i<pic1.pictos.length; i++) {
-                        if (pic1.pictos[i].picto != pic2.pictos[i].picto) return false;
+                    var len = pic1.pictos.length;
+                    for (var i=0; i<len; i++) {
+                        if (pic1.pictos[len-i-1].picto != pic2.pictos[pic2.pictos.length-i-1].picto) return false;
                     }
                     return true;
                 }

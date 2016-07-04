@@ -104,7 +104,6 @@
 
         vm.sendDocument = sendDocument;
 
-        // TODO: reload event is different from onChange
         $scope.$on('reloadText', function() {
             vm.myText.forEach(function(word) {
                 textAnalyzer.processEvent(word, vm.myText, true);
@@ -140,7 +139,8 @@
                     'pictInd': 0,
                     'words': 1,
                     'autofocus': true
-                }]
+                }];
+                textAnalyzer.text = vm.myText;
             })
         }
 
