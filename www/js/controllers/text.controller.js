@@ -247,7 +247,7 @@
 
             // Digest cycles are faster than read fs so we return empty picto to avoid multiple reads
             if (picto && !picto['base64'])
-                picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+                picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP==";
 
             if (picto)
                 document.addEventListener('deviceready', readPictHandler, false);
@@ -259,7 +259,7 @@
                     .then(function(success){
                         picto['base64'] = success;
                     },function(){
-                        picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+                        picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP==";
                     });
 
 

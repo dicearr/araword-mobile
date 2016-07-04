@@ -46,6 +46,7 @@
                 acc_toLoad: 'Abrir documentos',
                 acc_toSpeech: 'Usar lector',
                 acc_toShare: 'Compartir en redes sociales',
+                acc_toSend: 'Enviar documento',
                 acc_toAdd: 'Añadir pictogramas',
                 // templates/splash.html
                 spl_download: 'Descargando pictogramas',
@@ -113,6 +114,7 @@
                 acc_toLoad: 'Open documents',
                 acc_toSpeech: 'Text to speech',
                 acc_toShare: 'Share',
+                acc_toSend: 'Send document',
                 acc_toAdd: 'Add pictographs',
                 // templates/splash.html
                 spl_download: 'Downloading pictographs',

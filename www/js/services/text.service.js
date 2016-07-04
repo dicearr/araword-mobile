@@ -18,7 +18,7 @@
 
         var radius = 3;
         var caretPosition = 0;
-        var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='};
+        var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP=='};
         var text = [];
         var errors = [];
 
