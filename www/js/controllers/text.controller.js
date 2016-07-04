@@ -112,6 +112,51 @@
 
         vm.newDocument = newDocument;
 
+        document.addEventListener('deviceready', function(){
+            var HandleIntent = function (intent) {
+                console.log(JSON.stringify(intent));
+                if(intent.hasOwnProperty('data')){
+                    if (intent.data.indexOf('content://')==0) {
+                        window.FilePath.resolveNativePath(intent.data, function(result) {
+                            var uri = 'file://' + result;
+                            var ind = uri.lastIndexOf('/');
+                            var docName = uri.substr(ind+1);
+                            var path = uri.substr(0,ind);
+                            docsService.openDoc(path,docName);
+                        }, function () {
+                            // TODO: Content provider for content://gmail-ls URIs
+                            $ionicPopup.alert({
+                                'title': '<h1>Error</h1>',
+                                'template': '<p translate="open_err">Cannot open file. Please open it from any file browser</p>'
+                            })
+                        });
+                    } else {
+                        var ind = intent.data.lastIndexOf('/');
+                        var docName = intent.data.substr(ind+1);
+                        var path = intent.data.substr(0,ind);
+                        docsService.openDoc(path,docName);
+                    }
+
+                }else{
+                    // this will happen in getCordovaIntent when the app starts and there's no
+                    // active intent
+                    console.log("The app was opened manually and there's not file to open");
+                }
+            };
+
+            // Handle the intent when the app is open
+            // If the app is running in the background, this function
+            // will handle the opened file
+            window.plugins.intent.setNewIntentHandler(HandleIntent);
+
+            // Handle the intent when the app is not open
+            // This will be executed only when the app starts or wasn't active
+            // in the background
+            window.plugins.intent.getCordovaIntent(HandleIntent, function () {
+                alert("Error: Cannot handle open with file intent");
+            });
+        }, false);
+
         //////////////
 
         /**
@@ -349,7 +394,7 @@
          * from any other Araword app.
          */
         function sendDocument() {
-            docsService.saveDoc(vm.myText,null,textAnalyzer.docName?textAnalyzer.docName:'document')
+            docsService.saveDoc(vm.myText,null,textAnalyzer.docName?textAnalyzer.docName.substr(0,textAnalyzer.docName.lastIndexOf('.')):'document')
                 .then(function(data) {
                     if (!data.target.error) {
                         resolveLocalFileSystemURL(data.target.localURL, function(entry) {

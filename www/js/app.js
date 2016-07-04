@@ -23,5 +23,6 @@ angular.module('AraWord').run(function ($ionicPlatform) {
         if (window.StatusBar) {
             StatusBar.styleDefault();
         }
+
     });
 });

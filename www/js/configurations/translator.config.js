@@ -84,7 +84,8 @@
                 com_repass: 'Repite la clave',
                 com_paserr: 'Clave incorrecta',
                 spl_passMsg: 'Configura una clave para continuar',
-                nav_docName: 'Introduzca un nombre para continuar'
+                nav_docName: 'Introduzca un nombre para continuar',
+                open_err: 'No se puede abrir el documento. Pruebe a abrirlo desde un navegador de ficheros.'
             },
             'en': {
                 com_cancel: 'Cancel',
@@ -150,7 +151,8 @@
                 com_repass: 'Retype password',
                 com_paserr: 'Wrong password',
                 spl_passMsg: 'Configure a password to continue',
-                nav_docName: 'Introduce any name to continue'
+                nav_docName: 'Introduce any name to continue',
+                open_err: 'Cannot open file. Please open it from any file browser'
             }
         };
 

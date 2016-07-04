@@ -29,7 +29,13 @@
     "cordova-plugin-file-transfer",
     "cordova-plugin-image-resizer",
     "cordova-plugin-network-information",
-    "sqliteporter"
+    "sqliteporter",
+    "cordova-custom-config",
+    {
+      "locator": "https://github.com/napolitano/cordova-plugin-intent",
+      "id": "com.napolitano.cordova.plugin.intent"
+    },
+    "cordova-plugin-filepath"
   ],
   "cordovaPlatforms": [
     "android"
