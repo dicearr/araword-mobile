@@ -66,10 +66,10 @@
             var deferred = $q.defer();
 
             // If no language has been selected then document language is used.
-            if (!picto.lang) picto.lang = configService.configuration.docLang.id;
+            if (!picto.lang) picto.lang = configService.configuration.docLang.long;
             if (!picto.fileName) deferred.reject('NO_FILENAME');
             // If no type has been selected then Miscelanea is used
-            if (!picto.type) picto.type = 3;
+            if (!picto.type && picto.type!=0) picto.type = 3;
             if (!picto.word) deferred.reject('NO_WORD');
             if (!picto.oldPath) deferred.reject('NO_PATH');
 

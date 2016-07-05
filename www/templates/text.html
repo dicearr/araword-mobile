@@ -23,7 +23,7 @@
 
         <div class="visible" id="text" style="display: inline-block;">
 
-            <div class="inline padding" ng-repeat="word in text.myText"
+            <div class="inline padding" ng-repeat="word in text.myText track by word.id"
                  ng-style="text.conf.configuration.borders? {'border': '4px solid ' + text.conf.configuration.typeColors[word.pictos[word.pictInd].type].color} :{};"
                  style="margin: 5px; max-width: 300px;"
                  unbindable>
@@ -33,14 +33,15 @@
                        ng-change="text.onChange(word)"
                        ng-keyup="text.onKeyUp($event,word)"
                        ng-model="word.value"
-                       ng-model-options="{ debounce: { default:1000, blur:0 } }"
+                       ng-model-options="{ 'updateOn': 'blur', 'debounce': {  'blur':100 } }"
                        focus="{{ word.autofocus }}"
                        pu-elastic-input
                        ng-if="!text.conf.configuration['position']"
                        class="word"
                        ng-style="text.conf.styles['inputStyle']"
                        single
-                       autocapitalize="off" />
+                       autocapitalize="off"
+                       ng-attr-id="{{word.id}}"/>
 
                 <img class="picto"
                      data-ng-src="{{  word.pictos[word.pictInd]['base64'] || text.readPicto(word.pictos[word.pictInd]) }}"
@@ -53,14 +54,15 @@
                        ng-change="text.onChange(word)"
                        ng-keyup="text.onKeyUp($event,word)"
                        ng-model="word.value"
-                       ng-model-options="{ debounce: { default:1000, blur:0 } }"
+                       ng-model-options="{ 'updateOn': 'blur', 'debounce': { 'blur':100 } }"
                        focus="{{ word.autofocus }}"
                        pu-elastic-input
                        ng-if="text.conf.configuration['position']"
                        class="word"
                        ng-style="text.conf.styles['inputStyle']"
                        single
-                       autocapitalize="off" />
+                       autocapitalize="off"
+                       ng-attr-id="{{word.id}}"/>
             </div>
         </div>
     </ion-content>

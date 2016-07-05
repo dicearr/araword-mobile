@@ -15,7 +15,6 @@
     function araworddb($q,configService) {
 
         var db = undefined;
-        var t1,t2;
 
         var dbname = 'AraSuite.db'; // Pre filled db
         var json2sqlite = {
@@ -114,7 +113,6 @@
                 var words = [];
 
                 document.addEventListener('deviceready', function() {
-                    t1 = (new Date().getTime());
                     executeQuery(compounds, words, query, resolve, reject);
                 }, false);
 
@@ -146,15 +144,19 @@
             return $q(function(resolve,reject){
                 // Case insensitive
                 var query = "SELECT * FROM ArawordView WHERE word like \'" + form.toLowerCase() +" \%\'" +
-                    " UNION SELECT * FROM ArawordView WHERE word=\'" + form.toLowerCase() +"\'" +
-                    " UNION SELECT * FROM ArawordView WHERE word like \'" + infinitive.toLowerCase() +" \%\'" +
-                    " UNION SELECT * FROM ArawordView WHERE word=\'" + infinitive.toLowerCase() +"\'";
+                    " UNION SELECT * FROM ArawordView WHERE word=\'" + form.toLowerCase() +"\'";
+
+                infinitive.forEach(function(inf) {
+                    query +=
+                        " UNION SELECT * FROM ArawordView WHERE word like \'" + inf.toLowerCase() +" \%\'" +
+                        " UNION SELECT * FROM ArawordView WHERE word=\'" + inf.toLowerCase() +"\'";
+                });
+
 
                 var compounds = [];
                 var words = [];
 
                 document.addEventListener('deviceready', function() {
-                    t1 = (new Date().getTime());
                     executeQuery(compounds, words, query, resolve, reject);
                 }, false);
 
@@ -171,13 +173,39 @@
             word = word.replace(/[.,]/g,'');
             return $q(function(resolve,reject) {
                 var query = "INSERT INTO main(word, idL, idT, name, nameNN) VALUES(?,?,?,?,?)";
-                var params = [word.toLowerCase(), picto.lang, picto.type, picto.fileName, picto.fileName];
+                getLangId(picto.lang)
+                    .then(function(idL) {
+                        var params = [word.toLowerCase(), idL, picto.type, picto.fileName, picto.fileName];
+                        console.log(JSON.stringify(params));
 
-                document.addEventListener('deviceready', executeInsert);
+                        document.addEventListener('deviceready', executeInsert);
 
-                function executeInsert() {
-                    db.executeSql(query,params,function(s) {
-                        resolve();
+                        function executeInsert() {
+                            db.executeSql(query,params,function(s) {
+                                resolve();
+                            }, function(error) {
+                                reject(error);
+                            })
+                        }
+
+                    })
+            });
+
+
+        }
+
+        function getLangId(lang) {
+            return $q(function(resolve,reject) {
+                var query = "SELECT id FROM language WHERE name=\'"+lang+"\';";
+
+                document.addEventListener('deviceready', execute);
+
+                function execute() {
+                    db.executeSql(query,[],function(s) {
+                        console.log(JSON.stringify(s));
+                        if (s && s.rows.item(0)) {
+                            resolve(s.rows.item(0).id)
+                        }
                     }, function(error) {
                         reject(error);
                     })
@@ -259,8 +287,6 @@
          */
         function executeQuery(compounds, words, query, resolve, reject) {
             db.executeSql(query,[],function(res) {
-                console.log('DB_TIME',(new Date().getTime())-t1);
-                t1 = (new Date().getTime());
                 for(var i = 0; i < res.rows.length; i++) {
                     var word = res.rows.item(i).word;
                     var pictoName = res.rows.item(i).name;
@@ -289,7 +315,6 @@
                 if (compounds.length==0) {
                     reject('NO_COMPOUNDS');
                 }
-                console.log('RES_TIME',(new Date().getTime())-t1);
                 resolve(compounds);
             }, function (err) {
                 reject(err);
@@ -326,7 +351,7 @@
 
 
 
-    };
+    }
 
 })();
 

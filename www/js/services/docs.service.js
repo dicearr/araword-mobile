@@ -24,7 +24,7 @@
         var empty_picto = {
             'picto': '',
             'type': '3',
-            'base64': 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+            'base64': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII='
         };
 
         var service = {
@@ -109,6 +109,7 @@
 
                         words.forEach(function (word) {
                             var newWord = {
+                                'id': getId(),
                                 'value': word.word,
                                 'pictos': [{
                                     'picto': word.namePicto,
@@ -386,6 +387,13 @@
             var langs = ['Castellano', 'Ingles', 'Frances', 'Catalan', 'Italiano', 'Aleman', 'Portugues', 'Portugues Brasil', 'Gallego', 'Euskera'];
             var langCode = ['es', 'en', 'fr', 'cat', 'it', 'ger', 'pt', 'br', 'gal', 'eus'];
             return langs[langCode.indexOf(lang)];
+        }
+
+        function getId() {
+            // Math.random should be unique because of its seeding algorithm.
+            // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+            // after the decimal.
+            return '_' + Math.random().toString(36).substr(2, 9);
         }
     }
 })();

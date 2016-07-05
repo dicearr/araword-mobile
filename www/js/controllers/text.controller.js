@@ -64,6 +64,7 @@
          * @property {Boolean} word.autofocus - True if the caret is currently set on the word
          */
         vm.myText = [{
+            'id': getId(),
             'value': 'AraWord',
             'pictos': [{'picto':'25748.png', 'type':4}],
             'pictInd': 0,
@@ -76,6 +77,9 @@
                 ionic.Platform.exitApp();
             }
         });
+
+        var emptyPicto = {'picto':'','type':'3','base64':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII='};
+
 
         vm.onChange = onChange;
         vm.onKeyUp = onKeyUp; // Deletes empty words
@@ -114,7 +118,7 @@
 
         document.addEventListener('deviceready', function(){
             var HandleIntent = function (intent) {
-                console.log(JSON.stringify(intent));
+
                 if(intent.hasOwnProperty('data')){
                     if (intent.data.indexOf('content://')==0) {
                         window.FilePath.resolveNativePath(intent.data, function(result) {
@@ -179,6 +183,7 @@
             promise.then(function() {
                 textAnalyzer.docName = '';
                 vm.myText = [{
+                    'id': getId(),
                     'value': 'AraWord',
                     'pictos': [{'picto':'25748.png', 'type':4}],
                     'pictInd': 0,
@@ -219,22 +224,19 @@
          * @param {word} word - The word in which change has occurred
          */
         function onChange(word) {
-            var t1 = new Date().getTime();
-            if(angular.isUndefined(word.unbind) || !word.unbind) {
-                // Common case
-                var canAnalyze = true;
-                if (word.value.charAt(word.value.length-1)==' ') {
-                    vm.message = 'separator';
-                    word.value = word.value.substr(0,word.value.length-1);
-                    canAnalyze &= word.words==1;
-                }
-
-                if (word.value.length==0) {
-                    textAnalyzer.deleteWord(word,vm.myText);
-                } else if (canAnalyze){
-                    var t2 = new Date().getTime();
-                    console.log('PRE_TIME',t2-t1);
-                    textAnalyzer.processEvent(word, vm.myText);
+            if (word.empty) {
+                word.empty = false;
+            } else {
+                if(angular.isUndefined(word.unbind) || !word.unbind) {
+                    word.value = word.value.trim();
+                    // It does not analyze empty words
+                    if (word.value) {
+                        if (word.value.length==0) {
+                            textAnalyzer.deleteWord(word,vm.myText);
+                        } else {
+                            textAnalyzer.processEvent(word, vm.myText);
+                        }
+                    }
                 }
             }
         }
@@ -247,7 +249,7 @@
 
             // Digest cycles are faster than read fs so we return empty picto to avoid multiple reads
             if (picto && !picto['base64'])
-                picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP==";
+                picto['base64'] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=";
 
             if (picto)
                 document.addEventListener('deviceready', readPictHandler, false);
@@ -259,7 +261,7 @@
                     .then(function(success){
                         picto['base64'] = success;
                     },function(){
-                        picto['base64'] = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP==";
+                        picto['base64'] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=";
                     });
 
 
@@ -281,19 +283,57 @@
          * @param {word} word - The word that must be checked.
          */
         function onKeyUp(event, word) {
-            if (event.target.value.length==0) {
+            console.log('KUP', word.value);
+            var separators = ['.',',',';',':','.',' '];
+            var realValue = event.target.value;
+            var modelValue = word.value;
+            // If word is empty means you've deleted it's content so
+            // the input field will be destroy. If the word has been
+            // unbinded then you can rewrite it without destroy the
+            // input.
+
+            if (realValue.length==0) {
+                console.log('length 0');
                 if (word.unbind && word.blocked) {
+                    console.log('UNBINDED',realValue);
                     word.blocked = false;
                 } else {
-                    textAnalyzer.deleteWord(word,vm.myText);
+                    console.log('DELETE',realValue);
+                    console.log(vm.myText.length);
+                    var pos = vm.myText.indexOf(word);
+                    if (pos > -1 && vm.myText.length>1 ) {
+                        vm.myText.splice(pos, 1);
+                    } else if (pos==0) {
+                        vm.myText[pos]['pictos'][0] = emptyPicto;
+                        vm.myText[pos]['pictInd'] = 0;
+                    }
+                    textAnalyzer.setCaret(vm.myText, pos<=0?vm.myText.length-1:pos-1);
                 }
-            } else if (
-                ( event.target.value === word.value+" "
-                || word.value == ""
-                && (event.target.value.charAt(event.target.value.length-1) == ' '))) { // event.keyCode doesn't work. Workaround.
-                textAnalyzer.addEmptyWord(word,vm.myText);
+            }
+            // New input field will be created when a separator is written
+            // we do not have event.keyCode so i've thought a workaround.
+            // If word.value.length > event.target.value.length means user
+            // is writing so new word should be created.
+            else if ( separators.indexOf(realValue.charAt(realValue.length-1)) >= 0 // Last written was a separator
+            && realValue.length > modelValue.length) {
+                console.log('EMPTY',realValue);
+                if (word.pictos[0].picto) word.empty = true;
+                var pos = vm.myText.indexOf(word)+1;
+                vm.myText.splice(pos,0,{
+                    'id': getId(),
+                    'value': '',
+                    'pictos': [emptyPicto],
+                    'pictInd': 0,
+                    'words': 1
+                });
+                textAnalyzer.setCaret(vm.myText, pos);
+            } else {
+                console.log('realVal', realValue, 'modelVal', modelValue);
+                console.log('isSep?',separators.indexOf(realValue.charAt(realValue.length-1)) >= 0);
+                console.log('realLen',realValue.length,'modelLen',modelValue.length);
             }
         }
+
 
         /**
          * Reads a word by using text to speech
@@ -304,8 +344,7 @@
                 text: word.value,
                 locale: vm.conf.configuration.docLang.locale,
                 rate: vm.conf.configuration.tts/10
-            }, function(success) { console.log(JSON.stringify(success)) },
-                function(error) { console.log(JSON.stringify(error)) })
+            });
         }
 
         // Used in singleClickAction to manage double clicks
@@ -394,7 +433,8 @@
          * from any other Araword app.
          */
         function sendDocument() {
-            docsService.saveDoc(vm.myText,null,textAnalyzer.docName?textAnalyzer.docName.substr(0,textAnalyzer.docName.lastIndexOf('.')):'document')
+            console.log(textAnalyzer.docName);
+            docsService.saveDoc(vm.myText,null,textAnalyzer.docName?textAnalyzer.docName:'document')
                 .then(function(data) {
                     if (!data.target.error) {
                         resolveLocalFileSystemURL(data.target.localURL, function(entry) {
@@ -433,7 +473,8 @@
                         var separator = result[0].lastIndexOf('/');
                         picto.oldPath = result[0].substr(0,separator);
                         picto.fileName = result[0].substr(separator+1);
-                        picto.type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type || 3;
+                        var type = vm.selectedWord.pictos[vm.selectedWord.pictInd].type;
+                        picto.type =  type;
                         picto.word = vm.selectedWord.value;
 
                         pictoService.addPicto(picto)
@@ -465,6 +506,12 @@
             textAnalyzer.setCaret(vm.myText,vm.myText.indexOf(vm.selectedWord));
         }
 
+        function getId() {
+            // Math.random should be unique because of its seeding algorithm.
+            // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+            // after the decimal.
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
 
 
     }

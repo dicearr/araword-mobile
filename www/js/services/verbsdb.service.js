@@ -44,16 +44,16 @@
             return $q(function(resolve,reject){
                 // Case insensitive
                 var query = "SELECT * FROM verbs WHERE form=\'" + verb.toLowerCase() +"\'";
-                var result = undefined;
+                var result = [];
 
                 document.addEventListener('deviceready', executeQuery, false);
 
                 function executeQuery() {
                     db.executeSql(query, [], function(res) {
                         for(var i = 0; i < res.rows.length; i++) {
-                            result = res.rows.item(0).verb;
+                            result.push(res.rows.item(i).verb);
                         }
-                        if (angular.isUndefined(result)) {
+                        if (result.length==0) {
                             reject('NO_VERB');
                         }
                         resolve(result);

@@ -18,9 +18,13 @@
 
         var radius = 3;
         var caretPosition = 0;
-        var emptyPicto = {'picto':'','type':'3','base64':'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP=='};
+        var emptyPicto = {'picto':'','type':'3','base64':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII='};
         var text = [];
         var errors = [];
+        var lastCompound = {
+            'time': 0,
+            'text': ''
+        };
 
         var service = {
             processEvent: processEvent,
@@ -48,197 +52,154 @@
          * @param {Boolean} noPrevious - True means algorithm will not analyze previous words to look for compounds.
          */
         function processEvent(w, text, noPrevious) {
-            var t1 = new Date().getTime();
-            var t2;
+
             var deferred = $q.defer();
-            var wordPosition = text.indexOf(w);
-            var textContext = [];
-            textContext = getTextContext(wordPosition, radius);
-            // Words in context ar objects like { 'value': 'AraWord', 'position': 0 }
-            var wordsInContext = textContext.words;
-            // We have to parse it and obtain 'values'
-            var wordsValuesInContext = wordsInContext.map(function(word) {
-                if (!angular.isUndefined(word)) return word.value.toLowerCase();
-            });
+            var ctx = {
+                'values': [],
+                'strings': [],
+                'min': 0,
+                'max': 0
+            };
+            initializeContext(ctx, text.indexOf(w));
 
-            var promises = [];
-            var results = [];
+            var promises = [], finalResult = [];
+            ctx.values.forEach(function(word, position) {
+                var defer = $q.defer();
+                promises.push(defer.promise);
+                var infinitives = undefined;
+                var sanitized = sanitize(word);
+                verbsdb.getInfinitive(sanitized)
+                    .then(getVerbs, getWords)
+                    .catch(deferred.reject)
+                    .then(function(results) {
+                        if (!results) {
+                            finalResult.push({
+                                'id': getId(),
+                                'value': word,
+                                'pictos': [emptyPicto],
+                                'autofocus': false,
+                                'pictInd': 0,
+                                'words': 1
+                            });
+                        } else {
+                            // If there are many verbs we've to generate all the sentences
+                            // for each infinitive form.
+                            if (!angular.isUndefined(infinitives)) {
+                                generateStrings(ctx, infinitives, position);
+                            }
+                            ctx.strings.push(
+                                ctx.values.slice(position, ctx.values.length)
+                                    .map(sanitize).join(' ')
+                                    .trim()
+                            );
 
-            // Each word in context is the beginning of a simple/compound word so
-            // we search the greatest word in the database that starts with our word.
-            // For each result we store the word and the position in an array then we will select
-            // only the words that we need.
-            wordsInContext.forEach(function(simpleWord) {
-                var inf = undefined;
-                promises.push(
-                    $q(function(resolve) {
-                        // If it's a verb we have to use the infinitive instead of the given form
-                        var promise = verbsdb.getInfinitive(simpleWord.value.replace(/[.,]/g,''))
-                            .then(function(infinitive){
-                                inf = infinitive;
-                                t2 = new Date().getTime();
-                                console.log('TIME_INF['+simpleWord.value+']',t2-t1);
-                                t1 = new Date().getTime();
-                                return araworddb.getVerbsStartingWith(simpleWord.value, inf);
-                            }, function() {
-                                t2 = new Date().getTime();
-                                console.log('TIME_INF['+simpleWord.value+']',t2-t1);
-                                t1 = new Date().getTime();
-                                return araworddb.getWordsStartingWith(simpleWord.value);
+                            var finalWord = {
+                                'id': getId(),
+                                'value': word,
+                                'pictos': [emptyPicto],
+                                'autofocus': false,
+                                'pictInd': 0,
+                                'words': 1
+                            };
+
+                            //It will select the biggest compound that matches with our strings
+                            results.forEach(function(tentative) {
+                                ctx.strings.forEach(function(str) {
+                                    var tentativeValue = tentative.word;
+                                    var tentativeLength = tentativeValue.split(' ').length;
+                                    if (str.indexOf(tentativeValue)==0 ) {
+                                        if (tentativeLength > finalWord.words) {
+                                            finalWord.value = tentativeValue;
+                                            finalWord.pictos = tentative.pictos;
+                                            finalWord.words = tentativeLength;
+                                        } else if (tentativeLength == finalWord.words) {
+                                            finalWord.pictos = tentative.pictos.concat(finalWord.pictos);
+                                        }
+                                    }
+                                })
                             });
 
-                        promise
-                            .then(function(compounds) {
-                                console.log('TIME_AS['+simpleWord.value+']',(new Date().getTime())-t2);
-                                t2 = (new Date().getTime());
-                                // We concatenate all the words in a simple String so as to can compare database
-                                // results and know if our text contains any compound word.
-                                var nextWordsValues = wordsValuesInContext.slice(simpleWord.position, wordsValuesInContext.length);
-                                var text = nextWordsValues.join(' ').replace(/[.,]/g,'');
-                                var match = {
-                                    'value': simpleWord.value,
-                                    'pictos': [emptyPicto],
-                                    'autofocus': false,
-                                    'pictInd': 0,
-                                    'words': 1
-                                };
-                                // We loop over the results so as to find the longest word that
-                                // matches with our word
-                                for(var i=0; i<compounds.length; i++) {
-                                    var comp = compounds[i];
-                                    var len = comp.word.length;
-                                    var inftext = text.replace(nextWordsValues[0],inf);
+                            finalResult.push(finalWord);
+                            ctx.strings = [];
+                        }
 
-                                    // If it's a verb compound can start with it's infinitive form
-                                    var isVerbAndInfMatches = (!angular.isUndefined(inf)
-                                        && inftext.indexOf(comp.word)==0);
-                                    if ((text.indexOf(comp.word)==0 || isVerbAndInfMatches )
-                                            && ((!angular.isUndefined(inf) && (inftext.charAt(len)==' ' || inftext.charAt(len)==''))
-                                                || text.charAt(len)==' ' || (text.length <= len))) {
-                                        var newLength = comp.word.split(' ').length;
-                                        // If matches and it's longest we replace match with the new compound word
-                                        if (match == null || newLength >= match.words ) {
-                                            if (isVerbAndInfMatches && newLength>1) {
-                                                comp.word = comp.word.replace(inf,simpleWord.value);
-                                            }
-                                            if (newLength>match.words) {
-                                                match.pictos = [emptyPicto];
-                                            }
-                                            match = {
-                                                //Allows Upper Case in text, com.word is lower case
-                                                'value': newLength==1?simpleWord.value:comp.word,
-                                                'pictos': comp.pictos.concat(match.pictos),
-                                                'autofocus': false,
-                                                'pictInd': 0,
-                                                'words': newLength
-                                            };
+                        defer.resolve();
+
+                    }, function() {
+                        finalResult.push({
+                            'id': getId(),
+                            'value': word,
+                            'pictos': [emptyPicto],
+                            'autofocus': false,
+                            'pictInd': 0,
+                            'words': 1
+                        });
+                        defer.resolve();
+                    })
+                    .catch(deferred.reject);
+
+                function getVerbs(inf) {
+                    infinitives = inf;
+                    return araworddb.getVerbsStartingWith(sanitized, inf)
+                }
+
+                function getWords() {
+                    return araworddb.getWordsStartingWith(sanitized);
+                }
+            });
+
+            $q.all(promises)
+                .then(function() {
+                    for(var i=0; i<finalResult.length; i++) {
+                        if (finalResult[i] && !equals(finalResult[i], text[ctx.min])) {
+                            if (ctx.min<text.length) {
+                                if (finalResult[i].words == 1) {
+                                    if (lastCompound.text.lastIndexOf(finalResult[i].value)==-1
+                                    || new Date().getTime()-lastCompound.time>1600) {
+                                        text[ctx.min].value = finalResult[i].value;
+                                        text[ctx.min].pictos = finalResult[i].pictos;
+                                        text[ctx.min].autofocus = false;
+                                        text[ctx.min].words = 1;
+                                        text[ctx.min].divStyle = null;
+                                    }
+                                    lastCompound.text = lastCompound.text.replace(finalResult[i].value,'');
+                                } else {
+                                    lastCompound.time = new Date().getTime();
+                                    lastCompound.text = finalResult[i].value;
+                                    text.splice(ctx.min,finalResult[i].words,finalResult[i]);
+                                    if (ctx.min==text.length-1) {
+                                        setCaret(text, ctx.min);
+                                    }
+                                    i = i + finalResult[i].words - 1;
+                                }
+                            } else if (finalResult[i].words>1){
+                                text.push(finalResult[i]);
+                                i = i + finalResult[i].words -1;
+                            } else {
+                                if (lastCompound.text.lastIndexOf(finalResult[i].value)==-1) {
+                                    for (var j=ctx.min-radius; j<i; j++) {
+                                        if (text[j].value = finalResult[i].value && !equals(finalResult[i],text[j])) {
+                                            text[j].value = finalResult[i].value;
+                                            text[j].pictos = finalResult[i].pictos;
+                                            text[j].autofocus = false;
+                                            text[j].words = 1;
+                                            text[j].divStyle = null;
                                         }
                                     }
                                 }
-                                console.log('TIME_RES['+simpleWord.value+']',(new Date().getTime())-t2);
-                                results[simpleWord.position] = match;
-                                resolve();
-                            }, function () {
-                                // If word it's not in our database we use empty pictograph
-                                results[simpleWord.position] = {
-                                    'value': simpleWord.value,
-                                    'pictos': [emptyPicto],
-                                    'autofocus': false,
-                                    'pictInd': 0,
-                                    'words': 1
-                                };
-                                resolve();
-                            });
-                        })
-                    );
+                            }
+                        } else {
+                            if (finalResult[i]) {
+                                i = i + finalResult[i].words -1;
+                            }
+                        }
+                        ctx.min++;
+                    }
+
+                    deferred.resolve();
                 });
 
-            t2 = (new Date().getTime());
-            // Resutls looks like
-            // [ {'value': 'de color', 'words': 2, 'pictos': [*]}, {'value': 'color', 'words': 1, 'pictos': [*]} ]
-            $q.all(promises).then(function() {
-                var pushed = false;
-                for(var i=0; i<results.length; i++) {
-                    var pos = textContext.minIndex;
-                    // If we've to change the word
-                    if (pos<text.length && !equals(results[i],text[pos])) {
-                        // If word it's compound we remove all the simple words
-                        // that are included in the compound word
-                        // and we push the new compund word
-                        if (results[i].words>1) {
-                            text.splice(textContext.minIndex,results[i].words,results[i]);
-                            i = i + results[i].words - 1;
-                        }
-                        // If not we simply modify simple word values
-                        else {
-                            text[pos].value = results[i].value;
-                            text[pos].pictos = results[i].pictos;
-                            text[pos].autofocus = false;
-                            text[pos].words = 1;
-                            text[pos].divStyle = null;
-                        }
-                    }
-                    // If due to a compound word we have reduced the text size
-                    // we cannot access old text[pos] items so we simply push new
-                    // words at the end.
-                    else if (pos>=text.length) {
-                        pushed=true;
-                        text.push(results[i]);
-                        i = i + results[i].words - 1;
-                    }
-                    textContext.minIndex++;
-                }
-                if (pushed) {
-                    setCaret(text, text.length-1);
-                }
-                console.log('TIME_RES',(new Date().getTime())-t2);
-                deferred.resolve();
-            }, deferred.reject );
-
-            /**
-             * Returns the range of words from the text that must be re-analyzed.
-             * @param pos = Position in which change has happened.
-             * @param rad = Radius of analysis.
-             * @returns {{minIndex: number, maxIndex: number, words: Array}}
-             */
-            function getTextContext(pos, rad) {
-                var minIndex = 0;
-                var maxIndex = text.length-1;
-
-                if (pos-rad>0) {
-                    if (noPrevious) {
-                        minIndex = pos;
-                    } else {
-                        minIndex = pos-rad;
-                    }
-                }
-                if (pos+rad<maxIndex) { maxIndex = pos+rad; }
-
-                var words = [];
-                var j = 0;
-
-                for(var i=minIndex; i<maxIndex+1; i++) {
-                    if (i==pos || (text[i].words == 1 && text[i].value.length>0 && !text[i].unbind)) { // Compound word is made only by simple words
-                        text[i].value.split(' ').forEach(function(simpleWord) { // But changed word could be compound
-                            words.push({
-                                'value': simpleWord,
-                                'position': j
-                            });
-                            j++;
-                        });
-                    } else if (i<pos) { // We do not break previous compound words
-                        words = []; j = 0; minIndex = i+1;
-                    } else if (i>pos) { // We do not consider later compound words
-                        var aux = i;
-                        i = maxIndex+1; maxIndex = aux-1;
-                    }
-                }
-                return {
-                    'minIndex': minIndex,
-                    'maxIndex': maxIndex,
-                    'words': words
-                };
-            }
+            return deferred.promise;
 
             /**
              * Compares two pictographs.
@@ -247,8 +208,12 @@
              * @returns {boolean} True if pic1 is equal to pic2, otherwise false.
              */
             function equals(pic1, pic2) {
+                if (!pic1 && pic2) return false;
+                if (!pic2 && pic1) return false;
+                if (!pic1 && !pic2) return true;
                 if (pic1.value != pic2.value) return false;
                 if (pic1.pictos.length > pic2.pictos.length) return false;
+                if (pic1.pictos.length == 0 || (pic1.pictos.length == 1 && !pic1.pictos[0].picto)) return false;
                 else {
                     var len = pic1.pictos.length;
                     for (var i=0; i<len; i++) {
@@ -258,7 +223,45 @@
                 }
             }
 
-            return deferred.promise;
+            function sanitize(word) {
+                return word.replace(/[.,:;]/g,'').toLowerCase().trim();
+            }
+
+            function initializeContext(ctx, pos) {
+                var min = pos-radius>=0?pos-radius:0;
+                var max = pos+radius<text.length?pos+radius:text.length-1;
+                if (noPrevious) min = pos;
+                for (var i=min; i<max+1; i++) {
+                    if (text[i].value && (i==pos || (
+                        text[i].words == 1
+                        && text[i].value.length>0
+                        && !text[i].unbind))
+                    ) { // Compound word is made only by simple words
+                        text[i].value.split(' ').forEach(function(simpleWord) { // But changed word could be compound
+                            if (simpleWord) ctx.values.push(simpleWord);
+                        });
+                    } else if (i<pos) { // We do not break previous compound words
+                        ctx.values = []; min = i+1;
+                    } else if (i>pos) { // We do not consider later compound words
+                        var aux = i;
+                        i = max+1; max = aux-1;
+                    }
+                }
+                ctx.min = min; ctx.max = max;
+            }
+
+            function generateStrings(ctx, infinitives, position) {
+                var values = ctx.values.slice(position).map(sanitize);
+                var text = values.join(" ").trim();
+                if (infinitives.length>0) {
+                    infinitives.forEach(function(inf) {
+                        ctx.strings.push(text.replace(values[0],inf));
+                    })
+                } else {
+                    ctx.strings.push(text);
+                }
+            }
+
         }
 
 
@@ -297,14 +300,25 @@
          * @param text = The whole text
          */
         function addEmptyWord(word, text) {
+
             var pos = text.indexOf(word)+1;
+
             text.splice(pos,0,{
+                'id': getId(),
                 'value': '',
                 'pictos': [emptyPicto],
                 'pictInd': 0,
                 'words': 1
             });
+
             setCaret(text, pos);
+        }
+
+        function getId() {
+            // Math.random should be unique because of its seeding algorithm.
+            // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+            // after the decimal.
+            return '_' + Math.random().toString(36).substr(2, 9);
         }
 
     }
