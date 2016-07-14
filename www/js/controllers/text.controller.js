@@ -110,9 +110,18 @@
 
         $scope.$on('reloadText', function() {
             vm.myText.forEach(function(word) {
-                textAnalyzer.processEvent(word, vm.myText, true);
+                textAnalyzer.processEvent(word, vm.myText, true)
+                    .then(insertResults, function(e){
+                        console.log('ERROR',JSON.stringify(e));
+                    });
             });
         });
+
+        var lastCompound = {
+            'time': 0,
+            'text': '',
+            'ids': []
+        };
 
         vm.newDocument = newDocument;
 
@@ -141,10 +150,6 @@
                         docsService.openDoc(path,docName);
                     }
 
-                }else{
-                    // this will happen in getCordovaIntent when the app starts and there's no
-                    // active intent
-                    console.log("The app was opened manually and there's not file to open");
                 }
             };
 
@@ -234,10 +239,117 @@
                         if (word.value.length==0) {
                             textAnalyzer.deleteWord(word,vm.myText);
                         } else {
-                            textAnalyzer.processEvent(word, vm.myText);
+                            console.log('CHANGE',word.value);
+                            textAnalyzer.processEvent(word, vm.myText)
+                                .then(insertResults, function(e){
+                                    console.log('ERROR',JSON.stringify(e));
+                                });
                         }
                     }
                 }
+            }
+        }
+
+        function insertResults(data) {
+            var ctx = data.context, finalResult = data.result;
+            for(var i=0; i<finalResult.length; i++) {
+                if (finalResult[i] && !equals(finalResult[i], vm.myText[ctx.min])) {
+                    if (ctx.min<vm.myText.length) {
+                        // Simple word converted into another simple word...
+                        if (finalResult[i].words==1 && vm.myText[ctx.min].words==1) {
+                            if (lastCompound.ids.indexOf(finalResult[i].id)==-1) {
+                                vm.myText[ctx.min].value = finalResult[i].value;
+                                vm.myText[ctx.min].pictos = finalResult[i].pictos;
+                                vm.myText[ctx.min].autofocus = false;
+                                vm.myText[ctx.min].words = 1;
+                                vm.myText[ctx.min].divStyle = null;
+                            }
+                        }
+                        // New compound word
+                        else if (finalResult[i].words>1) {
+                            lastCompound.ids = [];
+                            var words = finalResult[i].value.split(' ');
+                            var changed = false;
+                            for (var k=0;k<finalResult[i].words && !changed; k++) {
+                                lastCompound.ids.push(vm.myText[ctx.min+k].id);
+                                if (document.getElementById(vm.myText[ctx.min+k].id)
+                                    && document.getElementById(vm.myText[ctx.min+k].id).value != words[k]) {
+                                    console.log('DIFF',document.getElementById(vm.myText[ctx.min+k].id).value,words[k]);
+                                    changed = true;
+                                }
+                            }
+                            if (changed) {
+                                lastCompound.ids = [];
+                            } else {
+                                vm.myText.splice(ctx.min,finalResult[i].words,finalResult[i]);
+                                if (ctx.min==vm.myText.length-1) {
+                                    textAnalyzer.setCaret(vm.myText, ctx.min);
+                                }
+                                i = i + finalResult[i].words - 1;
+                            }
+                        }
+                        // Compound word decomposed
+                        else {
+                            for(var jj=i; jj<finalResult.length; jj++) {
+                                finalResult[jj].autofocus = false;
+                                finalResult[jj].words = 1;
+                                finalResult[jj].divStyle = null;
+                                finalResult[jj].id = getId();
+                            }
+
+                            var len = vm.myText[ctx.min].words;
+                            var newPictos = finalResult.slice(i,i+len);
+                            vm.myText.splice.apply(vm.myText, [ctx.min,1].concat(newPictos));
+                            i += len;
+                            newPictos = [];
+                        }
+                    } else if (finalResult[i].words>1){
+                        vm.myText.push(finalResult[i]);
+                        i = i + finalResult[i].words -1;
+                    } else {
+                        if (lastCompound.ids.indexOf(finalResult[i].id)==-1) {
+                            var located;
+                            for (var j=ctx.min-textAnalyzer.radius; j<i; j++) {
+                                if (vm.myText[j]
+                                    && vm.myText[j].value == finalResult[i].value && !equals(finalResult[i],vm.myText[j])) {
+                                    located = true;
+                                    vm.myText[j].value = finalResult[i].value;
+                                    vm.myText[j].pictos = finalResult[i].pictos;
+                                    vm.myText[j].autofocus = false;
+                                    vm.myText[j].words = 1;
+                                    vm.myText[j].divStyle = null;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (finalResult[i]) {
+                        i = i + finalResult[i].words -1;
+                    }
+                }
+                ctx.min++;
+            }
+        }
+
+        /**
+         * Compares two pictographs.
+         * @param pic1 = first pictograph.
+         * @param pic2 = second pictograph.
+         * @returns {boolean} True if pic1 is equal to pic2, otherwise false.
+         */
+        function equals(pic1, pic2) {
+            if (!pic1 && pic2) return false;
+            if (!pic2 && pic1) return false;
+            if (!pic1 && !pic2) return true;
+            if (pic1.value != pic2.value) return false;
+            if (pic1.pictos.length > pic2.pictos.length) return false;
+            if (pic1.pictos.length == 0 || (pic1.pictos.length == 1 && !pic1.pictos[0].picto)) return false;
+            else {
+                var len = pic1.pictos.length;
+                for (var i=0; i<len; i++) {
+                    if (pic1.pictos[len-i-1].picto != pic2.pictos[pic2.pictos.length-i-1].picto) return false;
+                }
+                return true;
             }
         }
 
@@ -283,7 +395,6 @@
          * @param {word} word - The word that must be checked.
          */
         function onKeyUp(event, word) {
-            console.log('KUP', word.value);
             var separators = ['.',',',';',':','.',' '];
             var realValue = event.target.value;
             var modelValue = word.value;
@@ -291,23 +402,15 @@
             // the input field will be destroy. If the word has been
             // unbinded then you can rewrite it without destroy the
             // input.
-
             if (realValue.length==0) {
-                console.log('length 0');
+                console.log('KU-length-0',word.value);
                 if (word.unbind && word.blocked) {
-                    console.log('UNBINDED',realValue);
                     word.blocked = false;
                 } else {
-                    console.log('DELETE',realValue);
-                    console.log(vm.myText.length);
-                    var pos = vm.myText.indexOf(word);
-                    if (pos > -1 && vm.myText.length>1 ) {
-                        vm.myText.splice(pos, 1);
-                    } else if (pos==0) {
-                        vm.myText[pos]['pictos'][0] = emptyPicto;
-                        vm.myText[pos]['pictInd'] = 0;
-                    }
-                    textAnalyzer.setCaret(vm.myText, pos<=0?vm.myText.length-1:pos-1);
+                    console.log('Delete',word.value);
+                    $timeout(function() {
+                        if (event.target.value.length==0) textAnalyzer.deleteWord(word, vm.myText);
+                    },3)
                 }
             }
             // New input field will be created when a separator is written
@@ -316,21 +419,32 @@
             // is writing so new word should be created.
             else if ( separators.indexOf(realValue.charAt(realValue.length-1)) >= 0 // Last written was a separator
             && realValue.length > modelValue.length) {
-                console.log('EMPTY',realValue);
                 if (word.pictos[0].picto) word.empty = true;
-                var pos = vm.myText.indexOf(word)+1;
-                vm.myText.splice(pos,0,{
-                    'id': getId(),
-                    'value': '',
-                    'pictos': [emptyPicto],
-                    'pictInd': 0,
-                    'words': 1
+                if (realValue.lastIndexOf(' ')==realValue.length-1) {
+                   if(document.getElementById(word.id)) document.getElementById(word.id).value=realValue.trim();
+                }
+                console.log('addEmpty',word.value);
+                textAnalyzer.addEmptyWord(word,vm.myText);
+            }
+
+            else if (realValue.split(' ').length>modelValue.split(' ').length) {
+                console.log('COMP',realValue,modelValue);
+                var newWords = [];
+                realValue.split(' ').forEach(function(w) {
+                    newWords.push({
+                        'autofocus': false,
+                        'words': 1,
+                        'divStyle': null,
+                        'id': getId(),
+                        'value': w,
+                        'pictos': [emptyPicto],
+                        'pictInd': 0
+                    })
                 });
-                textAnalyzer.setCaret(vm.myText, pos);
-            } else {
-                console.log('realVal', realValue, 'modelVal', modelValue);
-                console.log('isSep?',separators.indexOf(realValue.charAt(realValue.length-1)) >= 0);
-                console.log('realLen',realValue.length,'modelLen',modelValue.length);
+                var ind = vm.myText.indexOf(word);
+                vm.myText.splice.apply(vm.myText, [ind,1].concat(newWords));
+                textAnalyzer.processEvent(vm.myText[ind], vm.myText)
+                    .then(insertResults);
             }
         }
 

@@ -21,10 +21,6 @@
         var emptyPicto = {'picto':'','type':'3','base64':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII='};
         var text = [];
         var errors = [];
-        var lastCompound = {
-            'time': 0,
-            'text': ''
-        };
 
         var service = {
             processEvent: processEvent,
@@ -33,6 +29,7 @@
             addEmptyWord: addEmptyWord,
             text: text,
             errors: errors,
+            radius: radius,
             docName: ''
         };
 
@@ -56,6 +53,7 @@
             var deferred = $q.defer();
             var ctx = {
                 'values': [],
+                'ids': [],
                 'strings': [],
                 'min': 0,
                 'max': 0
@@ -70,11 +68,10 @@
                 var sanitized = sanitize(word);
                 verbsdb.getInfinitive(sanitized)
                     .then(getVerbs, getWords)
-                    .catch(deferred.reject)
                     .then(function(results) {
                         if (!results) {
                             finalResult.push({
-                                'id': getId(),
+                                'id': w.id,
                                 'value': word,
                                 'pictos': [emptyPicto],
                                 'autofocus': false,
@@ -94,7 +91,7 @@
                             );
 
                             var finalWord = {
-                                'id': getId(),
+                                'id': ctx.ids[position],
                                 'value': word,
                                 'pictos': [emptyPicto],
                                 'autofocus': false,
@@ -109,7 +106,8 @@
                                     var tentativeLength = tentativeValue.split(' ').length;
                                     if (str.indexOf(tentativeValue)==0 ) {
                                         if (tentativeLength > finalWord.words) {
-                                            finalWord.value = tentativeValue;
+                                            var isInfinitive = infinitives && infinitives.indexOf(tentativeValue)!=-1;
+                                            finalWord.value = isInfinitive?word:tentativeValue;
                                             finalWord.pictos = tentative.pictos;
                                             finalWord.words = tentativeLength;
                                         } else if (tentativeLength == finalWord.words) {
@@ -135,8 +133,7 @@
                             'words': 1
                         });
                         defer.resolve();
-                    })
-                    .catch(deferred.reject);
+                    });
 
                 function getVerbs(inf) {
                     infinitives = inf;
@@ -150,78 +147,16 @@
 
             $q.all(promises)
                 .then(function() {
-                    for(var i=0; i<finalResult.length; i++) {
-                        if (finalResult[i] && !equals(finalResult[i], text[ctx.min])) {
-                            if (ctx.min<text.length) {
-                                if (finalResult[i].words == 1) {
-                                    if (lastCompound.text.lastIndexOf(finalResult[i].value)==-1
-                                    || new Date().getTime()-lastCompound.time>1600) {
-                                        text[ctx.min].value = finalResult[i].value;
-                                        text[ctx.min].pictos = finalResult[i].pictos;
-                                        text[ctx.min].autofocus = false;
-                                        text[ctx.min].words = 1;
-                                        text[ctx.min].divStyle = null;
-                                    }
-                                    lastCompound.text = lastCompound.text.replace(finalResult[i].value,'');
-                                } else {
-                                    lastCompound.time = new Date().getTime();
-                                    lastCompound.text = finalResult[i].value;
-                                    text.splice(ctx.min,finalResult[i].words,finalResult[i]);
-                                    if (ctx.min==text.length-1) {
-                                        setCaret(text, ctx.min);
-                                    }
-                                    i = i + finalResult[i].words - 1;
-                                }
-                            } else if (finalResult[i].words>1){
-                                text.push(finalResult[i]);
-                                i = i + finalResult[i].words -1;
-                            } else {
-                                if (lastCompound.text.lastIndexOf(finalResult[i].value)==-1) {
-                                    for (var j=ctx.min-radius; j<i; j++) {
-                                        if (text[j].value = finalResult[i].value && !equals(finalResult[i],text[j])) {
-                                            text[j].value = finalResult[i].value;
-                                            text[j].pictos = finalResult[i].pictos;
-                                            text[j].autofocus = false;
-                                            text[j].words = 1;
-                                            text[j].divStyle = null;
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            if (finalResult[i]) {
-                                i = i + finalResult[i].words -1;
-                            }
-                        }
-                        ctx.min++;
-                    }
-
-                    deferred.resolve();
+                    deferred.resolve({
+                        'result': finalResult,
+                        'context': ctx
+                    });
+                }, function(s) {
+                    console.log('REJECT',JSON.stringify(s));
                 });
 
             return deferred.promise;
 
-            /**
-             * Compares two pictographs.
-             * @param pic1 = first pictograph.
-             * @param pic2 = second pictograph.
-             * @returns {boolean} True if pic1 is equal to pic2, otherwise false.
-             */
-            function equals(pic1, pic2) {
-                if (!pic1 && pic2) return false;
-                if (!pic2 && pic1) return false;
-                if (!pic1 && !pic2) return true;
-                if (pic1.value != pic2.value) return false;
-                if (pic1.pictos.length > pic2.pictos.length) return false;
-                if (pic1.pictos.length == 0 || (pic1.pictos.length == 1 && !pic1.pictos[0].picto)) return false;
-                else {
-                    var len = pic1.pictos.length;
-                    for (var i=0; i<len; i++) {
-                        if (pic1.pictos[len-i-1].picto != pic2.pictos[pic2.pictos.length-i-1].picto) return false;
-                    }
-                    return true;
-                }
-            }
 
             function sanitize(word) {
                 return word.replace(/[.,:;]/g,'').toLowerCase().trim();
@@ -240,8 +175,16 @@
                         text[i].value.split(' ').forEach(function(simpleWord) { // But changed word could be compound
                             if (simpleWord) ctx.values.push(simpleWord);
                         });
+                        if (text[i].words>1) {
+                            for(var j=0; j<text[i].words; j++) {
+                                ctx.ids.push(getId());
+                            }
+                        } else {
+                            ctx.ids.push(text[i].id);
+                        }
                     } else if (i<pos) { // We do not break previous compound words
                         ctx.values = []; min = i+1;
+                        ctx.ids = [];
                     } else if (i>pos) { // We do not consider later compound words
                         var aux = i;
                         i = max+1; max = aux-1;

@@ -33,7 +33,7 @@
                        ng-change="text.onChange(word)"
                        ng-keyup="text.onKeyUp($event,word)"
                        ng-model="word.value"
-                       ng-model-options="{ 'updateOn': 'blur', 'debounce': {  'blur':100 } }"
+                       ng-model-options="{ 'updateOn': 'default blur', 'debounce': { 'blur':50, 'default':1200 } }"
                        focus="{{ word.autofocus }}"
                        pu-elastic-input
                        ng-if="!text.conf.configuration['position']"
@@ -54,7 +54,7 @@
                        ng-change="text.onChange(word)"
                        ng-keyup="text.onKeyUp($event,word)"
                        ng-model="word.value"
-                       ng-model-options="{ 'updateOn': 'blur', 'debounce': { 'blur':100 } }"
+                       ng-model-options="{ 'updateOn': 'default blur', 'debounce': { 'blur':50, 'default':1200 } }"
                        focus="{{ word.autofocus }}"
                        pu-elastic-input
                        ng-if="text.conf.configuration['position']"
