@@ -244,6 +244,7 @@
                     e.preventDefault();
                 } else {
                     pictoService.addPicto(vm.newPict);
+                    vm.newPict = {'type': 3};
                     $scope.menu.hide();
                 }
             };

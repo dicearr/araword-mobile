@@ -89,5 +89,7 @@
   </platform>
   <plugin name="cordova-plugin-whitelist" spec="~1.2.0"/>
   <allow-navigation href="*"/>
+  <allow-intent href="file://"/>
+  <allow-intent href="content://"/>
   <access origin="*"/>
 </widget>
