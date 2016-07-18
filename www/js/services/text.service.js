@@ -100,6 +100,7 @@
                             };
 
                             //It will select the biggest compound that matches with our strings
+                            // Foobar
                             results.forEach(function(tentative) {
                                 ctx.strings.forEach(function(str) {
                                     var tentativeValue = tentative.word;
