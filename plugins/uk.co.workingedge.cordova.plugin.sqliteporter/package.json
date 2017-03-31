@@ -1,0 +1,48 @@
+{
+    "version": "0.1.3",
+    "name": "uk.co.workingedge.cordova.plugin.sqliteporter",
+    "cordova_name": "sqlite porter",
+    "description": "Enables importing/exporting of SQLite databases to/from JSON/SQL.",
+    "author": "Dave Alden",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dpa99c/cordova-sqlite-porter.git"
+    },
+    "cordova": {
+        "id": "uk.co.workingedge.cordova.plugin.sqliteporter",
+        "platforms": [
+            "android",
+            "amazon-fireos",
+            "ios",
+            "blackberry10",
+            "wp7",
+            "wp8",
+            "windows8",
+            "windows",
+            "tizen",
+            "browser"
+        ]    
+    },
+    "issue": "https://github.com/dpa99c/cordova-sqlite-porter/issues",
+    "keywords": [
+        "ecosystem:cordova",
+        "cordova",
+        "android",
+        "fireos",
+        "ios",
+        "blackberry",
+        "wp7",
+        "windows phone 8",
+        "windows 8",
+        "windows",
+        "tizen",
+        "browser",
+        "phonegap",
+        "database",
+        "sqlite",
+        "websql",
+        "import",
+        "export"
+    ]
+}
