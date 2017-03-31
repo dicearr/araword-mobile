@@ -65,7 +65,6 @@
                     tx.executeSql(createType);
                     tx.executeSql(createIndex);
                 }, function(error) {
-                    console.log('INIT_DB_ERROR',JSON.stringify(error));
                     deferred.reject(error);
                 }, function() {
                     deferred.resolve();
@@ -176,7 +175,6 @@
                 getLangId(picto.lang)
                     .then(function(idL) {
                         var params = [word.toLowerCase(), idL, picto.type, picto.fileName, picto.fileName];
-                        console.log(JSON.stringify(params));
 
                         document.addEventListener('deviceready', executeInsert);
 
@@ -202,7 +200,6 @@
 
                 function execute() {
                     db.executeSql(query,[],function(s) {
-                        console.log(JSON.stringify(s));
                         if (s && s.rows.item(0)) {
                             resolve(s.rows.item(0).id)
                         }

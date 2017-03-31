@@ -395,6 +395,10 @@
          * @param {word} word - The word that must be checked.
          */
         function onKeyUp(event, word) {
+            if (event.keyCode === 13) {
+              word.hasNewline = true;  
+              textAnalyzer.addEmptyWord(word,vm.myText);
+            }
             var separators = ['.',',',';',':','.',' '];
             var realValue = event.target.value;
             var modelValue = word.value;

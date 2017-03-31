@@ -221,7 +221,9 @@
                 text[pos]['pictos'][0] = emptyPicto;
                 text[pos]['pictInd'] = 0;
             }
-            setCaret(text, pos<=0?text.length-1:pos-1);
+            var newPos = pos<=0?text.length-1:pos-1;
+            if (text[newPos].hasNewline) text[newPos].hasNewline = false;
+            setCaret(text, newPos);
         }
 
         /**

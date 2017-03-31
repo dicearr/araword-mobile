@@ -23,7 +23,7 @@
 
         <div class="visible" id="text" style="display: inline-block;">
 
-            <div class="inline padding" ng-repeat="word in text.myText track by word.id"
+            <div class="inline padding" ng-class="{true: 'lastword', false: ''}[word.hasNewline]" ng-repeat="word in text.myText track by word.id"
                  ng-style="text.conf.configuration.borders? {'border': '4px solid ' + text.conf.configuration.typeColors[word.pictos[word.pictInd].type].color} :{};"
                  style="margin: 5px; max-width: 300px;"
                  unbindable>

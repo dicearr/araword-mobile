@@ -279,7 +279,7 @@
             var deferred = $q.defer();
             $cordovaFile.readAsText(service.pictoPath, 'images.xml')
                 .then(function (xml) {
-                    parserService.xml2db(xml,deferred, is_first_time)
+                    parserService.xml2db(xml, deferred, is_first_time)
                         .then(function() {
                             deferred.resolve()
                         }, function(err) {
